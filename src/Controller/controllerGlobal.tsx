@@ -172,7 +172,8 @@ export const StatusTermEnum: any = {
   TERM_ANALYSIS: "Em análise",
   ACTIVE_TERM: "Termo ativo",
   INACTIVE_TERM: "Termo inativo",
-  PENDING_TERM: "Aguar. assinatura",
+  // PENDING_TERM: "Aguar. assinatura",
+  INVALID_TERM: "Termo inválido",
 };
 
 export const TypeTermEnum: any = {
