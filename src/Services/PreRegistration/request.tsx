@@ -43,7 +43,7 @@ export const requestUpdateRegistration = (data: any, id: number) => {
 
  
   return http
-    .put("/registration/" + id, data)
+    .put("/registration-classroom-bff/" + id + "/status", data)
     .then(response => response.data)
     .catch(err => {
       if (err.response.status === 401) {
