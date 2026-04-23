@@ -43,7 +43,26 @@ export const requestUpdateRegistration = (data: any, id: number) => {
 
  
   return http
-    .put("/registration-classroom-bff/" + id + "/status", data)
+    .put("/registration/" + id, data)
+    .then(response => response.data)
+    .catch(err => {
+      if (err.response.status === 401) {
+        window.location.reload()
+      }
+      alert(err.response.message)
+
+      throw err;
+    });
+};
+
+export const requestUpdateRegistrationClassroom = (data: any, id?: number) => {
+  const registrationClassroomId = id ?? data?.registration_classroom_id;
+
+  return http
+    .patch(
+      "/registration-classroom-bff/" + registrationClassroomId + "/status",
+      { status: data?.status }
+    )
     .then(response => response.data)
     .catch(err => {
       if (err.response.status === 401) {
@@ -200,5 +219,4 @@ export const requestDeleteRegistrationClassroom = (id: number) => {
       throw err;
     });
 };
-
 

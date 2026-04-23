@@ -81,7 +81,8 @@ export const RegisterState = () => {
     responsable_name: "",
     responsable_telephone: "",
     city: null,
-    state: null
+    state: null,
+    is_legal_responsible: false,
   };
 
   return {

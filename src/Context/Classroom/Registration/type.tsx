@@ -1,7 +1,7 @@
 export interface RegistrationDetailsTypes {
   registration?: RegistrationType;
   initialValue: UpdateRegister
-  handleUpdateRegistration: (data: UpdateRegister, id: number) => void
+  handleUpdateRegistration: (data: UpdateRegister) => void
   isLoading: boolean
 }
 

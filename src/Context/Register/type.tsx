@@ -41,6 +41,7 @@ export interface Registration {
     zone: number | null;
     city: number | null,
     state: number | null
+    is_legal_responsible: boolean | null
 }
 
 

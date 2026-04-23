@@ -9,7 +9,7 @@ export const RegistrationClassroomState = () => {
   const { idRegistration } = useParams();
   const { data: registrationRequest, isLoading } =
     useFetchRequestClassroomRegistrationOne(parseInt(idRegistration!));
-  const { requestPreRegistrationMutation } = ControllerUpdateRegistration();
+  const { requestUpdateRegistrationClassroomMutation } = ControllerUpdateRegistration();
   const [registration, setregistration] = useState<RegistrationType | undefined>();
 
   useEffect(() => {
@@ -22,13 +22,15 @@ export const RegistrationClassroomState = () => {
     status: getStatus(registration?.status!),
   };
 
-  const handleUpdateRegistration = (data: UpdateRegister, id: number) => {
+  const handleUpdateRegistration = (data: UpdateRegister) => {
     const payload = {
-      registration_classroom_id: registration?.id,
       status: data.status.id,
     };
 
-    requestPreRegistrationMutation.mutate({ data: payload, id });
+    requestUpdateRegistrationClassroomMutation.mutate({
+      data: payload,
+      id: registration?.id,
+    });
   };
 
   return {

@@ -11,6 +11,7 @@ import { Column, Padding, Row } from "../../../../../../Styles/styles";
 import DropdownComponent from "../../../../../../Components/Dropdown";
 import { kinship } from "../../../../../../Controller/controllerGlobal";
 import Swal from "sweetalert2";
+import CheckboxComponent from "../../../../../../Components/Checkbox";
 
 const UnderAge = () => {
   const props = useContext(RegisterContext) as RegisterTypes;
@@ -19,6 +20,7 @@ const UnderAge = () => {
     responsable_cpf: props.dataValues.responsable_cpf ?? "",
     responsable_name: props.dataValues.responsable_name ?? "",
     kinship: props.dataValues.kinship ?? "",
+    is_legal_responsible: props.dataValues.is_legal_responsible ?? false,
   };
 
   const schema = Yup.object().shape({
@@ -29,6 +31,9 @@ const UnderAge = () => {
       "Nome do responsável é obrigatório"
     ),
     kinship: Yup.string().required("Parentesco é obrigatório"),
+    is_legal_responsible: Yup.boolean().required(
+      "Confirmação de responsável legal é obrigatória"
+    ),
   });
 
   return (
@@ -54,7 +59,8 @@ const UnderAge = () => {
             }
           }}
         >
-          {({ values, handleChange, errors, touched }) => {
+          {({ values, handleChange, errors, touched, setFieldValue }) => {
+
             return (
               <Form>
                 <Row id="center">
@@ -114,6 +120,24 @@ const UnderAge = () => {
                     <Padding padding={props.padding} />
                   </div>
                 </Row>
+                {(
+                  <div className="col-12">
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
+                      <CheckboxComponent
+                        checked={values.is_legal_responsible}
+                        onChange={(e) => setFieldValue("is_legal_responsible", e.checked)}
+                      />
+                      <label style={{ cursor: "pointer", fontWeight: 500 }}>
+                        Confirmo que sou o responsável legal deste menor de idade *
+                      </label>
+                    </div>
+                    {errors.is_legal_responsible && touched.is_legal_responsible ? (
+                      <div style={{ color: "red", marginTop: "8px" }}>
+                        {errors.is_legal_responsible}
+                      </div>
+                    ) : null}
+                  </div>
+                )}
                 <Padding padding={props.padding} />
                 <Row id="center" className={"marginTop marginButtom"}>
                   <div className="col-4">
@@ -122,7 +146,7 @@ const UnderAge = () => {
                       // onClick={onButton}
                       className="t-button-primary"
                       label="Finalizar"
-                      // disabled={!isValid}
+                    // disabled={!isValid}
                     />
                   </div>
                 </Row>

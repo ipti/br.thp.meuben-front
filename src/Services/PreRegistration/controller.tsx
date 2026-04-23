@@ -12,6 +12,7 @@ import {
   requestRegistrationClassroom,
   requestUpdateAvatarRegistration,
   requestUpdateRegistration,
+  requestUpdateRegistrationClassroom,
 } from "./request";
 import {
   CreatePreRegistration,
@@ -124,6 +125,30 @@ export const ControllerUpdateRegistration = () => {
     }
   );
 
+  const requestUpdateRegistrationClassroomMutation = useMutation(
+    ({ data, id }: { data: { status: string; registration_classroom_id?: number }; id?: number }) =>
+      requestUpdateRegistrationClassroom(data, id),
+    {
+      onError: (error: any) => {
+        Swal.fire({
+          icon: 'error',
+          title: error.response.data.message,
+          confirmButtonColor: styles.colors.colorsBaseProductNormal,
+        })
+       },
+      onSuccess: () => {
+        Swal.fire({
+          icon: "success",
+          title: "Status da matrícula alterado com sucesso!",
+          confirmButtonColor: styles.colors.colorsBaseProductNormal,
+        });
+
+        queryClient.refetchQueries("useRequestsClassroomRegistrationOne");
+        queryClient.refetchQueries("useRequestsClassroomRegistration");
+      },
+    }
+  );
+
   const requestCHangeAvatarRegistrationMutation = useMutation(
     ({  id, file }: { id: number, file: File }) =>
       requestUpdateAvatarRegistration(id, file),
@@ -204,6 +229,7 @@ export const ControllerUpdateRegistration = () => {
     requestRegistrationClassroomMutation,
     requestDeleteRegistrationMutation,
     requestCHangeAvatarRegistrationMutation,
-    requestRegisterTermMutation
+    requestRegisterTermMutation,
+    requestUpdateRegistrationClassroomMutation
   };
 };

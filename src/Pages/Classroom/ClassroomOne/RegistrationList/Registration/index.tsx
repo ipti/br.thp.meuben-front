@@ -76,10 +76,7 @@ const RegistrationPage = () => {
           <Formik
             initialValues={props.initialValue}
             onSubmit={(values) => {
-              props.handleUpdateRegistration(
-                { ...values },
-                props.registration?.registration_fk!
-              );
+              props.handleUpdateRegistration({ ...values });
             }}
           >
             {({ values, handleChange }) => (

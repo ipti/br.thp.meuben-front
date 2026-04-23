@@ -32,6 +32,26 @@ const StyleComponent = styled.div`
     font-weight: 500;
     color: ${styles.colors.colorsBaseInkNormalActive};
   }
+
+  .attendance-legend {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    color: ${styles.colors.colorsBaseInkNormalActive};
+    font-weight: 500;
+  }
+
+  .attendance-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .attendance-legend-item img {
+    width: 18px;
+    height: 18px;
+  }
 `;
 
 const Beneficiarios = () => {
@@ -344,7 +364,7 @@ const Beneficiarios = () => {
 
   return (
     <div className="card">
-      <h3>Lista de presença</h3>
+      <h2>Lista de presença</h2>
       <Padding padding="16px" />
       <Row id="space-between">
         <Button
@@ -369,6 +389,16 @@ const Beneficiarios = () => {
       </Row>
       <Padding padding="16px" />
       <StyleComponent>
+        <div className="attendance-legend">
+          <div className="attendance-legend-item">
+            <img src={Present} alt="Presente" />
+            <span>Presente</span>
+          </div>
+          <div className="attendance-legend-item">
+            <img src={NotPresent} alt="Faltou" />
+            <span>Faltou</span>
+          </div>
+        </div>
         {props.meeting?.classroom.register_classroom ? (
           <DataTable
             value={props.meeting?.classroom.register_classroom}
