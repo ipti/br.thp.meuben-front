@@ -49,7 +49,21 @@ const InputAddressState = () => {
     return { dadosCep, state, setStateId, stateId }
 }
 
-const InputAddress = ({ errors, handleChange, touched, values, setFieldValue }: { values: any, handleChange: any, errors: any, touched: any, setFieldValue: any }) => {
+const InputAddress = ({
+    errors,
+    handleChange,
+    touched,
+    values,
+    setFieldValue,
+    showRequiredAsterisk = false,
+}: {
+    values: any,
+    handleChange: any,
+    errors: any,
+    touched: any,
+    setFieldValue: any,
+    showRequiredAsterisk?: boolean
+}) => {
 
     const props = InputAddressState();
 
@@ -83,7 +97,7 @@ const InputAddress = ({ errors, handleChange, touched, values, setFieldValue }: 
                 ) : null}
             </div>
             <div className="col-12 md:col-6">
-                <label>Endereço </label>
+                <label>Endereço {showRequiredAsterisk ? "*" : ""}</label>
                 <Padding />
                 <TextInput
                     value={values.address}
@@ -98,7 +112,7 @@ const InputAddress = ({ errors, handleChange, touched, values, setFieldValue }: 
                 ) : null}
             </div>
             <div className="col-12 md:col-6">
-                <label>Bairro/Povoado </label>
+                <label>Bairro/Povoado {showRequiredAsterisk ? "*" : ""}</label>
                 <Padding />
                 <TextInput
                     value={values.neighborhood}
@@ -129,7 +143,7 @@ const InputAddress = ({ errors, handleChange, touched, values, setFieldValue }: 
             </div>
             {props.state && <>
                 <div className="col-12 md:col-6">
-                    <label>Estado *</label>
+                    <label>Estado {showRequiredAsterisk ? "*" : ""}</label>
                     <Padding />
                     <DropdownComponent
                         value={values.state}
@@ -149,7 +163,7 @@ const InputAddress = ({ errors, handleChange, touched, values, setFieldValue }: 
                     ) : null}
                 </div>
                 {props.stateId && <div className="col-12 md:col-6">
-                    <label>Cidade *</label>
+                    <label>Cidade {showRequiredAsterisk ? "*" : ""}</label>
                     <Padding />
                     <DropdownComponent
                         value={values.city}

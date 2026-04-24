@@ -7,6 +7,7 @@ import { Project, Projects, Registration } from "./type";
 import { ControllerPreRegistration } from "../../Services/PreRegistration/controller";
 import { useNavigate } from "react-router-dom";
 import { RegistrationCPF } from "../../Services/PreRegistration/types";
+import { sanitizeDigits } from "../../Utils/beneficiaryRules";
 
 export const RegisterState = () => {
   const padding = "16px";
@@ -64,7 +65,15 @@ export const RegisterState = () => {
     const data = new Date(dataValues?.birthday);
     const dataFormatada = data?.toISOString()?.split('T')[0];
 
-    props.requestPreRegistrationMutation.mutate({ ...dataValues, cpf: dataValues.cpf.replace(/[^a-zA-Z0-9]/g, ''),kinship: dataValues.kinship === "" ? "NAO_DEFINIDO" : dataValues.kinship, responsable_telephone: dataValues.responsable_telephone.replace(/[^a-zA-Z0-9]/g, ''), birthday: dataFormatada, responsable_cpf: dataValues?.responsable_cpf?.replace(/[^a-zA-Z0-9]/g, '') })
+    props.requestPreRegistrationMutation.mutate({
+      ...dataValues,
+      cpf: sanitizeDigits(dataValues.cpf),
+      kinship: dataValues.kinship === "" ? "NAO_DEFINIDO" : dataValues.kinship,
+      telephone: sanitizeDigits(dataValues.telephone),
+      responsable_telephone: sanitizeDigits(dataValues.responsable_telephone),
+      birthday: dataFormatada,
+      responsable_cpf: sanitizeDigits(dataValues?.responsable_cpf),
+    })
   }
 
   const initialState: Registration = {
@@ -80,6 +89,13 @@ export const RegisterState = () => {
     responsable_cpf: "",
     responsable_name: "",
     responsable_telephone: "",
+    telephone: "",
+    responsable_email: "",
+    cep: "",
+    address: "",
+    number: "",
+    complement: "",
+    neighborhood: "",
     city: null,
     state: null,
     is_legal_responsible: false,

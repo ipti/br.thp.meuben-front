@@ -30,6 +30,7 @@ export interface Registration {
     name: string;
     birthday: string;
     cpf?: string;
+    telephone?: string;
     sex: number | null;
     color_race: number | null;
     deficiency: boolean | null;
@@ -37,8 +38,14 @@ export interface Registration {
     responsable_name?: string;
     responsable_cpf?: string;
     responsable_telephone?: string;
+    responsable_email?: string;
     kinship?: string | null;
     zone: number | null;
+    cep?: string;
+    address?: string;
+    number?: string;
+    complement?: string;
+    neighborhood?: string;
     city: number | null,
     state: number | null
     is_legal_responsible: boolean | null

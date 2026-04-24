@@ -11,6 +11,8 @@ export interface CreatePreRegistration {
     responsable_name?: string | null;
     responsable_cpf?: string | null;
     responsable_telephone?: string | null;
+    responsable_email?: string | null;
+    telephone?: string | null;
     zone: number;
     classroom: number;
     kinship: string | undefined | null
@@ -40,6 +42,8 @@ export interface CreatePreRegistration {
     responsable_name: string
     responsable_cpf: string
     responsable_telephone: string
+    responsable_email?: string
+    telephone?: string
     zone: number
     kinship: string
     kinship_description: any

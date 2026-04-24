@@ -19,6 +19,8 @@ const UnderAge = () => {
   const initialValue = {
     responsable_cpf: props.dataValues.responsable_cpf ?? "",
     responsable_name: props.dataValues.responsable_name ?? "",
+    responsable_telephone: props.dataValues.responsable_telephone ?? "",
+    responsable_email: props.dataValues.responsable_email ?? "",
     kinship: props.dataValues.kinship ?? "",
     is_legal_responsible: props.dataValues.is_legal_responsible ?? false,
   };
@@ -30,15 +32,36 @@ const UnderAge = () => {
     responsable_name: Yup.string().required(
       "Nome do responsável é obrigatório"
     ),
-    kinship: Yup.string().required("Parentesco é obrigatório"),
-    is_legal_responsible: Yup.boolean().required(
-      "Confirmação de responsável legal é obrigatória"
+    responsable_telephone: Yup.string().required(
+      "Telefone do responsável é obrigatório"
     ),
+    responsable_email: Yup.string().email("E-mail do responsável inválido"),
+    kinship: Yup.string().required("Parentesco é obrigatório"),
+    is_legal_responsible: Yup.boolean()
+      .oneOf([true], "Confirmação de responsável legal é obrigatória")
+      .required("Confirmação de responsável legal é obrigatória"),
   });
 
   return (
     <>
       <Column className="contentStart" id="center">
+        <Row id="center">
+          <div className="col-12 md:col-6">
+            <div
+              style={{
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: "8px",
+                padding: "12px",
+              }}
+            >
+              <p>
+                Campos com <strong>*</strong> são obrigatórios para concluir a matrícula.
+              </p>
+            </div>
+          </div>
+        </Row>
+        <Padding padding={props.padding} />
         <Formik
           initialValues={initialValue}
           validationSchema={schema}
@@ -118,11 +141,45 @@ const UnderAge = () => {
                       </div>
                     ) : null}
                     <Padding padding={props.padding} />
+                    <div>
+                      <label>Telefone do responsável *</label>
+                      <Padding />
+                      <MaskInput
+                        mask="(99) 9 9999-9999"
+                        placeholder="Telefone do responsável *"
+                        value={values.responsable_telephone}
+                        name="responsable_telephone"
+                        onChange={handleChange}
+                      />
+                    </div>
+                    {errors.responsable_telephone &&
+                    touched.responsable_telephone ? (
+                      <div style={{ color: "red", marginTop: "8px" }}>
+                        {errors.responsable_telephone}
+                      </div>
+                    ) : null}
+                    <Padding padding={props.padding} />
+                    <div>
+                      <label>E-mail do responsável</label>
+                      <Padding />
+                      <TextInput
+                        placeholder="E-mail do responsável"
+                        value={values.responsable_email}
+                        name="responsable_email"
+                        onChange={handleChange}
+                      />
+                    </div>
+                    {errors.responsable_email && touched.responsable_email ? (
+                      <div style={{ color: "red", marginTop: "8px" }}>
+                        {errors.responsable_email}
+                      </div>
+                    ) : null}
+                    <Padding padding={props.padding} />
                   </div>
                 </Row>
                 {(
                   <div className="col-12">
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginTop: "8px" }}>
                       <CheckboxComponent
                         checked={values.is_legal_responsible}
                         onChange={(e) => setFieldValue("is_legal_responsible", e.checked)}
@@ -140,12 +197,12 @@ const UnderAge = () => {
                 )}
                 <Padding padding={props.padding} />
                 <Row id="center" className={"marginTop marginButtom"}>
-                  <div className="col-4">
+                  <div className="col-12 md:col-5" style={{ maxWidth: "420px" }}>
                     <Button
                       type="submit"
                       // onClick={onButton}
                       className="t-button-primary"
-                      label="Finalizar"
+                      label="Continuar para revisão"
                     // disabled={!isValid}
                     />
                   </div>

@@ -2,12 +2,78 @@ import http from "../axios";
 import { getYear, logout } from "../localstorage";
 import { CreatePreRegistration, CreateRegistrationClassroomType } from "./types";
 
+const getPrimitive = (value: any) => {
+  if (value === null || value === undefined) {
+    return value;
+  }
+
+  if (typeof value === "object") {
+    if ("id" in value) {
+      return value.id;
+    }
+
+    if ("value" in value) {
+      return value.value;
+    }
+  }
+
+  return value;
+};
+
+const getNumberOrUndefined = (value: any) => {
+  const primitive = getPrimitive(value);
+
+  if (primitive === null || primitive === undefined || primitive === "") {
+    return undefined;
+  }
+
+  const parsed = Number(primitive);
+  return Number.isNaN(parsed) ? undefined : parsed;
+};
+
+const getBooleanOrUndefined = (value: any) => {
+  const primitive = getPrimitive(value);
+
+  if (primitive === null || primitive === undefined || primitive === "") {
+    return undefined;
+  }
+
+  if (typeof primitive === "boolean") {
+    return primitive;
+  }
+
+  if (primitive === "true" || primitive === "1" || primitive === 1) {
+    return true;
+  }
+
+  if (primitive === "false" || primitive === "0" || primitive === 0) {
+    return false;
+  }
+
+  return undefined;
+};
+
 export const requestPreRegistration = (data: CreatePreRegistration | any) => {
 
-  const body = {...data, state_fk: data?.state, city_fk: data?.city, cep: data?.cep?.replace(/[^a-zA-Z0-9 ]/g, '')}
+  const body = {
+    ...data,
+    state_fk: getNumberOrUndefined(data?.state),
+    city_fk: getNumberOrUndefined(data?.city),
+    cep: data?.cep?.replace(/[^a-zA-Z0-9 ]/g, ""),
+    color_race: getNumberOrUndefined(data?.color_race),
+    sex: getNumberOrUndefined(data?.sex),
+    zone: getNumberOrUndefined(data?.zone),
+    classroom: getNumberOrUndefined(data?.classroom),
+    deficiency: getBooleanOrUndefined(data?.deficiency),
+  };
 
   delete body.state
   delete body.city
+
+  if (process.env.NODE_ENV !== "production") {
+    console.debug("[requestPreRegistration] payload", body);
+  }
+
   return http
     .post("/registration-bff", body)
     .then(response => response.data)
@@ -219,4 +285,3 @@ export const requestDeleteRegistrationClassroom = (id: number) => {
       throw err;
     });
 };
-

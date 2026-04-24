@@ -25,6 +25,10 @@ import InputAddress from "../../../Components/InputsAddress";
 import { useFetchRequestRegistrationOneCPF } from "../../../Services/PreRegistration/query";
 import { RegistrationCPF } from "../../../Services/PreRegistration/types";
 import CalendarComponent from "../../../Components/Calendar";
+import {
+  isUnder18ByBirthDate,
+  shouldRequireBeneficiaryPhone,
+} from "../../../Utils/beneficiaryRules";
 
 const BeneficiariesCreate = () => {
   return (
@@ -80,19 +84,6 @@ const RegistrationPage = () => {
 
   const { data: registrationCpf } = useFetchRequestRegistrationOneCPF(cpf);
 
-  const isUnder18 = (birthday: string): boolean => {
-    if (!birthday) return false;
-    const birthDate = new Date(birthday);
-    if (isNaN(birthDate.getTime())) return false;
-    const today = new Date();
-    const age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      return age - 1 < 18;
-    }
-    return age < 18;
-  };
-
   var registraionFind: RegistrationCPF = registrationCpf;
 
   const schema = Yup.object().shape({
@@ -109,24 +100,24 @@ const RegistrationPage = () => {
       if (value && value.trim() !== "") return validaCPF(value);
       return true;
     }).when("birthday", {
-      is: (birthday: string) => isUnder18(birthday),
+      is: (birthday: string) => isUnder18ByBirthDate(birthday),
       then: (s) => s.required("CPF do responsável é obrigatório"),
       otherwise: (s) => s.optional(),
     }),
     responsable_name: Yup.string().when("birthday", {
-      is: (birthday: string) => isUnder18(birthday),
+      is: (birthday: string) => isUnder18ByBirthDate(birthday),
       then: (s) => s.required("Nome do responsável é obrigatório para menores de 18 anos"),
       otherwise: (s) => s.optional(),
     }),
     // Telefone de contato: obrigatório apenas para maiores de 18
     telephone: Yup.string().when("birthday", {
-      is: (birthday: string) => !isUnder18(birthday),
+      is: (birthday: string) => shouldRequireBeneficiaryPhone(birthday),
       then: (s) => s.required("Telefone para contato é obrigatório"),
       otherwise: (s) => s.optional(),
     }),
     // Telefone do responsável: obrigatório apenas para menores de 18
     responsable_telephone: Yup.string().when("birthday", {
-      is: (birthday: string) => isUnder18(birthday),
+      is: (birthday: string) => isUnder18ByBirthDate(birthday),
       then: (s) => s.required("Telefone do responsável é obrigatório para menores de 18 anos"),
       otherwise: (s) => s.optional(),
     }),
@@ -135,12 +126,12 @@ const RegistrationPage = () => {
     kinship: Yup.string()
       .nullable()
       .when("birthday", {
-        is: (birthday: string) => isUnder18(birthday),
+        is: (birthday: string) => isUnder18ByBirthDate(birthday),
         then: (s) => s.required("Parentesco é obrigatório para menores de 18 anos"),
         otherwise: (s) => s.optional(),
       }),
     is_legal_responsible: Yup.boolean().when("birthday", {
-      is: (birthday: string) => isUnder18(birthday),
+      is: (birthday: string) => isUnder18ByBirthDate(birthday),
       then: (s) =>
         s
           .oneOf([true], "É necessário confirmar que é o responsável legal do menor")
@@ -312,7 +303,7 @@ const RegistrationPage = () => {
                   </div>
                   <div className="col-12 md:col-6">
                     <label>
-                      Telefone para contato{!isUnder18(values.birthday) ? " *" : ""}
+                      Telefone para contato{shouldRequireBeneficiaryPhone(values.birthday) ? " *" : ""}
                     </label>
                     <Padding />
                     <MaskInput
@@ -365,6 +356,7 @@ const RegistrationPage = () => {
                 <Padding padding="8px" />
                 <h3>Dados Responsavel (Se for menor de 18 anos)</h3>
                 <Padding />
+                {isUnder18ByBirthDate(values.birthday) ? (
                 <div className="grid">
                   <div className="col-12 md:col-6">
                     <label>Nome</label>
@@ -391,7 +383,7 @@ const RegistrationPage = () => {
                   </div>
                   <div className="col-12 md:col-6">
                     <label>
-                      Telefone do Responsável{isUnder18(values.birthday) ? " *" : ""}
+                      Telefone do Responsável{isUnder18ByBirthDate(values.birthday) ? " *" : ""}
                     </label>
                     <Padding />
                     <MaskInput
@@ -430,7 +422,7 @@ const RegistrationPage = () => {
                     />
                     <FieldError message={fieldError("kinship")} />
                   </div>
-                  {isUnder18(values.birthday) && (
+                  {isUnder18ByBirthDate(values.birthday) && (
                     <div className="col-12">
                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
                         <CheckboxComponent
@@ -445,6 +437,11 @@ const RegistrationPage = () => {
                     </div>
                   )}
                 </div>
+                ) : (
+                  <div style={{ color: "#6b7280", fontSize: "14px" }}>
+                    Beneficiário maior de 18 anos: os dados de responsável legal não são necessários.
+                  </div>
+                )}
                 <Padding padding="8px" />
                 <h3>Matricula</h3>
                 <Padding padding="8px" />

@@ -3,7 +3,8 @@ import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { DataTable } from "primereact/datatable";
-import { useContext, useState } from "react";
+import { Dialog } from "primereact/dialog";
+import { useContext, useRef, useState } from "react";
 import styled from "styled-components";
 import * as Yup from "yup";
 import avatar from "../../../Assets/images/avatar.svg";
@@ -39,6 +40,10 @@ import ModalAddTerm from "./ModalAddTerm";
 import ModalCreateRegisterClassroom from "./ModalCreateRegisterClassroom";
 import CheckboxComponent from "../../../Components/Checkbox";
 import RadioButtonComponent from "../../../Components/RadioButton";
+import {
+  isUnder18ByBirthDate,
+  shouldRequireBeneficiaryPhone,
+} from "../../../Utils/beneficiaryRules";
 
 const BeneficiariesEdit = () => {
   return (
@@ -105,31 +110,12 @@ const BeneficiariesEditPage = () => {
   const [visible, setVisible] = useState<any>();
   const [visibleTerm, setVisibleTerm] = useState<any>();
   const [visibleDeleteTerm, setVisibleDeleteTerm] = useState<any>();
+  const [visiblePdfViewer, setVisiblePdfViewer] = useState(false);
+  const [pdfViewerUrl, setPdfViewerUrl] = useState<string>("");
+  const [pdfViewerLoading, setPdfViewerLoading] = useState(false);
+  const [pdfViewerError, setPdfViewerError] = useState<string>("");
+  const objectUrlRef = useRef<string>("");
   const [submitted, setSubmitted] = useState(false);
-
-  const isUnder18 = (birthday: string): boolean => {
-    if (!birthday) return false;
-
-    let birthDate: Date;
-
-    // Suporta formato DD/MM/YYYY (vindo do MaskInput)
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(birthday)) {
-      const [day, month, year] = birthday.split("/");
-      birthDate = new Date(`${year}-${month}-${day}`);
-    } else {
-      birthDate = new Date(birthday);
-    }
-
-    if (isNaN(birthDate.getTime())) return false;
-
-    const today = new Date();
-    const age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      return age - 1 < 18;
-    }
-    return age < 18;
-  };
 
   const schema = Yup.object().shape({
     name: Yup.string().required("Nome é obrigatório"),
@@ -153,7 +139,7 @@ const BeneficiariesEditPage = () => {
         return true;
       })
       .when("birthday", {
-        is: (birthday: string) => isUnder18(birthday),
+        is: (birthday: string) => isUnder18ByBirthDate(birthday),
         then: (s) => s.required("CPF do responsável é obrigatório para menores de 18 anos"),
         otherwise: (s) => s.optional(),
       }),
@@ -161,7 +147,7 @@ const BeneficiariesEditPage = () => {
       .nullable()
       .transform((value) => (value === "" || value === null ? undefined : value))
       .when("birthday", {
-        is: (birthday: string) => isUnder18(birthday),
+        is: (birthday: string) => isUnder18ByBirthDate(birthday),
         then: (s) => s.required("Nome do responsável é obrigatório para menores de 18 anos"),
         otherwise: (s) => s.optional(),
       }),
@@ -169,7 +155,7 @@ const BeneficiariesEditPage = () => {
       .nullable()
       .transform((value) => (value === "" || value === null ? undefined : value))
       .when("birthday", {
-        is: (birthday: string) => isUnder18(birthday),
+        is: (birthday: string) => isUnder18ByBirthDate(birthday),
         then: (s) => s.required("Telefone do responsável é obrigatório para menores de 18 anos"),
         otherwise: (s) => s.optional(),
       }),
@@ -181,17 +167,17 @@ const BeneficiariesEditPage = () => {
       .nullable()
       .transform((value) => (value === "" || value === null || value === "NAO_DEFINIDO" ? undefined : value))
       .when("birthday", {
-        is: (birthday: string) => isUnder18(birthday),
+        is: (birthday: string) => isUnder18ByBirthDate(birthday),
         then: (s) => s.required("Parentesco é obrigatório para menores de 18 anos"),
         otherwise: (s) => s.optional(),
       }),
     telephone: Yup.string().when("birthday", {
-      is: (birthday: string) => !isUnder18(birthday),
+      is: (birthday: string) => shouldRequireBeneficiaryPhone(birthday),
       then: (s) => s.required("Telefone para contato é obrigatório"),
       otherwise: (s) => s.optional(),
     }),
     is_legal_responsible: Yup.boolean().when("birthday", {
-      is: (birthday: string) => isUnder18(birthday),
+      is: (birthday: string) => isUnder18ByBirthDate(birthday),
       then: (s) =>
         s
           .oneOf([true], "É necessário confirmar que é o responsável legal do menor")
@@ -206,6 +192,57 @@ const BeneficiariesEditPage = () => {
     city: Yup.string().nullable().required("Cidade é obrigatório"),
     sex: Yup.object().nullable().required("Sexo é obrigatória"),
   });
+
+  const closePdfViewer = () => {
+    setVisiblePdfViewer(false);
+    setPdfViewerUrl("");
+    setPdfViewerLoading(false);
+    setPdfViewerError("");
+
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = "";
+    }
+  };
+
+  const openPdfViewer = async (url: string) => {
+    if (!url) {
+      return;
+    }
+
+    setVisiblePdfViewer(true);
+    setPdfViewerLoading(true);
+    setPdfViewerError("");
+
+    try {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = "";
+      }
+
+      const response = await fetch(url, {
+        headers: {
+          Accept: "application/pdf",
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Falha ao carregar o arquivo.");
+      }
+
+      const buffer = await response.arrayBuffer();
+      const pdfBlob = new Blob([buffer], { type: "application/pdf" });
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      objectUrlRef.current = blobUrl;
+      setPdfViewerUrl(blobUrl);
+    } catch (error) {
+      setPdfViewerUrl(url);
+      setPdfViewerError(
+        "Não foi possível abrir a pré-visualização agora. Você ainda pode abrir em nova guia."
+      );
+    } finally {
+      setPdfViewerLoading(false);
+    }
+  };
 
   const [visibleDelete, setVisibleDelete] = useState<any>();
 
@@ -456,7 +493,7 @@ const BeneficiariesEditPage = () => {
                   </div>
                   <div className="col-12 md:col-6">
                     <label>
-                      Telefone para contato{!isUnder18(values.birthday?.toString() ?? "") ? " *" : ""}
+                      Telefone para contato{shouldRequireBeneficiaryPhone(values.birthday?.toString() ?? "") ? " *" : ""}
                     </label>
                     <Padding />
                     <MaskInput
@@ -528,100 +565,108 @@ const BeneficiariesEditPage = () => {
                 <Padding padding="8px" />
                 <h3>Dados Responsavel (Se for menor de 18 anos)</h3>
                 <Padding />
-                <div className="grid">
-                  <div className="col-12 md:col-6">
-                    <label>Nome</label>
-                    <Padding />
-                    <TextInput
-                      value={values.responsable_name}
-                      name="responsable_name"
-                      onChange={handleChange}
-                      placeholder="Nome do Resposável"
-                    />
-                    {errors.responsable_name && touched.responsable_name ? (
-                      <FieldError message={fieldError("responsable_name")} />
-                    ) : null}
-                  </div>
-                  <div className="col-12 md:col-6">
-                    <label>CPF Responsavel</label>
-                    <Padding />
-                    <MaskInput
-                      value={values.responsable_cpf}
-                      mask="999.999.999-99"
-                      name="responsable_cpf"
-                      placeholder="CPF do Responsável"
-                      onChange={handleChange}
-                    />
-                    {errors.responsable_cpf && touched.responsable_cpf ? (
-                      <FieldError message={fieldError("responsable_cpf")} />
-                    ) : null}
-                  </div>
-                </div>{" "}
-                <div className="grid">
-                  <div className="col-12 md:col-6">
-                    <label>Parentesco</label>
-                    <Padding />
-                    <DropdownComponent
-                      placerholder="Parantesco"
-                      onChange={handleChange}
-                      options={kinship}
-                      name="kinship"
-                      optionsValue="id"
-                      optionsLabel="name"
-                      value={values.kinship}
-                    />
-                    {errors.kinship && touched.kinship ? (
-                      <FieldError message={fieldError("kinship")} />
-                    ) : null}
-                  </div>
-                  <div className="col-12 md:col-6">
-                    <label>
-                      Telefone do Responsável{isUnder18(values.birthday?.toString() ?? "") ? " *" : ""}
-                    </label>
-                    <Padding />
-                    <MaskInput
-                      value={values.responsable_telephone}
-                      mask="(99) 9 9999-9999"
-                      name="responsable_telephone"
-                      onChange={handleChange}
-                      placeholder="Telefone do Responsável"
-                    />
-                    {errors.responsable_telephone && touched.responsable_telephone ? (
-                      <FieldError message={fieldError("responsable_telephone")} />
-                    ) : null}
-                  </div>
-                  <div className="col-12 md:col-6">
-                    <label>
-                      E-mail do Responsável
-                    </label>
-                    <Padding />
-                    <TextInput
-                      value={values.responsable_email}
-                      name="responsable_email"
-                      onChange={handleChange}
-                      placeholder="E-mail do Responsável"
-                    />
-                    {errors.responsable_email && touched.responsable_email ? (
-                      <FieldError message={fieldError("responsable_email")} />
-                    ) : null}
-                  </div>
-                  {isUnder18(values.birthday?.toString() ?? "") && (
-                    <div className="col-12">
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
-                        <CheckboxComponent
-                          checked={values.is_legal_responsible}
-                          onChange={(e) => setFieldValue("is_legal_responsible", e.checked)}
+                {isUnder18ByBirthDate(values.birthday?.toString() ?? "") ? (
+                  <>
+                    <div className="grid">
+                      <div className="col-12 md:col-6">
+                        <label>Nome</label>
+                        <Padding />
+                        <TextInput
+                          value={values.responsable_name}
+                          name="responsable_name"
+                          onChange={handleChange}
+                          placeholder="Nome do Resposável"
                         />
-                        <label style={{ cursor: "pointer", fontWeight: 500 }}>
-                          Confirmo que sou o responsável legal deste menor de idade *
-                        </label>
+                        {errors.responsable_name && touched.responsable_name ? (
+                          <FieldError message={fieldError("responsable_name")} />
+                        ) : null}
                       </div>
-                      {errors.is_legal_responsible && touched.is_legal_responsible ? (
-                        <FieldError message={fieldError("is_legal_responsible")} />
-                      ) : null}
-                    </div>
-                  )}
-                </div>{" "}
+                      <div className="col-12 md:col-6">
+                        <label>CPF Responsavel</label>
+                        <Padding />
+                        <MaskInput
+                          value={values.responsable_cpf}
+                          mask="999.999.999-99"
+                          name="responsable_cpf"
+                          placeholder="CPF do Responsável"
+                          onChange={handleChange}
+                        />
+                        {errors.responsable_cpf && touched.responsable_cpf ? (
+                          <FieldError message={fieldError("responsable_cpf")} />
+                        ) : null}
+                      </div>
+                    </div>{" "}
+                    <div className="grid">
+                      <div className="col-12 md:col-6">
+                        <label>Parentesco</label>
+                        <Padding />
+                        <DropdownComponent
+                          placerholder="Parantesco"
+                          onChange={handleChange}
+                          options={kinship}
+                          name="kinship"
+                          optionsValue="id"
+                          optionsLabel="name"
+                          value={values.kinship}
+                        />
+                        {errors.kinship && touched.kinship ? (
+                          <FieldError message={fieldError("kinship")} />
+                        ) : null}
+                      </div>
+                      <div className="col-12 md:col-6">
+                        <label>
+                          Telefone do Responsável{isUnder18ByBirthDate(values.birthday?.toString() ?? "") ? " *" : ""}
+                        </label>
+                        <Padding />
+                        <MaskInput
+                          value={values.responsable_telephone}
+                          mask="(99) 9 9999-9999"
+                          name="responsable_telephone"
+                          onChange={handleChange}
+                          placeholder="Telefone do Responsável"
+                        />
+                        {errors.responsable_telephone && touched.responsable_telephone ? (
+                          <FieldError message={fieldError("responsable_telephone")} />
+                        ) : null}
+                      </div>
+                      <div className="col-12 md:col-6">
+                        <label>
+                          E-mail do Responsável
+                        </label>
+                        <Padding />
+                        <TextInput
+                          value={values.responsable_email}
+                          name="responsable_email"
+                          onChange={handleChange}
+                          placeholder="E-mail do Responsável"
+                        />
+                        {errors.responsable_email && touched.responsable_email ? (
+                          <FieldError message={fieldError("responsable_email")} />
+                        ) : null}
+                      </div>
+                      {isUnder18ByBirthDate(values.birthday?.toString() ?? "") && (
+                        <div className="col-12">
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
+                            <CheckboxComponent
+                              checked={values.is_legal_responsible}
+                              onChange={(e) => setFieldValue("is_legal_responsible", e.checked)}
+                            />
+                            <label style={{ cursor: "pointer", fontWeight: 500 }}>
+                              Confirmo que sou o responsável legal deste menor de idade *
+                            </label>
+                          </div>
+                          {errors.is_legal_responsible && touched.is_legal_responsible ? (
+                            <FieldError message={fieldError("is_legal_responsible")} />
+                          ) : null}
+                        </div>
+                      )}
+                    </div>{" "}
+                  </>
+                ) : (
+                  <div style={{ color: "#6b7280", fontSize: "14px" }}>
+                    Beneficiário maior de 18 anos: os dados de responsável legal não são necessários.
+                  </div>
+                )}
                 <Padding />
                 <h3>Endereço</h3>
                 <Padding padding="8px" />
@@ -685,7 +730,16 @@ const BeneficiariesEditPage = () => {
                   ></Column>
                   <Column
                     align={"center"}
-                    body={(e) => <RenderActionTerm row={e} setVisibleDeleteTerm={setVisibleDeleteTerm} setVisibleTerm={setVisibleTerm} />}
+                    body={(e) => (
+                      <RenderActionTerm
+                        row={e}
+                        setVisibleDeleteTerm={setVisibleDeleteTerm}
+                        setVisibleTerm={setVisibleTerm}
+                        onOpenPdfViewer={(url: string) => {
+                          openPdfViewer(url);
+                        }}
+                      />
+                    )}
                     header="Ações"
                   ></Column>
                 </DataTable>
@@ -761,6 +815,50 @@ const BeneficiariesEditPage = () => {
         visible={visibleTerm}
         id={props.registrations?.id!}
       />
+      <Dialog
+        header="Visualizar termo"
+        visible={visiblePdfViewer}
+        onHide={closePdfViewer}
+        style={{ width: window.innerWidth > 800 ? "80vw" : "95vw" }}
+      >
+        <div
+          style={{
+            background: "#f8fafc",
+            border: "1px solid #e2e8f0",
+            borderRadius: "8px",
+            padding: "12px",
+            marginBottom: "12px",
+            color: "#334155",
+          }}
+        >
+          Confira o termo abaixo. Se preferir, você pode abrir em nova guia.
+        </div>
+        {pdfViewerLoading ? (
+          <p>Carregando visualização do termo...</p>
+        ) : null}
+        {pdfViewerError ? (
+          <p style={{ color: "#b91c1c", marginBottom: "12px" }}>{pdfViewerError}</p>
+        ) : null}
+        {pdfViewerUrl && !pdfViewerLoading ? (
+          <div>
+            <object
+              data={pdfViewerUrl}
+              type="application/pdf"
+              style={{ width: "100%", height: "75vh", border: "none" }}
+            >
+              <iframe
+                title="Visualizador de termo"
+                src={pdfViewerUrl}
+                style={{ width: "100%", height: "75vh", border: "none" }}
+              />
+            </object>
+            <Padding padding="8px" />
+            <a href={pdfViewerUrl} target="_blank" rel="noreferrer">
+              Abrir em nova guia
+            </a>
+          </div>
+        ) : null}
+      </Dialog>
       <ConfirmDialog
         visible={visibleDelete}
         onHide={() => setVisibleDelete(false)}
@@ -784,7 +882,17 @@ const BeneficiariesEditPage = () => {
   );
 };
 
-const RenderActionTerm = ({ row, setVisibleTerm, setVisibleDeleteTerm }: { row: any, setVisibleTerm: any, setVisibleDeleteTerm: any }) => {
+const RenderActionTerm = ({
+  row,
+  setVisibleTerm,
+  setVisibleDeleteTerm,
+  onOpenPdfViewer,
+}: {
+  row: any,
+  setVisibleTerm: any,
+  setVisibleDeleteTerm: any,
+  onOpenPdfViewer: (url: string) => void
+}) => {
 
   const [isPopoverOpen, setIsPopoverOpen] = useState<any>();
 
@@ -804,6 +912,25 @@ const RenderActionTerm = ({ row, setVisibleTerm, setVisibleDeleteTerm }: { row: 
                 "rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
             }}
           >
+            <Row
+              onClick={() => {
+                onOpenPdfViewer(row?.blob_file?.blob_url);
+                setIsPopoverOpen(!isPopoverOpen);
+              }}
+              id="space-between"
+              style={{ cursor: "pointer", padding: "8px", gap: "8px" }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                }}
+              >
+                <Icon icon="pi pi-eye" size="16px" />
+              </div>
+              <p>Visualizar</p>
+            </Row>
             <Row
               onClick={() => {
                 window.open(row.blob_file.blob_url);

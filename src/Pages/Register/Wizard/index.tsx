@@ -11,7 +11,7 @@ import StepOne from "./Steps/StepOne";
 import StepTwo from "./Steps/StepTwo";
 import Finish from "./Steps/Finish";
 import ChoiceYear from "./Steps/ChoiceYear";
-import ChoiceIsOverAge from "./Steps/ChoiceIsOverAge";
+import Review from "./Steps/Review/index";
 // import { RegistrationContext } from "../../containers/Registration/Context/context";
 // import Classroom from "./ClassRoom";
 // import Finish from "./Finish";
@@ -31,9 +31,9 @@ const Wizard = () => {
     "0": ChoiceYear,
     "1": Start,
     "2": Classroom,
-    "3": ChoiceIsOverAge,
-    "4": StepOne,
-    "5": StepTwo,
+    "3": StepOne,
+    "4": StepTwo,
+    "5": Review,
     "6": Finish,
     "7": NotPeriod,
     // "2": StepOne,

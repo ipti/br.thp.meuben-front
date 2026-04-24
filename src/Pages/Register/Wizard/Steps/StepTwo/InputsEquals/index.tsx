@@ -8,6 +8,7 @@ import { RegisterTypes } from "../../../../../../Context/Register/type"
 import { Padding, Row } from "../../../../../../Styles/styles"
 import { typesex } from "../../../../../../Controller/controllerGlobal"
 import InputAddress from "../../../../../../Components/InputsAddress"
+import { shouldRequireBeneficiaryPhone } from "../../../../../../Utils/beneficiaryRules"
 
 const InputsEquals = ({ values, handleChange, errors, touched, setFieldValue }: { values: any, handleChange: any, errors: any, touched: any, setFieldValue: any }) => {
 
@@ -34,12 +35,14 @@ const InputsEquals = ({ values, handleChange, errors, touched, setFieldValue }: 
             ) : null}
             <Padding padding={props.padding} />
             <div>
-                <label>Telefone para contato*</label>
+                <label>
+                    Telefone para contato{shouldRequireBeneficiaryPhone(values.birthday) ? "*" : ""}
+                </label>
                 <Padding />
-                <MaskInput mask="(99) 9 9999-9999" placeholder="Telefone *" name="responsable_telephone" onChange={handleChange} value={values.responsable_telephone} />
+                <MaskInput mask="(99) 9 9999-9999" placeholder="Telefone *" name="telephone" onChange={handleChange} value={values.telephone} />
             </div>
-            {errors.responsable_telephone && touched.responsable_telephone ? (
-                <div style={{ color: "red", marginTop: "8px" }}>{errors.responsable_telephone}</div>
+            {errors.telephone && touched.telephone ? (
+                <div style={{ color: "red", marginTop: "8px" }}>{errors.telephone}</div>
             ) : null}
             <Padding padding={props.padding} />
 
@@ -55,7 +58,14 @@ const InputsEquals = ({ values, handleChange, errors, touched, setFieldValue }: 
                 <div style={{ color: "red", marginTop: "8px" }}>{errors.zone}</div>
             ) : null}
             <Padding padding={props.padding} />
-            <InputAddress errors={errors} handleChange={handleChange} setFieldValue={setFieldValue} touched={touched} values={values} />
+            <InputAddress
+                errors={errors}
+                handleChange={handleChange}
+                setFieldValue={setFieldValue}
+                touched={touched}
+                values={values}
+                showRequiredAsterisk
+            />
         </>
     )
 }
