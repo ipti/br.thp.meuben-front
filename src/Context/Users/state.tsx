@@ -5,10 +5,19 @@ import { CreateUser } from "./type";
 import { converterData } from "../../Controller/controllerGlobal";
 
 export const UsersState = () => {
-  const [users, setusers] = useState<any>();
-  const [role, setRole] = useState<string | undefined>("TODOS")
+  const [users, setusers] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [role, setRole] = useState<string | undefined>("TODOS");
+  const [nameSearch, setNameSearch] = useState("");
 
-  const { data: userRequest, isLoading } = useFetchRequestUsers(role);
+  const { data: userRequest, isLoading } = useFetchRequestUsers({
+    role,
+    page,
+    perPage,
+    name: nameSearch,
+  });
 
   const props = ControllerUser();
 
@@ -17,7 +26,6 @@ export const UsersState = () => {
     for (const project of data) {
       array.push(project.id);
     }
-
     return array;
   };
 
@@ -54,19 +62,41 @@ export const UsersState = () => {
     props.requestUpdateUserMutation.mutate({ data: body, id: id });
   };
 
-  const ChangePassword = (data: {password: string}, id: number) => {
-   
+  const ChangePassword = (data: { password: string }, id: number) => {
     props.requestPasswordMutation.mutate({ data: data, id: id });
   };
 
   const DeleteUser = (id: number) => {
     props.requestDeleteUserMutation.mutate(id);
   };
+
   useEffect(() => {
     if (userRequest) {
-      setusers(userRequest);
+      setusers(userRequest.data ?? []);
+      setTotal(userRequest.total ?? 0);
     }
-  }, [userRequest, role]);
+  }, [userRequest]);
 
-  return { users, CreateUser, DeleteUser, UpdateUser, isLoading, role, setRole, ChangePassword };
+  // Reset to page 1 whenever filters change
+  useEffect(() => {
+    setPage(1);
+  }, [role, nameSearch]);
+
+  return {
+    users,
+    total,
+    page,
+    perPage,
+    setPage,
+    setPerPage,
+    nameSearch,
+    setNameSearch,
+    CreateUser,
+    DeleteUser,
+    UpdateUser,
+    isLoading,
+    role,
+    setRole,
+    ChangePassword,
+  };
 };

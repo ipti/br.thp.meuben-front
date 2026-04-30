@@ -2,12 +2,20 @@ import { CreateUser } from "../../Context/Users/type";
 import http from "../axios";
 import { getYear, logout } from "../localstorage";
 
-export const requestUsers = (role: string | undefined) => {
-  let path = "/user-bff";
+export const requestUsers = (params: {
+  role?: string;
+  page?: number;
+  perPage?: number;
+  name?: string;
+}) => {
+  const query = new URLSearchParams();
 
-  if (role && role !== "TODOS") {
-    path = path + "?role=" + role
-  }
+  if (params.role && params.role !== "TODOS") query.append("role", params.role);
+  if (params.page) query.append("page", String(params.page));
+  if (params.perPage) query.append("perPage", String(params.perPage));
+  if (params.name && params.name.trim() !== "") query.append("name", params.name.trim());
+
+  const path = `/user-bff${query.toString() ? "?" + query.toString() : ""}`;
 
   return http
     .get(path)

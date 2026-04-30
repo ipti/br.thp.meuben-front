@@ -1,16 +1,21 @@
 import { Dispatch, SetStateAction } from "react";
 
 export interface UsersTypes {
-  users: any;
-  CreateUser: (data: CreateUser) => void
-  DeleteUser: (id: number) => void
-  UpdateUser: (data: CreateUser, id: number) => void
-  isLoading: boolean,
-  role?: string,
-  setRole: Dispatch<SetStateAction<string | undefined>>
-  ChangePassword: (data: {
-    password: string;
-}, id: number) => void
+  users: any[];
+  total: number;
+  page: number;
+  perPage: number;
+  setPage: Dispatch<SetStateAction<number>>;
+  setPerPage: Dispatch<SetStateAction<number>>;
+  nameSearch: string;
+  setNameSearch: Dispatch<SetStateAction<string>>;
+  CreateUser: (data: CreateUser) => void;
+  DeleteUser: (id: number) => void;
+  UpdateUser: (data: CreateUser, id: number) => void;
+  isLoading: boolean;
+  role?: string;
+  setRole: Dispatch<SetStateAction<string | undefined>>;
+  ChangePassword: (data: { password: string }, id: number) => void;
 }
 
 export interface CreateUser {

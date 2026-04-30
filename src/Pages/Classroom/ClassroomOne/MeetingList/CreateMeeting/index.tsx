@@ -49,7 +49,8 @@ const schema = Yup.object().shape({
 
 const CreateMeetingPage = () => {
   const props = useContext(CreateMeetingContext) as CreateMeetingType;
-  const { data: userRequest } = useFetchRequestUsers(undefined);
+  const { data: usersResponse } = useFetchRequestUsers({ perPage: 1000 });
+  const userRequest = usersResponse?.data;
   const { id } = useParams();
   const [submitted, setSubmitted] = useState(false);
 

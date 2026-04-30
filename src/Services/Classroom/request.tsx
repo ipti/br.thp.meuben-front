@@ -172,7 +172,6 @@ export const requestDeleteClassroom = (id: number) => {
         logout();
         window.location.reload();
       }
-      alert(err.response.message);
       throw err;
     });
 };

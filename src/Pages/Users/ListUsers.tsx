@@ -2,12 +2,12 @@ import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { DataTable } from "primereact/datatable";
+import { InputText } from "primereact/inputtext";
+import { Paginator } from "primereact/paginator";
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ContentPage from "../../Components/ContentPage";
-
 import DropdownComponent from "../../Components/Dropdown";
-import Loading from "../../Components/Loading";
 import { AplicationContext } from "../../Context/Aplication/context";
 import UsersProvider, { UsersContext } from "../../Context/Users/context";
 import { UsersTypes } from "../../Context/Users/type";
@@ -85,51 +85,136 @@ const ListUsersPage = () => {
     );
   };
 
-  if (props.isLoading) return <Loading />;
+  const roleOptions = propsAplication.user?.role === ROLE.ADMIN
+    ? [
+        { id: "TODOS", name: "Todos" },
+        { id: ROLE.ADMIN, name: "Admin" },
+        { id: ROLE.COORDINATORS, name: "Coordenador" },
+        { id: ROLE.REAPPLICATORS, name: "Reaplicador" },
+      ]
+    : [
+        { id: "TODOS", name: "Todos" },
+        { id: ROLE.COORDINATORS, name: "Coordenador" },
+        { id: ROLE.REAPPLICATORS, name: "Reaplicador" },
+      ];
 
-  const renderHeader = () => {
-    return (
-      <div
-        className="flex justify-content-between"
-        // style={{ background: color.colorCard }}
-      >
-        <Button label="Criar usuário" onClick={() => history("/users/criar")} icon={"pi pi-plus"} />
+  const hasActiveFilters =
+    props.nameSearch.trim().length > 0 ||
+    props.role !== "TODOS";
 
-        <div>
-          <DropdownComponent optionsLabel="name" value={props.role} onChange={(e) => props.setRole(e.target.value)} optionsValue="id" placerholder="Filtrar tipo de usuário" options={propsAplication.user?.role === ROLE.ADMIN
-
-            ? [
-              { id: "TODOS", name: "Todos" },
-              { id: ROLE.ADMIN, name: "Admin" },
-              { id: ROLE.COORDINATORS, name: "Coordenador" },
-              { id: ROLE.REAPPLICATORS, name: "Reaplicador" },
-            ]
-            : [
-              { id: "TODOS", name: "Todos" },
-              { id: ROLE.COORDINATORS, name: "Coordenador" },
-              { id: ROLE.REAPPLICATORS, name: "Reaplicador" },
-            ]
-          } />
-        </div>
-
-      </div>
-    );
+  const clearFilters = () => {
+    props.setNameSearch("");
+    props.setRole("TODOS");
   };
 
+  const renderHeader = () => (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "12px",
+        padding: "12px",
+        border: "1px solid #e5e7eb",
+        borderRadius: "10px",
+        background: "#f8fafc",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          gap: "12px",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+        }}
+      >
+        <Button label="Criar usuário" onClick={() => history("/users/criar")} icon="pi pi-plus" />
+        <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+          {hasActiveFilters ? (
+            <Button
+              label="Limpar filtros"
+              severity="secondary"
+              outlined
+              icon="pi pi-filter-slash"
+              onClick={clearFilters}
+            />
+          ) : null}
+          <span style={{ color: "#475569", fontSize: "13px" }}>
+            {props.total} usuário(s) no total
+          </span>
+        </div>
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: "10px",
+          alignItems: "end",
+        }}
+      >
+        <div>
+          <label style={{ fontSize: "12px", color: "#334155", fontWeight: 600 }}>
+            Buscar por nome
+          </label>
+          <div style={{ marginTop: "6px" }}>
+            <span className="p-input-icon-left" style={{ width: "100%" }}>
+              <i className="pi pi-search" />
+              <InputText
+                placeholder="Digite o nome"
+                value={props.nameSearch}
+                onChange={(e) => props.setNameSearch(e.target.value)}
+                style={{ width: "100%" }}
+              />
+            </span>
+          </div>
+        </div>
+        <div>
+          <label style={{ fontSize: "12px", color: "#334155", fontWeight: 600 }}>
+            Tipo de usuário
+          </label>
+          <div style={{ marginTop: "6px" }}>
+            <DropdownComponent
+              optionsLabel="name"
+              value={props.role}
+              onChange={(e) => props.setRole(e.target.value)}
+              optionsValue="id"
+              placerholder="Selecione o tipo"
+              options={roleOptions}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <>
       <ContentPage title="Usuários" description="Lista usuários do MeuBen.">
         <Padding padding="8px" />
-        <DataTable value={props.users} header={renderHeader} paginator rows={10} rowsPerPageOptions={[5, 10, 25, 50]} tableStyle={{ minWidth: "50rem" }}>
-          <Column field="name" header="Nome"></Column>
-          <Column field="username" header="Usuário"></Column>
-          <Column field="role" body={typeUserBody} header="Tipo"></Column>
-          <Column field="isProfileComplete" body={PerfilCompleteUserBody} header="Perfil completo?"></Column>
-          <Column field="active" body={ActiveUserBody} header="Ativo"></Column>
-          <Column field="actions" body={ActionsUserBody} header="Ações"></Column>
-
+        <DataTable
+          value={props.users}
+          header={renderHeader}
+          loading={props.isLoading}
+          tableStyle={{ minWidth: "50rem" }}
+          emptyMessage="Nenhum usuário encontrado."
+        >
+          <Column field="name" header="Nome" />
+          <Column field="username" header="Usuário" />
+          <Column field="role" body={typeUserBody} header="Tipo" />
+          <Column field="isProfileComplete" body={PerfilCompleteUserBody} header="Perfil completo?" />
+          <Column field="active" body={ActiveUserBody} header="Ativo" />
+          <Column field="actions" body={ActionsUserBody} header="Ações" />
         </DataTable>
+        <Paginator
+          first={(props.page - 1) * props.perPage}
+          rows={props.perPage}
+          totalRecords={props.total}
+          rowsPerPageOptions={[10, 25, 50]}
+          onPageChange={(e) => {
+            props.setPage(e.page + 1);
+            props.setPerPage(e.rows);
+          }}
+        />
       </ContentPage>
       <ConfirmDialog
         visible={visible}

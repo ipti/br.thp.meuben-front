@@ -14,13 +14,23 @@ import queryClient from "../reactquery";
 
 export const ControllerClassroom = () => {
   const history = useNavigate();
+  const getErrorMessage = (error: any) => {
+    return (
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.message ||
+      "Não foi possível concluir a operação. Tente novamente em instantes."
+    );
+  };
+
   const requestCreateClassroomMutation = useMutation(
     (data: CreateClassroom) => requestCreateClassroom(data),
     {
       onError: (error: any) => {
         Swal.fire({
           icon: 'error',
-          title: error.response.data.message,
+          title: "Erro ao criar turma",
+          text: getErrorMessage(error),
           confirmButtonColor: styles.colors.colorsBaseProductNormal,
         })
        },
@@ -44,7 +54,8 @@ export const ControllerClassroom = () => {
       onError: (error: any) => {
         Swal.fire({
           icon: 'error',
-          title: error.response.data.message,
+          title: "Erro ao transferir turma",
+          text: getErrorMessage(error),
           confirmButtonColor: styles.colors.colorsBaseProductNormal,
         })
        },
@@ -68,7 +79,8 @@ export const ControllerClassroom = () => {
       onError: (error: any) => {
         Swal.fire({
           icon: 'error',
-          title: error.response.data.message,
+          title: "Erro ao reaproveitar turma",
+          text: getErrorMessage(error),
           confirmButtonColor: styles.colors.colorsBaseProductNormal,
         })
        },
@@ -93,7 +105,8 @@ export const ControllerClassroom = () => {
       onError: (error: any) => {
         Swal.fire({
           icon: 'error',
-          title: error.response.data.message,
+          title: "Erro ao editar turma",
+          text: getErrorMessage(error),
           confirmButtonColor: styles.colors.colorsBaseProductNormal,
         })
        },
@@ -118,7 +131,8 @@ export const ControllerClassroom = () => {
       onError: (error: any) => {
         Swal.fire({
           icon: 'error',
-          title: error.response.data.message,
+          title: "Não foi possível excluir a turma",
+          text: getErrorMessage(error),
           confirmButtonColor: styles.colors.colorsBaseProductNormal,
         })
        },

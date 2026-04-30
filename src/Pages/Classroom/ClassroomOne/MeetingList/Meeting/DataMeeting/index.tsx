@@ -150,7 +150,8 @@ const sanitizeMeetingDescriptionForView = (content: string | null | undefined) =
 
 const DataMeeting = () => {
 
-  const { data: userRequest } = useFetchRequestUsers(undefined);
+  const { data: usersResponse } = useFetchRequestUsers({ perPage: 1000 });
+  const userRequest = usersResponse?.data;
 
   const [edit, setEdit] = useState(false);
   const [statusInfoOpen, setStatusInfoOpen] = useState(false);
@@ -163,11 +164,14 @@ const DataMeeting = () => {
   const propsAplication = useContext(
     AplicationContext
   ) as PropsAplicationContext;
+  const canEditStatus =
+    propsAplication.user?.role === ROLE.ADMIN ||
+    propsAplication.user?.role === ROLE.COORDINATORS;
 
   const status = [
     { id: Status.APPROVED, name: "Aprovado" },
     { id: Status.REPROVED, name: "Pendente de Revisão" },
-    { id: Status.PENDING, name: "Pedente de Análise" },
+    { id: Status.PENDING, name: "Pendente de Análise" },
   ];
 
   const getStatus = (id: string) => {
@@ -207,6 +211,14 @@ const DataMeeting = () => {
     lineHeight: "1.6",
   };
 
+  const sectionStyle: React.CSSProperties = {
+    border: "1px solid #e2e8f0",
+    borderRadius: "12px",
+    padding: "16px",
+    backgroundColor: "#ffffff",
+    marginBottom: "14px",
+  };
+
   return (
     <Formik
       enableReinitialize
@@ -219,11 +231,11 @@ const DataMeeting = () => {
         theme: props.meeting?.theme,
         status: getStatus(props.meeting?.status!),
         meeting_date: date,
-        users: props.meeting?.meeting_user.map((item) => item.users) ?? [],
+        users: props.meeting?.meeting_user.map((item) => item.users.id) ?? [],
         workload: props.meeting?.workload ?? 0,
       }}
       onSubmit={(values) => {
-        props.UpdateMeetingUser({ id: props.meeting?.id!, users: values.users.map((item) => item.id) });
+        props.UpdateMeetingUser({ id: props.meeting?.id!, users: values.users });
         var body: any = values
         delete body.users
         props.UpdateMeeting({
@@ -232,13 +244,17 @@ const DataMeeting = () => {
             ? new Date(new Date(values?.meeting_date!).setDate(new Date(values?.meeting_date!).getDate() - 1))
             : values.meeting_date
         }, props.meeting?.id!);
-        setEdit(!edit);
+        setEdit(false);
       }}
     >
       {({ values, errors, handleChange, touched, setFieldValue }) => {
         const safeDescriptionHtml = sanitizeMeetingDescriptionForView(
           values.description
         );
+        const selectedResponsibles = (userRequest ?? []).filter((user: any) =>
+          (values.users ?? []).includes(user.id)
+        );
+        const fallbackResponsibles = props.meeting?.meeting_user?.map((item) => item.users) ?? [];
 
         return (
           <Form>
@@ -263,7 +279,9 @@ const DataMeeting = () => {
                     text
                     label="Editar"
                     icon="pi pi-pencil"
-                    onClick={() => setEdit(true)}
+                    onClick={() => {
+                      setEdit(true);
+                    }}
                   />
                 ) : null}
               </Row>
@@ -275,185 +293,204 @@ const DataMeeting = () => {
                     label="Cancelar"
                     severity="secondary"
                     type="button"
-                    onClick={() => setEdit(false)}
+                    onClick={() => {
+                      setEdit(false);
+                    }}
                   />
                 </Row>
               ) : null}
             </Row>
             <Padding padding="16px" />
-            <div className="grid">
-              <div className="col-12 md:col-6">
-                <label>Tema</label>
-                <Padding />
-                <TextInput
-                  name="theme"
-                  placeholder="Tema do encontro"
-                  value={values.theme}
-                  disabled={!edit}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="col-12 md:col-4">
-                <label>Carga Horária (horas)</label>
-                <Padding />
-                <TimeInput
-                  placeholder="Carga Horária"
-                  value={values.workload}
-                  name="workload"
-                  onChange={(e: any) => setFieldValue("workload", e.target.value)}
-                  disabled={!edit}
-                />
-              </div>
-              <div className="col-12 md:col-6">
-                <label>Data do encontro</label>
-                <Padding />
-                <CalendarComponent
-                  value={values.meeting_date}
-                  name="meeting_date"
-                  dateFormat="dd/mm/yy"
-                  disabled={!edit}
-                  onChange={handleChange}
-                />
-                {errors.meeting_date && touched.meeting_date ? (
-                  <div style={{ color: "red", marginTop: "8px" }}>
-                    {String(errors.meeting_date)}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-            <Padding padding="16px" />
-            {(propsAplication.user?.role === ROLE.ADMIN ||
-              propsAplication.user?.role === ROLE.COORDINATORS) && (
-                <>
-                  <div className="grid">
-                    <div className="col-12 md:col-6">
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <label>Status</label>
-                        <Popover
-                          isOpen={statusInfoOpen}
-                          positions={["top", "right", "bottom"]}
-                          onClickOutside={() => setStatusInfoOpen(false)}
-                          content={
-                            <div style={popoverBoxStyle}>
-                              <strong>Como aplicar cada status:</strong>
-                              <ul style={{ marginTop: "8px", paddingLeft: "16px" }}>
-                                <li><strong>Pendente de Análise:</strong> o encontro ainda aguarda revisão inicial.</li>
-                                <li><strong>Pendente de Revisão:</strong> o encontro foi analisado mas precisa de correções.</li>
-                                <li><strong>Aprovado:</strong> disponível somente quando há arquivos anexados; indica que o encontro está validado.</li>
-                              </ul>
-                            </div>
-                          }
-                        >
-                          <span style={tooltipStyle} onClick={() => setStatusInfoOpen(!statusInfoOpen)}>?</span>
-                        </Popover>
-                      </div>
-                      <Padding />
-                      <DropdownComponent
-                        disabled={!edit}
-                        value={values.status}
-                        onChange={handleChange}
-                        name="status"
-                        placerholder="Status"
-                        optionsLabel="name"
-                        options={!props.ArchivesMeeting ? status.filter((i) => i.id !== Status.APPROVED) : status}
-
-                      />
-                      {values.status?.id === Status.REPROVED && <div className="col-12 md:col-6">
-                        <label>Justificativa</label>
-                        <Padding />
-                        <TextAreaComponent
-                          disabled={!edit}
-                          onChange={handleChange}
-                          value={values.justification}
-                          name="justification"
-                          placeholder="Justicativa sobre a escolha do status"
-                        />
-                      </div>}
-                    </div>
-                  </div>
-                </>
-              )}{" "}
-            <div className="grid">
-              <div className="col-12 md:col-6">
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <label>Observações</label>
-                  <Popover
-                    isOpen={obsInfoOpen}
-                    positions={["top", "right", "bottom"]}
-                    onClickOutside={() => setObsInfoOpen(false)}
-                    content={
-                      <div style={popoverBoxStyle}>
-                        <strong>O que colocar nas observações:</strong>
-                        <ul style={{ marginTop: "8px", paddingLeft: "16px" }}>
-                          <li>Informações relevantes sobre a dinâmica do encontro.</li>
-                          <li>Dificuldades ou imprevistos ocorridos.</li>
-                          <li>Comentários sobre a participação dos beneficiários.</li>
-                          <li>Qualquer observação que complemente o registro do encontro.</li>
-                        </ul>
-                      </div>
-                    }
-                  >
-                    <span style={tooltipStyle} onClick={() => setObsInfoOpen(!obsInfoOpen)}>?</span>
-                  </Popover>
-                </div>
-                <Padding />
-                {edit ? (
-                  <QuillEditor
-                    value={values.description || ""}
-                    onChange={(event) =>
-                      setFieldValue("description", event || "")
-                    }
-                    height={240}
+            <div style={sectionStyle}>
+              <h4 style={{ margin: "0 0 4px 0", color: "#1f2937" }}>Informações do encontro</h4>
+              <p style={{ margin: "0 0 12px 0", color: "#64748b", fontSize: "13px" }}>
+                Preencha os dados principais para identificar e organizar este encontro.
+              </p>
+              <div className="grid">
+                <div className="col-12 md:col-6">
+                  <label>Tema</label>
+                  <Padding />
+                  <TextInput
+                    name="theme"
+                    placeholder="Tema do encontro"
+                    value={values.theme}
+                    disabled={!edit}
+                    onChange={handleChange}
                   />
-                ) : (
-                  <div style={{
-                    border: "1px solid #d1d5db",
-                    borderRadius: "8px",
-                    padding: "12px",
-                    minHeight: "240px",
-                    maxHeight: "400px",
-                    overflowY: "auto",
-                    backgroundColor: "#f9fafb",
-                  }}>
+                </div>
+                <div className="col-12 md:col-4">
+                  <label>Carga horária (horas)</label>
+                  <Padding />
+                  <TimeInput
+                    placeholder="Carga horária"
+                    value={values.workload}
+                    name="workload"
+                    onChange={(e: any) => setFieldValue("workload", e.target.value)}
+                    disabled={!edit}
+                  />
+                </div>
+                <div className="col-12 md:col-6">
+                  <label>Data do encontro</label>
+                  <Padding />
+                  <CalendarComponent
+                    value={values.meeting_date}
+                    name="meeting_date"
+                    dateFormat="dd/mm/yy"
+                    disabled={!edit}
+                    onChange={handleChange}
+                  />
+                  {errors.meeting_date && touched.meeting_date ? (
+                    <div style={{ color: "red", marginTop: "8px" }}>
+                      {String(errors.meeting_date)}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
 
-                    <div
-                      className="meeting-description-view-html"
-                      style={{ lineHeight: 1.6 }}
-                      dangerouslySetInnerHTML={{
-                        __html:
-                          safeDescriptionHtml ||
-                          "<p style='margin:0'>Sem observações.</p>",
-                      }}
+            {canEditStatus && (
+              <div style={sectionStyle}>
+                <div className="grid">
+                  <div className="col-12 md:col-6">
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <label>Status do encontro</label>
+                      <Popover
+                        isOpen={statusInfoOpen}
+                        positions={["top", "right", "bottom"]}
+                        onClickOutside={() => setStatusInfoOpen(false)}
+                        content={
+                          <div style={popoverBoxStyle}>
+                            <strong>Como aplicar cada status:</strong>
+                            <ul style={{ marginTop: "8px", paddingLeft: "16px" }}>
+                              <li><strong>Pendente de Análise:</strong> o encontro ainda aguarda revisão inicial.</li>
+                              <li><strong>Pendente de Revisão:</strong> o encontro foi analisado mas precisa de correções.</li>
+                              <li><strong>Aprovado:</strong> disponível somente quando há arquivos anexados; indica que o encontro está validado.</li>
+                            </ul>
+                          </div>
+                        }
+                      >
+                        <span style={tooltipStyle} onClick={() => setStatusInfoOpen(!statusInfoOpen)}>?</span>
+                      </Popover>
+                    </div>
+                    <Padding />
+                    <DropdownComponent
+                      disabled={!edit}
+                      value={values.status}
+                      onChange={handleChange}
+                      name="status"
+                      placerholder="Status"
+                      optionsLabel="name"
+                      options={!props.ArchivesMeeting ? status.filter((i) => i.id !== Status.APPROVED) : status}
                     />
+                    {values.status?.id === Status.REPROVED && <div className="col-12 md:col-6">
+                      <label>Justificativa</label>
+                      <Padding />
+                      <TextAreaComponent
+                        disabled={!edit}
+                        onChange={handleChange}
+                        value={values.justification}
+                        name="justification"
+                        placeholder="Justificativa sobre a escolha do status"
+                      />
+                    </div>}
                   </div>
-                )}
+                </div>
+              </div>
+            )}{" "}
+
+            <div style={sectionStyle}>
+              <div className="grid">
+                <div className="col-12 md:col-6">
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <label>Observações</label>
+                    <Popover
+                      isOpen={obsInfoOpen}
+                      positions={["top", "right", "bottom"]}
+                      onClickOutside={() => setObsInfoOpen(false)}
+                      content={
+                        <div style={popoverBoxStyle}>
+                          <strong>O que colocar nas observações:</strong>
+                          <ul style={{ marginTop: "8px", paddingLeft: "16px" }}>
+                            <li>Informações relevantes sobre a dinâmica do encontro.</li>
+                            <li>Dificuldades ou imprevistos ocorridos.</li>
+                            <li>Comentários sobre a participação dos beneficiários.</li>
+                            <li>Qualquer observação que complemente o registro do encontro.</li>
+                          </ul>
+                        </div>
+                      }
+                    >
+                      <span style={tooltipStyle} onClick={() => setObsInfoOpen(!obsInfoOpen)}>?</span>
+                    </Popover>
+                  </div>
+                  <Padding />
+                  {edit ? (
+                    <QuillEditor
+                      value={values.description || ""}
+                      onChange={(event) =>
+                        setFieldValue("description", event || "")
+                      }
+                      height={240}
+                    />
+                  ) : (
+                    <div style={{
+                      border: "1px solid #d1d5db",
+                      borderRadius: "8px",
+                      padding: "12px",
+                      minHeight: "240px",
+                      maxHeight: "400px",
+                      overflowY: "auto",
+                      backgroundColor: "#f9fafb",
+                    }}>
+                      <div
+                        className="meeting-description-view-html"
+                        style={{ lineHeight: 1.6 }}
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            safeDescriptionHtml ||
+                            "<p style='margin:0'>Sem observações.</p>",
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {!edit ? <div className="col-12 md:col-6">
-              <label>Responsáveis pelo encontro</label>
-              <Padding />
-              <div className="flex flex-wrap gap-2">
-                {props.meeting?.meeting_user.map((item) => {
-                  return <Chip label={item.users.name} />;
-                })}
-              </div>
-            </div>
-              : <div className="col-12 md:col-6">
-                <label>Responsavel</label>
+            <div style={sectionStyle}>
+              <h4 style={{ margin: "0 0 4px 0", color: "#1f2937" }}>Responsáveis</h4>
+              <p style={{ margin: "0 0 12px 0", color: "#64748b", fontSize: "13px" }}>
+                Selecione quem conduziu ou apoiou este encontro.
+              </p>
+              {!edit ? <div className="col-12 md:col-6">
+                <label>Responsáveis pelo encontro</label>
                 <Padding />
-                <MultiSelect
-                  optionLabel="name"
-                  onChange={handleChange}
-                  filter
-                  maxSelectedLabels={3}
-                  className="w-full"
-                  name="users"
-                  placeholder="Responsável"
-                  value={values.users}
-                  options={userRequest}
-                />
-              </div>}
+                <div className="flex flex-wrap gap-2">
+                  {(selectedResponsibles.length ? selectedResponsibles : fallbackResponsibles).length ? (selectedResponsibles.length ? selectedResponsibles : fallbackResponsibles).map((item: any) => {
+                    return <Chip key={item.id} label={item.name} />;
+                  }) : <span style={{ color: "#64748b" }}>Sem responsáveis definidos.</span>}
+                </div>
+              </div>
+                : <div className="col-12 md:col-8">
+                  <label>Responsáveis do encontro</label>
+                  <Padding />
+                  <MultiSelect
+                    optionLabel="name"
+                    optionValue="id"
+                    onChange={(e) => setFieldValue("users", e.value)}
+                    filter
+                    maxSelectedLabels={2}
+                    className="w-full"
+                    name="users"
+                    placeholder="Selecione um ou mais responsáveis"
+                    value={values.users}
+                    options={userRequest ?? []}
+                    selectedItemsLabel="{0} responsáveis selecionados"
+                  />
+                  <small style={{ color: "#64748b", marginTop: "6px", display: "inline-block" }}>
+                    Dica: digite o nome para filtrar e selecionar mais rápido.
+                  </small>
+                </div>}
+            </div>
           </Form>
         );
       }}

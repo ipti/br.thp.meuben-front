@@ -7,6 +7,13 @@ export const UsersContext = createContext<UsersTypes | null>(null);
 const UsersProvider = ({ children }: { children: React.ReactNode }) => {
   const {
     users,
+    total,
+    page,
+    perPage,
+    setPage,
+    setPerPage,
+    nameSearch,
+    setNameSearch,
     CreateUser,
     DeleteUser,
     UpdateUser,
@@ -19,6 +26,13 @@ const UsersProvider = ({ children }: { children: React.ReactNode }) => {
     <UsersContext.Provider
       value={{
         users,
+        total,
+        page,
+        perPage,
+        setPage,
+        setPerPage,
+        nameSearch,
+        setNameSearch,
         CreateUser,
         DeleteUser,
         UpdateUser,
