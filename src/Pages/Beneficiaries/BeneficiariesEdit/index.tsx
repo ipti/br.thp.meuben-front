@@ -4,6 +4,7 @@ import { Column } from "primereact/column";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { DataTable } from "primereact/datatable";
 import { Dialog } from "primereact/dialog";
+import { OverlayPanel } from "primereact/overlaypanel";
 import { useContext, useRef, useState } from "react";
 import styled from "styled-components";
 import * as Yup from "yup";
@@ -101,6 +102,91 @@ const FieldError = ({ message }: { message?: string }) => {
     <div style={{ display: "flex", alignItems: "center", gap: "4px", color: "#e53e3e", marginTop: "6px", fontSize: "13px" }}>
       <i className="pi pi-times-circle" style={{ fontSize: "13px" }} />
       <span>{message}</span>
+    </div>
+  );
+};
+
+const termStatusInfo = [
+  {
+    label: "Termo em análise",
+    color: "#f59e0b",
+    icon: "pi pi-clock",
+    description:
+      "Status inicial atribuído automaticamente ao anexar o documento. O termo aguarda revisão pela equipe de M&A.",
+  },
+  {
+    label: "Termo ativo",
+    color: "#10b981",
+    icon: "pi pi-check-circle",
+    description:
+      "Documento validado e aceito pela equipe de M&A. O beneficiário está com o termo regularizado e em plena vigência.",
+  },
+  {
+    label: "Termo inativo",
+    color: "#6b7280",
+    icon: "pi pi-minus-circle",
+    description:
+      "O termo perdeu a validade. Pode ocorrer automaticamente quando o prazo expira ou o beneficiário fica inativo no THP (Termo de Adesão), ou ser definido manualmente pela equipe de M&A.",
+  },
+  {
+    label: "Termo inválido",
+    color: "#ef4444",
+    icon: "pi pi-times-circle",
+    description:
+      "Documento recusado pela equipe de M&A por não atender aos requisitos exigidos. É necessário anexar um novo documento para regularizar a situação.",
+  },
+];
+
+const StatusTermHeader = () => {
+  const op = useRef<OverlayPanel>(null);
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+      <span>Status</span>
+      <button
+        type="button"
+        onClick={(e) => op.current?.toggle(e)}
+        style={{
+          background: "#6b7280",
+          border: "none",
+          borderRadius: "50%",
+          width: "18px",
+          height: "18px",
+          color: "white",
+          fontSize: "11px",
+          fontWeight: "bold",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+        title="Ver descrição dos status"
+      >
+        ?
+      </button>
+      <OverlayPanel ref={op} style={{ maxWidth: "360px" }}>
+        <p style={{ fontWeight: 600, marginBottom: "12px", fontSize: "14px", color: "#1e293b" }}>
+          Legenda dos status de termo
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {termStatusInfo.map((item) => (
+            <div key={item.label} style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+              <i
+                className={item.icon}
+                style={{ color: item.color, fontSize: "16px", marginTop: "2px", flexShrink: 0 }}
+              />
+              <div>
+                <p style={{ fontWeight: 600, fontSize: "13px", color: item.color, margin: 0 }}>
+                  {item.label}
+                </p>
+                <p style={{ fontSize: "12px", color: "#475569", margin: "2px 0 0" }}>
+                  {item.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </OverlayPanel>
     </div>
   );
 };
@@ -710,13 +796,26 @@ const BeneficiariesEditPage = () => {
                   ></Column>
                   <Column
                     body={(row) => {
+                      const statusKey = row?.status ?? "";
+                      const info = termStatusInfo.find((i) => {
+                        const keyMap: Record<string, string> = {
+                          TERM_ANALYSIS: "Termo em análise",
+                          ACTIVE_TERM: "Termo ativo",
+                          INACTIVE_TERM: "Termo inativo",
+                          INVALID_TERM: "Termo inválido",
+                        };
+                        return i.label === keyMap[statusKey];
+                      });
                       return (
-                        <>
-                          {StatusTermEnum[row?.status ?? ""] && `${StatusTermEnum[row?.status ?? ""]}`}
-                        </>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          {info && (
+                            <i className={info.icon} style={{ color: info.color, fontSize: "14px" }} />
+                          )}
+                          <span>{StatusTermEnum[statusKey] ?? "-"}</span>
+                        </div>
                       );
                     }}
-                    header="Status"
+                    header={<StatusTermHeader />}
                   ></Column>
                   <Column
                     body={(row) => {

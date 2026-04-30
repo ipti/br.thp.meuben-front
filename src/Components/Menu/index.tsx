@@ -19,8 +19,9 @@ import Icon from "../Icon";
 import Item from "./Item";
 import { Container } from "./style";
 import turmasHover from "../../Assets/images/turmasPessoas.svg";
-
 import turmas from "../../Assets/images/peoples.svg";
+import reapplicator from "../../Assets/images/iconsMenu/reapplicator.svg";
+import reapplicatorHover from "../../Assets/images/iconsMenu/reapplicator_active.svg";
 import home from "../../Assets/images/iconsMenu/home.svg";
 import homeHover from "../../Assets/images/iconsMenu/home_active.svg";
 
@@ -147,17 +148,22 @@ const Menu = ({ viewdMenu }: { viewdMenu: boolean }) => {
             path={"/beneficiarios"}
             icon={active === 5 ? beneficiaries_hover : beneficiaries}
           />
-          {/* <Item
-            text={"Reaplicadores"}
-            funcActiv={() => {
-              setActive(8);
-              menuItem("8");
-            }}
-            active={active === 8 ? true : false}
-            path={"/reaplicadores"}
-            icon={active === 8 ? turmasHover : turmas}
-          /> */}
-
+          {(props.user?.role === ROLE.ADMIN ||
+            props.user?.role === ROLE.COORDINATORS) && (
+            <>
+              <Padding />
+              <Item
+                text={"Reaplicadores"}
+                funcActiv={() => {
+                  setActive(9);
+                  menuItem("9");
+                }}
+                active={active === 9 ? true : false}
+                path={"/reaplicadores"}
+                icon={active === 9 ? reapplicatorHover : reapplicator}
+              />
+            </>
+          )}
 
           {props.user?.role === ROLE.ADMIN ||
             props.user?.role === ROLE.COORDINATORS ? (
