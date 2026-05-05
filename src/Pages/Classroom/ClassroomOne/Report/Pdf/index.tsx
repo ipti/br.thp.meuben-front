@@ -125,23 +125,32 @@ export const ReportClassroom = () => {
     const createTableBody = (registrationsSubset: any, meetingSubset: any, startIndex: number) => {
 
       const headerRow = [
-        "Nº",
-        "NOME COMPLETO",
-        ...meetingSubset.map((item: any, index: number) => formatarDataAnoDuas(item.meeting_date)),
-        "FREQUÊNCIA",
-        "STATUS",
+        { text: "Nº", style: "tableHeader" },
+        { text: "NOME COMPLETO", style: "tableHeader" },
+        ...meetingSubset.map((item: any) => ({
+          text: `${formatarDataAnoDuas(item.meeting_date)}\n${minutesToTimeStr(item.workload ?? 0)}h`,
+          style: "tableHeader",
+          alignment: "center",
+        })),
+        { text: "FREQUÊNCIA", style: "tableHeader", alignment: "center" },
+        { text: "STATUS", style: "tableHeader", alignment: "center" },
       ];
 
       const bodyRows = registrationsSubset.map((item: any, index: number) => {
         const isApproved = parseInt(bodyTotal(item).percentage) >= report?.project?.approval_percentage!;
         return [
-          startIndex + index + 1,
-          item.registration.name + " - " + item.registration.cpf,
-          ...meetingSubset.map((meeting: any) => bodyMeeting(item, meeting)),
-          bodyTotal(item).percentage + "%",
+          { text: startIndex + index + 1, style: "tableCell", alignment: "center" },
+          { text: `${item.registration.name} - ${item.registration.cpf}`, style: "tableCell" },
+          ...meetingSubset.map((meeting: any) => ({
+            text: bodyMeeting(item, meeting),
+            style: "tableCell",
+            alignment: "center",
+          })),
+          { text: `${bodyTotal(item).percentage}%`, style: "tableCell", alignment: "center" },
           {
             text: isApproved ? "Aprovado" : "Reprovado",
-            color: isApproved ? styles.colors.green : styles.colors.red,
+            style: isApproved ? "statusApproved" : "statusRejected",
+            alignment: "center",
           },
         ];
       });
@@ -213,16 +222,24 @@ export const ReportClassroom = () => {
             table: {
               widths: [
                 "3%",
-                "20%",
+                "26%",
                 ...meetingSubset!.map(() => "*"),
                 "6%",
-                "5%",
+                "7%",
               ],
               body: createTableBody(
                 studentSubset || [],
                 meetingSubset,
                 studentPageIndex * maxStudentsPerPage
               ),
+            },
+            layout: {
+              fillColor: (rowIndex: number) => {
+                if (rowIndex === 0) return "#E5E7EB";
+                return rowIndex % 2 === 0 ? "#F9FAFB" : null;
+              },
+              hLineColor: "#D1D5DB",
+              vLineColor: "#D1D5DB",
             },
             pageBreak: studentPageIndex === 0 && meetingPageIndex === 0 ? undefined : "before",
           },
@@ -231,12 +248,24 @@ export const ReportClassroom = () => {
             marginTop: 8,
             fontSize: 6,
             table: {
-              widths: ["*"],
+              widths: ["*", "*"],
               body: [
                 [
-                  `Critério Mínimo de Aprovação: ${report?.project?.approval_percentage}%    Quantidade de Encontros: ${report?.meeting.length}    Quantidade de Alunos: ${report?.register_classroom?.length}   Quantidade de aprovados: ${approvedCount}    Média de Presença da Turma: ${mediaDasMedias.toFixed(2)}%   Carga horária dos encontros aprovados: ${minutesToTimeStr(totalWorkload ?? 0)}h`,
+                  {
+                    text: `Critério Mínimo de Aprovação: ${report?.project?.approval_percentage}%\nQuantidade de Encontros: ${report?.meeting.length}\nQuantidade de Alunos: ${report?.register_classroom?.length}`,
+                    style: "summaryCell",
+                  },
+                  {
+                    text: `Quantidade de aprovados: ${approvedCount}\nMédia de Presença da Turma: ${mediaDasMedias.toFixed(2)}%\nCarga horária total: ${minutesToTimeStr(totalWorkload ?? 0)}h`,
+                    style: "summaryCell",
+                  },
                 ],
               ],
+            },
+            layout: {
+              fillColor: "#F3F4F6",
+              hLineColor: "#D1D5DB",
+              vLineColor: "#D1D5DB",
             },
           },
         ])
@@ -251,6 +280,32 @@ export const ReportClassroom = () => {
           fontSize: 12,
           bold: true,
           margin: [0, 0, 0, 10],
+        },
+        tableHeader: {
+          fontSize: 6,
+          bold: true,
+          color: "#111827",
+          margin: [0, 2, 0, 2],
+        },
+        tableCell: {
+          fontSize: 6,
+          color: "#111827",
+          margin: [0, 2, 0, 2],
+        },
+        statusApproved: {
+          fontSize: 6,
+          bold: true,
+          color: styles.colors.green,
+        },
+        statusRejected: {
+          fontSize: 6,
+          bold: true,
+          color: styles.colors.red,
+        },
+        summaryCell: {
+          fontSize: 6,
+          color: "#111827",
+          margin: [0, 2, 0, 2],
         },
       },
       header: (currentPage, pageCount) => {
