@@ -11,7 +11,7 @@ import TextInput from "../../../../Components/TextInput";
 import { AplicationContext } from "../../../../Context/Aplication/context";
 import { BeneficiariesEditContext } from "../../../../Context/Beneficiaries/BeneficiaresEdit/context";
 import { BeneficiariesEditType } from "../../../../Context/Beneficiaries/BeneficiaresEdit/type";
-import { ROLE, StatusTermEnum, TypeTermEnum } from "../../../../Controller/controllerGlobal";
+import { ROLE, TypeTermEnum } from "../../../../Controller/controllerGlobal";
 import { ControllerUpdateRegistration } from "../../../../Services/PreRegistration/controller";
 import { Column, Padding, Row } from "../../../../Styles/styles";
 import { PropsAplicationContext } from "../../../../Types/types";
@@ -137,15 +137,24 @@ const ModalAddTerm = ({
   };
 
   const schemaCreate = Yup.object().shape({
-    dateTerm: Yup.string().required("Data de assinatura é obrigatório"),
-    dateValid: Yup.string().required("Data de validade é obrigatório"),
-    file: Yup.string().required("Arquivo com termo é obrigatório"),
     type: Yup.string().required("Tipo é obrigatório"),
+    dateTerm: Yup.string().required("Data de assinatura é obrigatório"),
+    dateValid: Yup.string().when("type", {
+      is: (type: string) => type === "ACCESSION",
+      then: (schema) => schema.optional().nullable(),
+      otherwise: (schema) => schema.required("Data de validade é obrigatório"),
+    }),
+    file: Yup.string().required("Arquivo com termo é obrigatório"),
   });
 
   const schemaEdit = Yup.object().shape({
+    type: Yup.string().required("Tipo é obrigatório"),
     dateTerm: Yup.string().required("Data de assinatura é obrigatório"),
-    dateValid: Yup.string().required("Data de validade é obrigatório"),
+    dateValid: Yup.string().when("type", {
+      is: (type: string) => type === "ACCESSION",
+      then: (schema) => schema.optional().nullable(),
+      otherwise: (schema) => schema.required("Data de validade é obrigatório"),
+    }),
   });
 
   const optionsType = Object.keys(TypeTermEnum).map((key) => ({
@@ -160,6 +169,8 @@ const ModalAddTerm = ({
 
   const currentStatusInfo = termStatusInfo.find((s) => s.key === visible?.status);
 
+  const isAccessionTerm = visible?.type === "ACCESSION";
+
   return (
     <Dialog
       onHide={onHide}
@@ -169,20 +180,24 @@ const ModalAddTerm = ({
     >
       <Formik
         initialValues={{
+          type: visible?.type ?? "",
           dateTerm: new Date(visible?.dateTerm || Date.now()),
-          dateValid: new Date(visible?.dateValid || Date.now()),
+          dateValid: isAccessionTerm ? undefined : new Date(visible?.dateValid || Date.now()),
           file: undefined,
           observation: visible?.observation ?? "",
           // Novo termo: fixo em TERM_ANALYSIS. Edição: herda status atual
           status: isEdit ? (visible?.status ?? "") : "TERM_ANALYSIS",
-          type: visible?.type ?? "",
         }}
         validationSchema={isEdit ? schemaEdit : schemaCreate}
         onSubmit={(values) => {
+          const isAccession = values.type === "ACCESSION";
+
           if (!isEdit && values.file) {
             const formData = new FormData();
             formData.append("dateTerm", values.dateTerm.toString());
-            formData.append("dateValid", values.dateValid?.toString());
+            if (!isAccession && values.dateValid) {
+              formData.append("dateValid", values.dateValid?.toString());
+            }
             formData.append("registration", id?.toString());
             formData.append("observation", values.observation);
             formData.append("status", "TERM_ANALYSIS");
@@ -192,13 +207,18 @@ const ModalAddTerm = ({
           }
 
           if (isEdit) {
-            props.UpdateRegisterTerm(visible.id, {
+            const payload: any = {
               dateTerm: values.dateTerm,
-              dateValid: values.dateValid,
               observation: values.observation,
               status: values.status,
               type: values.type,
-            });
+            };
+
+            if (!isAccession) {
+              payload.dateValid = values.dateValid;
+            }
+
+            props.UpdateRegisterTerm(visible.id, payload);
           }
 
           onHide();
@@ -207,6 +227,31 @@ const ModalAddTerm = ({
         {({ values, handleChange, errors, touched, setFieldValue }) => (
           <Form>
             <div className="grid">
+              {/* Tipo */}
+              <div className="col-12 md:col-6">
+                <label>Tipo *</label>
+                <Padding />
+                <Dropdown
+                  value={values.type}
+                  options={optionsType}
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="Tipo"
+                  onChange={(e) => {
+                    setFieldValue("type", e.value);
+                    if (e.value === "ACCESSION") {
+                      setFieldValue("dateValid", undefined);
+                    }
+                  }}
+                  name="type"
+                  className="w-full"
+                  disabled={isEdit && !isAdmin}
+                />
+                {errors.type && touched.type && (
+                  <div style={{ color: "red", marginTop: "8px" }}>{String(errors.type)}</div>
+                )}
+              </div>
+
               {/* Datas */}
               <div className="col-12 md:col-6">
                 <label>Data de assinatura *</label>
@@ -222,20 +267,22 @@ const ModalAddTerm = ({
                   <div style={{ color: "red", marginTop: "8px" }}>{String(errors.dateTerm)}</div>
                 )}
               </div>
-              <div className="col-12 md:col-6">
-                <label>Data de validade *</label>
-                <Padding />
-                <CalendarComponent
-                  value={values.dateValid}
-                  name="dateValid"
-                  dateFormat="dd/mm/yy"
-                  placeholder="Data de validade"
-                  onChange={handleChange}
-                />
-                {errors.dateValid && touched.dateValid && (
-                  <div style={{ color: "red", marginTop: "8px" }}>{String(errors.dateValid)}</div>
-                )}
-              </div>
+              {values.type !== "ACCESSION" && (
+                <div className="col-12 md:col-6">
+                  <label>Data de validade *</label>
+                  <Padding />
+                  <CalendarComponent
+                    value={values.dateValid}
+                    name="dateValid"
+                    dateFormat="dd/mm/yy"
+                    placeholder="Data de validade"
+                    onChange={handleChange}
+                  />
+                  {errors.dateValid && touched.dateValid && (
+                    <div style={{ color: "red", marginTop: "8px" }}>{String(errors.dateValid)}</div>
+                  )}
+                </div>
+              )}
 
               {/* Arquivo — somente criação */}
               {!isEdit && (
@@ -253,26 +300,6 @@ const ModalAddTerm = ({
                   )}
                 </div>
               )}
-
-              {/* Tipo */}
-              <div className="col-12 md:col-6">
-                <label>Tipo *</label>
-                <Padding />
-                <Dropdown
-                  value={values.type}
-                  options={optionsType}
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="Tipo"
-                  onChange={(e) => setFieldValue("type", e.value)}
-                  name="type"
-                  className="w-full"
-                  disabled={isEdit && !isAdmin}
-                />
-                {errors.type && touched.type && (
-                  <div style={{ color: "red", marginTop: "8px" }}>{String(errors.type)}</div>
-                )}
-              </div>
 
               {/* Status */}
               <div className="col-12 md:col-6">

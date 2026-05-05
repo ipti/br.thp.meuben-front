@@ -14,6 +14,7 @@ import { TDocumentDefinitions } from "pdfmake/interfaces";
 import { convertImageUrlToBase64, formatarDataAnoDuas, loadImageFileAsBase64 } from "../../../../../Controller/controllerGlobal";
 import { MediafrequencyType } from "../../../../../Context/Classroom/type";
 import styles from "../../../../../Styles";
+import { minutesToTimeStr } from "../../../../../Components/TimeInput";
 
 pdfMake.vfs = pdfFonts.vfs;
 export const ReportClassroom = () => {
@@ -30,9 +31,14 @@ export const ReportClassroom = () => {
 
   var fouls = foulsRequest as MediafrequencyType;
 
-  const approvedCount = data ?  approvedRegistration(data)?.approved?.filter(item => item >= (report?.project.approval_percentage || 0)).length : 0;
+  const approvedCount = data ? approvedRegistration(data)?.approved?.filter(item => item >= (report?.project.approval_percentage || 0)).length : 0;
 
   const totalMedia = fouls?.reduce((sum, item) => sum + item.media, 0);
+
+  const totalWorkload = report?.meeting.reduce(
+    (acc, meeting) => acc + (meeting.workload ?? 0),
+    0,
+  );
 
   // Calcula a média das médias
   const mediaDasMedias = totalMedia / (fouls?.length || 1);
@@ -228,7 +234,7 @@ export const ReportClassroom = () => {
               widths: ["*"],
               body: [
                 [
-                  `Critério Mínimo de Aprovação: ${report?.project?.approval_percentage}%    Quantidade de Encontros: ${report?.meeting.length}    Quantidade de Alunos: ${report?.register_classroom?.length}   Quantidade de aprovados: ${approvedCount}    Média de Presença da Turma: ${mediaDasMedias.toFixed(2)}%`,
+                  `Critério Mínimo de Aprovação: ${report?.project?.approval_percentage}%    Quantidade de Encontros: ${report?.meeting.length}    Quantidade de Alunos: ${report?.register_classroom?.length}   Quantidade de aprovados: ${approvedCount}    Média de Presença da Turma: ${mediaDasMedias.toFixed(2)}%   Carga horária dos encontros aprovados: ${minutesToTimeStr(totalWorkload ?? 0)}h`,
                 ],
               ],
             },
@@ -352,29 +358,29 @@ export const ReportClassroom = () => {
 };
 
 
-  const approvedRegistration = (rowData: ReportClassroomType) => {
-    const count: number[] = [];
+const approvedRegistration = (rowData: ReportClassroomType) => {
+  const count: number[] = [];
 
-    const verifyFouls = () => {
-      for (const register of rowData?.register_classroom) {
-        var countFouls = 0;
+  const verifyFouls = () => {
+    for (const register of rowData?.register_classroom) {
+      var countFouls = 0;
 
-        for (const meeting of rowData?.meeting) {
-          const verify = meeting?.fouls?.find(
-            (props: any) => props.registration_fk === register.registration_fk
-          );
+      for (const meeting of rowData?.meeting) {
+        const verify = meeting?.fouls?.find(
+          (props: any) => props.registration_fk === register.registration_fk
+        );
 
-          if (verify) {
-            countFouls++;
-          }
+        if (verify) {
+          countFouls++;
         }
+      }
 
-        count.push(rowData.meeting.length !== 0
-          ? ((rowData.meeting.length - countFouls) / rowData.meeting.length) * 100
-          : 0);
+      count.push(rowData.meeting.length !== 0
+        ? ((rowData.meeting.length - countFouls) / rowData.meeting.length) * 100
+        : 0);
 
-        }
-        return count;
-    };
-    return { approved: verifyFouls() };
+    }
+    return count;
   };
+  return { approved: verifyFouls() };
+};
