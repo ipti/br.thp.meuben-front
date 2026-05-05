@@ -21,13 +21,29 @@ import {
 
 export const ControllerPreRegistration = () => {
   const history = useNavigate();
+
+  const getErrorMessage = (error: any) => {
+    const message = error?.response?.data?.message;
+
+    if (Array.isArray(message)) {
+      return message.join(" | ");
+    }
+
+    if (typeof message === "string" && message.trim()) {
+      return message;
+    }
+
+    return "Não foi possível finalizar a matrícula. Revise os dados e tente novamente.";
+  };
+
   const requestPreRegistrationMutation = useMutation(
     (data: CreatePreRegistration) => requestPreRegistration(data),
     {
       onError: (error: any) => {
         Swal.fire({
           icon: 'error',
-          title: error.response.data.message,
+          title: "Erro ao finalizar matrícula",
+          text: getErrorMessage(error),
           confirmButtonColor: styles.colors.colorsBaseProductNormal,
         })
        },

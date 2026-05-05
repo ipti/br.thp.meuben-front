@@ -73,6 +73,10 @@ export const RegisterState = () => {
       responsable_telephone: sanitizeDigits(dataValues.responsable_telephone),
       birthday: dataFormatada,
       responsable_cpf: sanitizeDigits(dataValues?.responsable_cpf),
+    }, {
+      onError: () => {
+        setStep(5);
+      },
     })
   }
 
