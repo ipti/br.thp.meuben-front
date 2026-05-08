@@ -1,8 +1,8 @@
 import { Form } from "formik";
-import { MultiSelect } from "primereact/multiselect";
 import { useContext } from "react";
 import DropdownComponent from "../../../Components/Dropdown";
 import MaskInput from "../../../Components/InputMask";
+import MultiSelectComponet from "../../../Components/MultiSelect";
 import TextInput from "../../../Components/TextInput";
 import { AplicationContext } from "../../../Context/Aplication/context";
 import {
@@ -11,17 +11,10 @@ import {
   typesex,
 } from "../../../Controller/controllerGlobal";
 import { useFetchRequestSocialTechnologyLists } from "../../../Services/SocialTechnology/query";
+import color from "../../../Styles/colors";
 import { Padding } from "../../../Styles/styles";
 import { PropsAplicationContext } from "../../../Types/types";
 import styled from "styled-components";
-
-interface InputsUserProps {
-  errors: any;
-  handleChange: any;
-  touched: any;
-  values: any;
-  basicOnly?: boolean;
-}
 
 const InputWrapper = styled.div`
   .p-inputtext,
@@ -33,6 +26,25 @@ const InputWrapper = styled.div`
     box-sizing: border-box;
   }
 `;
+
+const ADMIN_ROLE_OPTIONS = [
+  { id: ROLE.ADMIN, name: "Admin" },
+  { id: ROLE.COORDINATORS, name: "Coordenador" },
+  { id: ROLE.REAPPLICATORS, name: "Reaplicador" },
+];
+
+const COORDINATOR_ROLE_OPTIONS = [
+  { id: ROLE.COORDINATORS, name: "Coordenador" },
+  { id: ROLE.REAPPLICATORS, name: "Reaplicador" },
+];
+
+interface InputsUserProps {
+  errors: any;
+  handleChange: any;
+  touched: any;
+  values: any;
+  basicOnly?: boolean;
+}
 
 const InputsUser = ({
   values,
@@ -48,7 +60,7 @@ const InputsUser = ({
 
   return (
     <InputWrapper>
-      <Form>
+      <div>
         <div className="grid">
           <div className="col-12 md:col-6">
             <label>Nome</label>
@@ -61,7 +73,7 @@ const InputsUser = ({
             />
             <Padding />
             {errors.name && touched.name ? (
-              <div style={{ color: "red" }}>
+              <div style={{ color: color.red }}>
                 {errors.name}
                 <Padding />
               </div>
@@ -79,15 +91,15 @@ const InputsUser = ({
             />
             <Padding />
             {errors.username && touched.username ? (
-              <div style={{ color: "red" }}>
+              <div style={{ color: color.red }}>
                 {errors.username}
                 <Padding />
               </div>
             ) : null}
           </div>
-        </div>{" "}
+        </div>
         <div className="grid">
-          <div className={`col-12 ${"md:col-6"}`}>
+          <div className="col-12 md:col-6">
             <label>Tipo de usuário</label>
             <Padding />
             <DropdownComponent
@@ -97,22 +109,11 @@ const InputsUser = ({
               optionsValue="id"
               value={values.role}
               onChange={handleChange}
-              options={
-                props.user?.role === ROLE.ADMIN
-                  ? [
-                      { id: ROLE.ADMIN, name: "Admin" },
-                      { id: ROLE.COORDINATORS, name: "Coordenador" },
-                      { id: ROLE.REAPPLICATORS, name: "Reaplicador" },
-                    ]
-                  : [
-                      { id: ROLE.COORDINATORS, name: "Coordenador" },
-                      { id: ROLE.REAPPLICATORS, name: "Reaplicador" },
-                    ]
-              }
+              options={props.user?.role === ROLE.ADMIN ? ADMIN_ROLE_OPTIONS : COORDINATOR_ROLE_OPTIONS}
             />
             <Padding />
             {errors.role && touched.role ? (
-              <div style={{ color: "red" }}>
+              <div style={{ color: color.red }}>
                 {errors.role}
                 <Padding />
               </div>
@@ -122,21 +123,17 @@ const InputsUser = ({
             <div className="col-12 md:col-6">
               <label>Tecnologia</label>
               <Padding />
-              <MultiSelect
+              <MultiSelectComponet
                 options={projects}
-                optionLabel="name"
+                optionsLabel="name"
                 name="project"
                 value={values.project}
                 onChange={handleChange}
-                filter
-                placeholder="Tecnologia"
-                maxSelectedLabels={3}
-                className="w-full"
-                style={{ height: "44px", alignItems: "center" }}
+                placerholder="Tecnologia"
               />
               <Padding />
               {errors.project && touched.project ? (
-                <div style={{ color: "red" }}>
+                <div style={{ color: color.red }}>
                   {errors.project}
                   <Padding />
                 </div>
@@ -162,7 +159,7 @@ const InputsUser = ({
                   />
                 </div>
                 {errors.color_race && touched.color_race ? (
-                  <div style={{ color: "red", marginTop: "8px" }}>
+                  <div style={{ color: color.red, marginTop: "8px" }}>
                     {errors.color_race}
                   </div>
                 ) : null}
@@ -181,12 +178,12 @@ const InputsUser = ({
                   />
                 </div>
                 {errors.birthday && touched.birthday ? (
-                  <div style={{ color: "red", marginTop: "8px" }}>
+                  <div style={{ color: color.red, marginTop: "8px" }}>
                     {errors.birthday}
                   </div>
                 ) : null}
               </div>
-            </div>{" "}
+            </div>
             <div className="grid">
               <div className="col-12 md:col-6">
                 <label>Sexo *</label>
@@ -201,7 +198,7 @@ const InputsUser = ({
                   optionsLabel="type"
                 />
                 {errors.sex && touched.sex ? (
-                  <div style={{ color: "red", marginTop: "8px" }}>{errors.sex}</div>
+                  <div style={{ color: color.red, marginTop: "8px" }}>{errors.sex}</div>
                 ) : null}
               </div>
               <div className="col-12 md:col-6">
@@ -215,7 +212,7 @@ const InputsUser = ({
                   onChange={handleChange}
                 />
                 {errors.initial_date && touched.initial_date ? (
-                  <div style={{ color: "red", marginTop: "8px" }}>
+                  <div style={{ color: color.red, marginTop: "8px" }}>
                     {errors.initial_date}
                   </div>
                 ) : null}
@@ -232,11 +229,11 @@ const InputsUser = ({
                   name="email"
                 />
                 {errors.email && touched.email ? (
-                  <div style={{ color: "red", marginTop: "8px" }}>{errors.email}</div>
+                  <div style={{ color: color.red, marginTop: "8px" }}>{errors.email}</div>
                 ) : null}
               </div>
               <div className="col-12 md:col-6">
-                <label>Telefone para contato*</label>
+                <label>Telefone para contato *</label>
                 <Padding />
                 <MaskInput
                   mask="(99) 9 9999-9999"
@@ -246,13 +243,13 @@ const InputsUser = ({
                   value={values.phone}
                 />
                 {errors.phone && touched.phone ? (
-                  <div style={{ color: "red", marginTop: "8px" }}>{errors.phone}</div>
+                  <div style={{ color: color.red, marginTop: "8px" }}>{errors.phone}</div>
                 ) : null}
               </div>
             </div>
           </>
         )}
-      </Form>
+      </div>
     </InputWrapper>
   );
 };

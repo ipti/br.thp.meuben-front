@@ -1,4 +1,5 @@
 import { Button } from "primereact/button";
+import "./StepsNavigator.css";
 
 export type StepItem = {
   key: string;
@@ -11,6 +12,7 @@ type StepsNavigatorProps = {
   currentStep: number;
   onStepChange: (index: number) => void;
   showActions?: boolean;
+  onlyActions?: boolean;
   previousLabel?: string;
   nextLabel?: string;
   finishLabel?: string;
@@ -21,75 +23,71 @@ const StepsNavigator = ({
   currentStep,
   onStepChange,
   showActions = true,
+  onlyActions = false,
   previousLabel = "Etapa anterior",
   nextLabel = "Próxima etapa",
   finishLabel = "Concluir navegação",
 }: StepsNavigatorProps) => {
+  const progressPercent =
+    steps.length > 1 ? (currentStep / (steps.length - 1)) * 100 : 100;
+
+  const isLast = currentStep === steps.length - 1;
+
   return (
-    <>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
-          gap: "10px",
-          marginBottom: "16px",
-        }}
-      >
-        {steps.map((step, index) => {
-          const isActive = index === currentStep;
-          const isDone = index < currentStep;
+    <div className="steps-navigator">
+      {!onlyActions && (
+        <>
+          <div className="steps-progress-bar">
+            <div
+              className="steps-progress-fill"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
 
-          return (
-            <button
-              key={step.key}
-              type="button"
-              onClick={() => onStepChange(index)}
-              style={{
-                border: "1px solid",
-                borderColor: isActive || isDone ? "#6366f1" : "#d1d5db",
-                backgroundColor: isActive ? "#eef2ff" : "#fff",
-                borderRadius: "10px",
-                padding: "12px 10px",
-                cursor: "pointer",
-                textAlign: "left",
-                width: "100%",
-              }}
-            >
-              <div style={{ fontSize: "11px", color: "#64748b", marginBottom: "4px" }}>
-                Etapa {index + 1}
-              </div>
-              <div
-                style={{
-                  fontSize: "14px",
-                  color: isActive || isDone ? "#3730a3" : "#334155",
-                  fontWeight: isActive ? 700 : 600,
-                }}
-              >
-                {step.label}
-              </div>
-            </button>
-          );
-        })}
-      </div>
+          <div className="steps-grid">
+            {steps.map((step, index) => {
+              const isActive = index === currentStep;
+              const isDone = index < currentStep;
 
-      {steps[currentStep]?.description ? (
-        <div
-          style={{
-            background: "#f8fafc",
-            border: "1px solid #e2e8f0",
-            borderRadius: "10px",
-            padding: "12px 14px",
-            marginBottom: "16px",
-            color: "#334155",
-            fontSize: "13px",
-          }}
-        >
-          <strong>{steps[currentStep]?.label}:</strong> {steps[currentStep]?.description}
-        </div>
-      ) : null}
+              return (
+                <button
+                  key={step.key}
+                  type="button"
+                  onClick={() => onStepChange(index)}
+                  className={[
+                    "step-button",
+                    isActive ? "step-active" : "",
+                    isDone ? "step-done" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  <div className="step-header">
+                    <span className="step-number">Etapa {index + 1}</span>
+                    {isDone && (
+                      <i className="pi pi-check-circle step-check-icon" />
+                    )}
+                  </div>
+                  <div className="step-title">{step.label}</div>
+                </button>
+              );
+            })}
+          </div>
 
-      {showActions ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "8px" }}>
+          {steps[currentStep]?.description && (
+            <div className="step-description">
+              <i className="pi pi-info-circle step-description-icon" />
+              <span>
+                <strong>{steps[currentStep].label}:</strong>{" "}
+                {steps[currentStep].description}
+              </span>
+            </div>
+          )}
+        </>
+      )}
+
+      {showActions && (
+        <div className="steps-actions">
           <Button
             type="button"
             label={previousLabel}
@@ -98,20 +96,20 @@ const StepsNavigator = ({
             outlined
             disabled={currentStep === 0}
             onClick={() => onStepChange(Math.max(currentStep - 1, 0))}
-            style={{ width: "100%" }}
           />
           <Button
             type="button"
-            label={currentStep === steps.length - 1 ? finishLabel : nextLabel}
-            icon="pi pi-arrow-right"
+            label={isLast ? finishLabel : nextLabel}
+            icon={isLast ? "pi pi-check" : "pi pi-arrow-right"}
             iconPos="right"
-            disabled={currentStep === steps.length - 1}
-            onClick={() => onStepChange(Math.min(currentStep + 1, steps.length - 1))}
-            style={{ width: "100%" }}
+            disabled={isLast}
+            onClick={() =>
+              onStepChange(Math.min(currentStep + 1, steps.length - 1))
+            }
           />
         </div>
-      ) : null}
-    </>
+      )}
+    </div>
   );
 };
 

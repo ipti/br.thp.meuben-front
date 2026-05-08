@@ -1,38 +1,54 @@
 import { Form, Formik } from "formik";
 import { Button } from "primereact/button";
-import { MultiSelect } from "primereact/multiselect";
 import { useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 import * as Yup from "yup";
 import CalendarComponent from "../../../../../Components/Calendar";
 import ContentPage from "../../../../../Components/ContentPage";
+import FieldError from "../../../../../Components/FieldError";
+import MultiSelectComponet from "../../../../../Components/MultiSelect";
 import TextInput from "../../../../../Components/TextInput";
 import TimeInput from "../../../../../Components/TimeInput";
 import CreateMeetingProvider, {
   CreateMeetingContext,
 } from "../../../../../Context/Classroom/Meeting/Create/context";
 import { CreateMeetingType } from "../../../../../Context/Classroom/Meeting/Create/type";
+import { getErrorsAsArray } from "../../../../../Controller/controllerGlobal";
 import { useFetchRequestUsers } from "../../../../../Services/Users/query";
-import { Padding, Row } from "../../../../../Styles/styles";
+import color from "../../../../../Styles/colors";
+import { Column, Padding, Row } from "../../../../../Styles/styles";
 
-const CreateMeeting = () => {
+// ─── ErrorSummary ─────────────────────────────────────────────────────────────
+const ErrorSummary = ({ errors }: { errors: string[] }) => {
+  if (errors.length === 0) return null;
   return (
-    <CreateMeetingProvider>
-      <CreateMeetingPage />
-    </CreateMeetingProvider>
-  );
-};
-
-const FieldError = ({ message }: { message?: string }) => {
-  if (!message) return null;
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: "4px", color: "#e53e3e", marginTop: "6px", fontSize: "13px" }}>
-      <i className="pi pi-times-circle" style={{ fontSize: "13px" }} />
-      <span>{message}</span>
+    <div
+      style={{
+        background: color.colorCardRed,
+        border: `1px solid ${color.red}`,
+        borderRadius: "8px",
+        padding: "16px 20px",
+        marginBottom: "16px",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+        <i className="pi pi-exclamation-circle" style={{ color: color.red, fontSize: "18px" }} />
+        <strong style={{ color: color.red, fontSize: "15px" }}>
+          Corrija os seguintes erros antes de continuar:
+        </strong>
+      </div>
+      <ul style={{ margin: 0, paddingLeft: "20px" }}>
+        {errors.map((error, index) => (
+          <li key={index} style={{ color: color.red, marginBottom: "4px", fontSize: "14px" }}>
+            {error}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
+// ─── Schema ──────────────────────────────────────────────────────────────────
 const schema = Yup.object().shape({
   name: Yup.string()
     .max(150, "Nome deve ter no máximo 150 caracteres")
@@ -44,9 +60,18 @@ const schema = Yup.object().shape({
     .min(1, "Selecione ao menos um responsável")
     .required("Responsável é obrigatório"),
   theme: Yup.string().max(300, "Tema deve ter no máximo 300 caracteres").optional(),
-  workload: Yup.string().optional(),
+  workload: Yup.mixed()
+    .test("required-time", "Carga horária é obrigatória", (v) => typeof v === "number"),
 });
 
+// ─── Page wrapper ─────────────────────────────────────────────────────────────
+const CreateMeeting = () => (
+  <CreateMeetingProvider>
+    <CreateMeetingPage />
+  </CreateMeetingProvider>
+);
+
+// ─── Form ─────────────────────────────────────────────────────────────────────
 const CreateMeetingPage = () => {
   const props = useContext(CreateMeetingContext) as CreateMeetingType;
   const { data: usersResponse } = useFetchRequestUsers({ perPage: 1000 });
@@ -64,12 +89,27 @@ const CreateMeetingPage = () => {
           props.CreateMeeting({ ...values, classroom: parseInt(id!) });
         }}
       >
-        {({ values, handleChange, errors, touched, setFieldValue }) => {
+        {({ values, handleChange, errors, setFieldValue, isSubmitting }) => {
+          const errorArray = submitted ? getErrorsAsArray(errors) : [];
           const fieldError = (field: string) =>
-            submitted && (errors as any)[field] ? (errors as any)[field] : undefined;
+            submitted ? (errors as any)[field] : undefined;
 
           return (
             <Form>
+              <Column>
+                <Row id="end">
+                  <Button
+                    label="Salvar"
+                    type="submit"
+                    icon="pi pi-check"
+                    loading={isSubmitting}
+                    onClick={() => setSubmitted(true)}
+                  />
+                </Row>
+              </Column>
+              <Padding padding="8px" />
+              <ErrorSummary errors={errorArray} />
+              <Padding padding="8px" />
               <div className="grid">
                 <div className="col-12 md:col-6">
                   <label>Nome *</label>
@@ -121,14 +161,11 @@ const CreateMeetingPage = () => {
                 <div className="col-12 md:col-4">
                   <label>Responsável *</label>
                   <Padding />
-                  <MultiSelect
-                    optionLabel="name"
-                    onChange={(e) => setFieldValue("users", e.value)}
-                    filter
-                    maxSelectedLabels={3}
-                    className="w-full"
+                  <MultiSelectComponet
+                    optionsLabel="name"
+                    onChange={(e: any) => setFieldValue("users", e.value)}
                     name="users"
-                    placeholder="Responsável"
+                    placerholder="Responsável"
                     value={values.users}
                     options={userRequest}
                   />
@@ -136,13 +173,6 @@ const CreateMeetingPage = () => {
                 </div>
               </div>
               <Padding padding="16px" />
-              <Row id="end">
-                <Button
-                  label="Salvar"
-                  type="submit"
-                  onClick={() => setSubmitted(true)}
-                />
-              </Row>
             </Form>
           );
         }}

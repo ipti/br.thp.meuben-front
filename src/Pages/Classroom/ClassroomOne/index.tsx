@@ -3,12 +3,14 @@ import { Button } from "primereact/button";
 import { Chart as ChartPrime } from "primereact/chart";
 import { useContext, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import * as Yup from "yup";
 import pessoas from "../../../Assets/images/pessoasgray.svg";
 import report from "../../../Assets/images/report-svgrepo-com.svg";
 import meeting from "../../../Assets/images/school_teacher.svg";
 import TextInput from "../../../Components/TextInput";
 import ContentPage from "../../../Components/ContentPage";
 import DropdownComponent from "../../../Components/Dropdown";
+import FieldError from "../../../Components/FieldError";
 import Loading from "../../../Components/Loading";
 import { AplicationContext } from "../../../Context/Aplication/context";
 import ClassroomProvider, { ClassroomContext } from "../../../Context/Classroom/context";
@@ -31,6 +33,11 @@ import UserLogs from "../../../Components/UserLogs";
 import { minutesToTimeStr } from "../../../Components/TimeInput/index";
 import { useFetchRequestState, useFetchRequestCity } from "../../../Services/Address/query";
 
+const schemaEditClassroom = Yup.object().shape({
+  name: Yup.string().required("Nome da turma é obrigatório"),
+  status: Yup.object().nullable().required("Status da turma é obrigatório"),
+});
+
 const ClassroomOne = () => {
   return (
     <ClassroomProvider>
@@ -52,6 +59,7 @@ const ClassroomOnePage = () => {
   const [actionsPopoverOpen, setActionsPopoverOpen] = useState(false);
   const [chartInfoOpen, setChartInfoOpen] = useState(false);
   const [loadingEvi, setLoadingEvi] = useState(false);
+  const [submittedEdit, setSubmittedEdit] = useState(false);
   var fouls = foulsRequest as MediafrequencyType;
 
   const totalMedia = fouls?.reduce((sum, item) => sum + item.media, 0);
@@ -156,6 +164,7 @@ const ClassroomOnePage = () => {
                 city_fk: classroom?.city_fk ?? undefined,
                 neighborhood: classroom?.neighborhood ?? "",
               }}
+              validationSchema={schemaEditClassroom}
               onSubmit={(values) => {
                 props.UpdateClassroom(
                   {
@@ -170,75 +179,88 @@ const ClassroomOnePage = () => {
                 setEdit(false);
               }}
             >
-              {({ values, handleChange, setFieldValue }) => (
-                <Form>
-                  <Column>
-                    <div className="grid">
-                      <div className="col-12 md:col-6">
-                        <label>Nome da turma</label>
-                        <Padding />
-                        <TextInput name="name" placeholder="Nome da turma" onChange={handleChange} value={values.name} />
+              {({ values, errors, handleChange, setFieldValue }) => {
+                const fieldError = (field: string) =>
+                  submittedEdit ? (errors as Record<string, string>)[field] : undefined;
+
+                return (
+                  <Form>
+                    <Column>
+                      <div className="grid">
+                        <div className="col-12 md:col-6">
+                          <label>Nome da turma *</label>
+                          <Padding />
+                          <TextInput name="name" placeholder="Nome da turma" onChange={handleChange} value={values.name} />
+                          <FieldError message={fieldError("name")} />
+                        </div>
+                        <div className="col-12 md:col-6">
+                          <label>Status da turma *</label>
+                          <Padding />
+                          <DropdownComponent
+                            options={getStatusClassroomList()}
+                            name="status"
+                            value={values.status}
+                            placerholder="Status da turma"
+                            onChange={handleChange}
+                          />
+                          <FieldError message={fieldError("status")} />
+                        </div>
                       </div>
-                      <div className="col-12 md:col-6">
-                        <label>Status da turma</label>
-                        <Padding />
-                        <DropdownComponent
-                          options={getStatusClassroomList()}
-                          name="status"
-                          value={values.status}
-                          placerholder="Status da turma"
-                          onChange={handleChange}
-                        />
+                      <div className="grid">
+                        <div className="col-12 md:col-6">
+                          <label>Estado</label>
+                          <Padding />
+                          <DropdownComponent
+                            value={values.state_fk}
+                            name="state_fk"
+                            placerholder="Selecione o estado"
+                            options={states ?? []}
+                            optionsLabel="name"
+                            optionsValue="id"
+                            onChange={(e) => {
+                              handleChange(e);
+                              setSelectedState(e.target.value);
+                              setFieldValue("city_fk", undefined);
+                            }}
+                          />
+                        </div>
+                        <div className="col-12 md:col-6">
+                          <label>Cidade</label>
+                          <Padding />
+                          <DropdownComponent
+                            value={values.city_fk}
+                            name="city_fk"
+                            placerholder="Selecione a cidade"
+                            options={cities ?? []}
+                            optionsLabel="name"
+                            optionsValue="id"
+                            onChange={handleChange}
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className="grid">
-                      <div className="col-12 md:col-6">
-                        <label>Estado</label>
-                        <Padding />
-                        <DropdownComponent
-                          value={values.state_fk}
-                          name="state_fk"
-                          placerholder="Selecione o estado"
-                          options={states ?? []}
-                          optionsLabel="name"
-                          optionsValue="id"
-                          onChange={(e) => {
-                            handleChange(e);
-                            setSelectedState(e.target.value);
-                            setFieldValue("city_fk", undefined);
-                          }}
-                        />
+                      <div className="grid">
+                        <div className="col-12 md:col-6">
+                          <label>Bairro/Povoado</label>
+                          <Padding />
+                          <TextInput name="neighborhood" placeholder="Bairro/Povoado" onChange={handleChange} value={values.neighborhood} />
+                        </div>
                       </div>
-                      <div className="col-12 md:col-6">
-                        <label>Cidade</label>
-                        <Padding />
-                        <DropdownComponent
-                          value={values.city_fk}
-                          name="city_fk"
-                          placerholder="Selecione a cidade"
-                          options={cities ?? []}
-                          optionsLabel="name"
-                          optionsValue="id"
-                          onChange={handleChange}
-                        />
-                      </div>
-                    </div>
-                    <div className="grid">
-                      <div className="col-12 md:col-6">
-                        <label>Bairro/Povoado</label>
-                        <Padding />
-                        <TextInput name="neighborhood" placeholder="Bairro/Povoado" onChange={handleChange} value={values.neighborhood} />
-                      </div>
-                    </div>
-                    <Padding />
-                    <Row>
-                      <Button label="Salvar" icon={"pi pi-save"} />
                       <Padding />
-                      <Button label="Cancelar" severity="secondary" type="button" onClick={() => setEdit(false)} />
-                    </Row>
-                  </Column>
-                </Form>
-              )}
+                      <Row id="end">
+                        <Button
+                          label="Salvar"
+                          type="submit"
+                          icon={"pi pi-save"}
+                          loading={props.isLoading}
+                          onClick={() => setSubmittedEdit(true)}
+                        />
+                        <Padding />
+                        <Button label="Cancelar" severity="secondary" type="button" onClick={() => setEdit(false)} />
+                      </Row>
+                    </Column>
+                  </Form>
+                );
+              }}
             </Formik>
           ) : null}
         </>

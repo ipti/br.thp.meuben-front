@@ -1,5 +1,6 @@
 import { Form, Formik } from "formik";
 import { Button } from "primereact/button";
+import { ConfirmDialog } from "primereact/confirmdialog";
 import { useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 import * as Yup from "yup";
@@ -7,6 +8,7 @@ import CardClassroom from "../../../Components/Card/CardClassroom";
 import CardQuant from "../../../Components/Chart/CardQuant";
 import ContentPage from "../../../Components/ContentPage";
 import Empty from "../../../Components/Empty";
+import FieldError from "../../../Components/FieldError";
 import InputNumberComponent from "../../../Components/InputNumber";
 import Loading from "../../../Components/Loading";
 import TextInput from "../../../Components/TextInput";
@@ -17,10 +19,46 @@ import ProjectOneProvider, {
 } from "../../../Context/Project/ProjectOne/context";
 import { ProjectOneTypes } from "../../../Context/Project/ProjectOne/type";
 import { ROLE } from "../../../Controller/controllerGlobal";
+import color from "../../../Styles/colors";
 import { Column, Padding, Row } from "../../../Styles/styles";
 import { PropsAplicationContext } from "../../../Types/types";
-import { ConfirmDialog } from "primereact/confirmdialog";
 
+const schemaProjectEdit = Yup.object().shape({
+  name: Yup.string().required("Nome do plano de trabalho é obrigatório"),
+  approval_percentage: Yup.number()
+    .typeError("Parâmetro para aprovação é obrigatório")
+    .required("Parâmetro para aprovação é obrigatório"),
+});
+
+const ErrorSummary = ({ errors }: { errors: string[] }) => {
+  if (errors.length === 0) return null;
+
+  return (
+    <div
+      style={{
+        background: color.colorCardRed,
+        border: `1px solid ${color.red}`,
+        borderRadius: "8px",
+        padding: "16px 20px",
+        marginBottom: "16px",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+        <i className="pi pi-exclamation-circle" style={{ color: color.red, fontSize: "18px" }} />
+        <strong style={{ color: color.red, fontSize: "15px" }}>
+          Corrija os seguintes erros antes de continuar:
+        </strong>
+      </div>
+      <ul style={{ margin: 0, paddingLeft: "20px" }}>
+        {errors.map((error, index) => (
+          <li key={index} style={{ color: color.red, marginBottom: "4px", fontSize: "14px" }}>
+            {error}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
 const ProjectOne = () => {
   return (
@@ -37,8 +75,9 @@ const ProjectOnePage = () => {
     AplicationContext
   ) as PropsAplicationContext;
   const [edit, setEdit] = useState(false);
+  const [submittedEdit, setSubmittedEdit] = useState(false);
 
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(false);
 
   const { id } = useParams();
 
@@ -51,17 +90,13 @@ const ProjectOnePage = () => {
   };
 
   if (props.isLoading) return <Loading />;
-  const CreateProjectSchema = Yup.object().shape({
-    name: Yup.string().required("Campo Obrigatório"),
-    approval_percentage: Yup.number().required("Campo Obrigatório"),
-  });
 
   return (
     <ContentPage title={props.project?.project.name!} description="Detalhes do seu plano de trabalho">
       {edit ? (
         <Formik
           initialValues={initialValues}
-          validationSchema={CreateProjectSchema}
+          validationSchema={schemaProjectEdit}
           onSubmit={(values) => {
             props.updateProject(
               {
@@ -74,19 +109,35 @@ const ProjectOnePage = () => {
             setEdit(!edit);
           }}
         >
-          {({ values, errors, handleChange, touched, setFieldValue }) => {
+          {({ values, errors, handleChange, setFieldValue }) => {
+            const fieldError = (field: string) =>
+              submittedEdit ? (errors as Record<string, string>)[field] : undefined;
+            const errorArray = submittedEdit
+              ? (Object.values(errors).filter(Boolean) as string[])
+              : [];
+
             return (
               <Form>
-                <Row id="end">
-                  <Button label="Salvar" />
-                  <Padding />
-                  <Button
-                    label="Cancelar"
-                    severity="secondary"
-                    type="button"
-                    onClick={() => setEdit(false)}
-                  />
-                </Row>
+                <Column>
+                  <Row id="end">
+                    <Button
+                      label="Salvar"
+                      type="submit"
+                      icon="pi pi-save"
+                      loading={props.isLoading}
+                      onClick={() => setSubmittedEdit(true)}
+                    />
+                    <Padding />
+                    <Button
+                      label="Cancelar"
+                      severity="secondary"
+                      type="button"
+                      onClick={() => setEdit(false)}
+                    />
+                  </Row>
+                </Column>
+                <Padding padding="8px" />
+                <ErrorSummary errors={errorArray} />
                 <Padding padding="32px" />
                 <div className="grid">
                   <div className="col-12 md:col-6">
@@ -98,12 +149,7 @@ const ProjectOnePage = () => {
                       placeholder="Nome do plano de trabalho*"
                       value={values.name}
                     />
-                    <Padding />
-                    {errors.name && touched.name ? (
-                      <div style={{ color: "red", marginTop: "8px" }}>
-                        {errors.name}
-                      </div>
-                    ) : null}
+                    <FieldError message={fieldError("name")} />
                   </div>
                   <div className="col-12 md:col-6">
                     <label>Parâmetro para aprovação do plano de trabalho *</label>
@@ -115,13 +161,7 @@ const ProjectOnePage = () => {
                       placeholder="Parâmetro para aprovação do plano de trabalho *"
                       value={values.approval_percentage}
                     />
-                    <Padding />
-                    {errors.approval_percentage &&
-                      touched.approval_percentage ? (
-                      <div style={{ color: "red", marginTop: "8px" }}>
-                        {errors.approval_percentage}
-                      </div>
-                    ) : null}
+                    <FieldError message={fieldError("approval_percentage")} />
                   </div>
                   <div className="col-12 md:col-6">
                     <label>Adicionar ou mudar Régua do plano de trabalho</label>
@@ -134,12 +174,6 @@ const ProjectOnePage = () => {
                       placeholder="Régua do plano de trabalho*"
                       type="file"
                     />
-                    <Padding />
-                    {errors.file && touched.file ? (
-                      <div style={{ color: "red", marginTop: "8px" }}>
-                        {errors.file}
-                      </div>
-                    ) : null}
                   </div>
                 </div>
                 <Padding padding="16px" />
@@ -180,7 +214,7 @@ const ProjectOnePage = () => {
             <Column>
               <label>* Imagem para adicionar aos relatórios</label>
               <Padding />
-              <img style={{width: '100%'}} alt="" src={props.project?.project.ruler_url} />
+              <img style={{ width: "100%" }} alt="" src={props.project?.project.ruler_url} />
             </Column>
           </div>}
         </Column>
@@ -246,7 +280,7 @@ const ProjectOnePage = () => {
           {props.project?.project.classrooms?.map(
             (item: any, index: number) => {
               return (
-                <div className="col-12 md:col-6 lg:col-4">
+                <div className="col-12 md:col-6 lg:col-4" key={index}>
                   <CardClassroom
                     title={item.name}
                     meetingCount={item._count.meeting}

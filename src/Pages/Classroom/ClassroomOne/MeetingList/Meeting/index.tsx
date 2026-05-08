@@ -125,14 +125,14 @@ const MeetingPage = () => {
                 props.meeting.status === Status.APPROVED &&
                 propsAplication.user?.role === ROLE.REAPPLICATORS
               ) && (
-                <div className="grid">
-                  <div className="col-12 md:col-6">
-                    <label>Salve os arquivos do encontro</label>
-                    <Padding />
-                    <Upload />
+                  <div className="grid">
+                    <div className="col-12">
+                      <label>Salve os arquivos do encontro</label>
+                      <Padding />
+                      <Upload />
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
               <Padding />
               {props.meeting?.meeting_archives?.length > 0 && <label>Arquivos</label>}
               <Padding />
@@ -179,11 +179,12 @@ const MeetingPage = () => {
           )}
 
           <Padding padding="12px" />
-          <div style={{ maxWidth: "820px" }}>
+          <div>
             <StepsNavigator
               steps={steps}
               currentStep={currentStep}
               onStepChange={setCurrentStep}
+              onlyActions
             />
           </div>
         </>
