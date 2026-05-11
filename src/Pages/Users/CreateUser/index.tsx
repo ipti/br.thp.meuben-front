@@ -75,7 +75,7 @@ const CreateUserPage = () => {
               />
               <div className="grid">
                 <div className="col-12 md:col-6">
-                  <label>Senha</label>
+                  <label>Senha *</label>
                   <Padding />
                   <PasswordInput
                     placeholder="Senha"
@@ -86,7 +86,7 @@ const CreateUserPage = () => {
                   <FieldError message={fieldError("password")} />
                 </div>
                 <div className="col-12 md:col-6">
-                  <label>Confirmar senha</label>
+                  <label>Confirmar senha *</label>
                   <Padding />
                   <PasswordInput
                     placeholder="Confirmar senha"

@@ -17,6 +17,36 @@ import typography from "../../../Styles/typography";
 import { PropsAplicationContext } from "../../../Types/types";
 import InputsUser from "../Inputs";
 
+const buildEditUserSchema = (isSocialRole: boolean, isAdminRole: boolean) =>
+  Yup.object().shape({
+    name: Yup.string()
+      .required("Campo Obrigatório")
+      .min(8, "Nome deve ter pelo menos 8 caracteres"),
+    username: Yup.string()
+      .required("Campo Obrigatório")
+      .min(8, "Nome do usuário deve ter pelo menos 8 caracteres"),
+    role: Yup.string().required("Campo Obrigatório"),
+    project: isAdminRole
+      ? Yup.array()
+      : Yup.array()
+          .min(1, "Selecione pelo menos uma tecnologia")
+          .required("Campo Obrigatório"),
+    initial_date: isSocialRole
+      ? Yup.string().required("Campo Obrigatório")
+      : Yup.string(),
+    birthday: isSocialRole
+      ? Yup.string().required("Campo Obrigatório")
+      : Yup.string(),
+    phone: Yup.string().required("Campo Obrigatório"),
+    email: Yup.string().required("Campo Obrigatório"),
+    sex: isSocialRole
+      ? Yup.string().required("Campo Obrigatório")
+      : Yup.string(),
+    color_race: isSocialRole
+      ? Yup.string().required("Campo Obrigatório")
+      : Yup.string(),
+  });
+
 const EditUser = () => {
   return (
     <UsersProvider>
@@ -51,6 +81,7 @@ const EditUserPage = () => {
   ) as PropsAplicationContext;
 
   const [loading, setLoading] = useState(true);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     if (loading) {
@@ -75,38 +106,7 @@ const EditUserPage = () => {
 
   const isAdminRole = project?.role === ROLE.ADMIN;
 
-  const CreateUserSchema = Yup.object().shape({
-    name: Yup.string()
-      .required("Campo Obrigatório")
-      .min(8, "Nome deve ter pelo menos 8 caracteres"),
-    username: Yup.string()
-      .required("Campo Obrigatório")
-      .min(8, "Nome do usuário deve ter pelo menos 8 caracteres"),
-    role: Yup.string().required("Campo Obrigatório"),
-    // confirmPassword: Yup.string()
-    //   .label("Confirmar senha")
-    //   .required("Campo Obrigatório")
-    //   .oneOf([Yup.ref("password")], "Senhas difirentes"),
-    project: isAdminRole
-      ? Yup.array()
-      : Yup.array()
-          .min(1, "Selecione pelo menos uma tecnologia")
-          .required("Campo Obrigatório"),
-    initial_date: isSocialRole
-      ? Yup.string().required("Campo Obrigatório")
-      : Yup.string(),
-    birthday: isSocialRole
-      ? Yup.string().required("Campo Obrigatório")
-      : Yup.string(),
-    phone: Yup.string().required("Campo Obrigatório"),
-    email: Yup.string().required("Campo Obrigatório"),
-    sex: isSocialRole
-      ? Yup.string().required("Campo Obrigatório")
-      : Yup.string(),
-    color_race: isSocialRole
-      ? Yup.string().required("Campo Obrigatório")
-      : Yup.string(),
-  });
+  const CreateUserSchema = buildEditUserSchema(isSocialRole, isAdminRole);
 
   const selectTs = (data: any) => {
     const array: any = [];
@@ -159,11 +159,16 @@ const EditUserPage = () => {
                       </Link>
                     </LinkSenha>
                   )}
-                  <Button label="Salvar" />
+                  <Button
+                    label="Salvar"
+                    type="submit"
+                    icon="pi pi-save"
+                    onClick={() => setSubmitted(true)}
+                  />
                 </Row>
                 <Padding padding="16px" />
                 <InputsUser
-                  errors={errors}
+                  errors={submitted ? errors : {}}
                   handleChange={handleChange}
                   touched={touched}
                   values={values}

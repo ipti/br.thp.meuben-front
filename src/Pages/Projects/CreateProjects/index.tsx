@@ -4,6 +4,7 @@ import { useContext, useState } from "react";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
 import ContentPage from "../../../Components/ContentPage";
+import ErrorSummary from "../../../Components/ErrorSummary";
 import FieldError from "../../../Components/FieldError";
 import InputNumberComponent from "../../../Components/InputNumber";
 import TextInput from "../../../Components/TextInput";
@@ -12,7 +13,6 @@ import CreateProjectProvider, {
 } from "../../../Context/Project/CreateList/context";
 import { CreateProjectTypes } from "../../../Context/Project/CreateList/type";
 import { GetIdTs } from "../../../Services/localstorage";
-import color from "../../../Styles/colors";
 import { Column, Padding, Row } from "../../../Styles/styles";
 
 const createProjectSchema = Yup.object().shape({
@@ -25,36 +25,6 @@ const createProjectSchema = Yup.object().shape({
 const initialValues = {
   name: "",
   approval_percentage: undefined,
-};
-
-const ErrorSummary = ({ errors }: { errors: string[] }) => {
-  if (errors.length === 0) return null;
-
-  return (
-    <div
-      style={{
-        background: color.colorCardRed,
-        border: `1px solid ${color.red}`,
-        borderRadius: "8px",
-        padding: "16px 20px",
-        marginBottom: "16px",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-        <i className="pi pi-exclamation-circle" style={{ color: color.red, fontSize: "18px" }} />
-        <strong style={{ color: color.red, fontSize: "15px" }}>
-          Corrija os seguintes erros antes de continuar:
-        </strong>
-      </div>
-      <ul style={{ margin: 0, paddingLeft: "20px" }}>
-        {errors.map((error, index) => (
-          <li key={index} style={{ color: color.red, marginBottom: "4px", fontSize: "14px" }}>
-            {error}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
 };
 
 const CreateProjects = () => {

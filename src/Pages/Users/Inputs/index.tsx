@@ -1,4 +1,3 @@
-import { Form } from "formik";
 import { useContext } from "react";
 import DropdownComponent from "../../../Components/Dropdown";
 import MaskInput from "../../../Components/InputMask";
@@ -63,7 +62,7 @@ const InputsUser = ({
       <div>
         <div className="grid">
           <div className="col-12 md:col-6">
-            <label>Nome</label>
+            <label>Nome *</label>
             <Padding />
             <TextInput
               placeholder="Nome"
@@ -81,7 +80,7 @@ const InputsUser = ({
           </div>
 
           <div className="col-12 md:col-6">
-            <label>Usuário</label>
+            <label>Usuário *</label>
             <Padding />
             <TextInput
               placeholder="Usuário"
@@ -100,7 +99,7 @@ const InputsUser = ({
         </div>
         <div className="grid">
           <div className="col-12 md:col-6">
-            <label>Tipo de usuário</label>
+            <label>Tipo de usuário *</label>
             <Padding />
             <DropdownComponent
               name="role"
@@ -121,7 +120,7 @@ const InputsUser = ({
           </div>
           {!isAdmin && (
             <div className="col-12 md:col-6">
-              <label>Tecnologia</label>
+              <label>Tecnologia *</label>
               <Padding />
               <MultiSelectComponet
                 options={projects}
