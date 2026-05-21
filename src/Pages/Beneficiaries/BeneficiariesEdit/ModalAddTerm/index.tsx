@@ -7,6 +7,7 @@ import { Tag } from "primereact/tag";
 import { useContext, useRef } from "react";
 import * as Yup from "yup";
 import CalendarComponent from "../../../../Components/Calendar";
+import CheckboxComponent from "../../../../Components/Checkbox";
 import TextInput from "../../../../Components/TextInput";
 import { AplicationContext } from "../../../../Context/Aplication/context";
 import { BeneficiariesEditContext } from "../../../../Context/Beneficiaries/BeneficiaresEdit/context";
@@ -185,6 +186,7 @@ const ModalAddTerm = ({
           dateValid: isAccessionTerm ? undefined : new Date(visible?.dateValid || Date.now()),
           file: undefined,
           observation: visible?.observation ?? "",
+          has_original_format_change: visible?.has_original_format_change ?? false,
           // Novo termo: fixo em TERM_ANALYSIS. Edição: herda status atual
           status: isEdit ? (visible?.status ?? "") : "TERM_ANALYSIS",
         }}
@@ -202,6 +204,10 @@ const ModalAddTerm = ({
             formData.append("observation", values.observation);
             formData.append("status", "TERM_ANALYSIS");
             formData.append("type", values.type);
+            formData.append(
+              "has_original_format_change",
+              values.has_original_format_change ? "true" : "false"
+            );
             formData.append("file", (values.file as any)[0]);
             CreateRegisterTerm(formData);
           }
@@ -212,6 +218,7 @@ const ModalAddTerm = ({
               observation: values.observation,
               status: values.status,
               type: values.type,
+              has_original_format_change: values.has_original_format_change,
             };
 
             if (!isAccession) {
@@ -378,6 +385,21 @@ const ModalAddTerm = ({
                   onChange={handleChange}
                   name="observation"
                 />
+              </div>
+              <div className="col-12 md:col-6">
+                <label>Modelo do termo</label>
+                <Padding />
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <CheckboxComponent
+                    checked={values.has_original_format_change}
+                    onChange={(e) =>
+                      setFieldValue("has_original_format_change", e.checked)
+                    }
+                  />
+                  <label style={{ cursor: "pointer", fontWeight: 500 }}>
+                    O termo anexado sofreu alterações e não está no modelo original THP
+                  </label>
+                </div>
               </div>
             </div>
 

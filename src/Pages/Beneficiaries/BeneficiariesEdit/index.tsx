@@ -750,6 +750,24 @@ const BeneficiariesEditPage = () => {
                 </>)}
                 {currentStep === 3 && (<>
                   <Padding padding="8px" />
+                  <h3>Autorização de imagem</h3>
+                  <Padding padding="8px" />
+                  <div className="grid">
+                    <div className="col-12">
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <CheckboxComponent
+                          checked={values.image_sharing_not_authorized}
+                          onChange={(e) =>
+                            setFieldValue("image_sharing_not_authorized", e.checked)
+                          }
+                        />
+                        <label style={{ cursor: "pointer", fontWeight: 500 }}>
+                          O beneficiário ou responsável legal não autorizou o uso da imagem.
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <Padding padding="8px" />
                   <h3>Termo</h3>
                   <Padding padding="8px" />
                   <DataTable

@@ -27,6 +27,7 @@ export interface Registration {
   telephone: string | undefined
   responsable_email: string | undefined
   is_legal_responsible: boolean | undefined
+  image_sharing_not_authorized: boolean | undefined
   id: number
   avatar_url: any
   name: string
@@ -61,6 +62,7 @@ export interface RegisterTerm {
   id: number
   dateTerm: string
   dateValid: any
+  has_original_format_change?: boolean
   createdAt: string
   updatedAt: string
   registration_fk: number

@@ -85,6 +85,8 @@ export const BeneficiariesEditState = () => {
       telephone: registrations?.telephone ?? undefined,
       responsable_email: registrations?.responsable_email,
       is_legal_responsible: registrations?.is_legal_responsible,
+      image_sharing_not_authorized:
+        registrations?.image_sharing_not_authorized ?? false,
       zone: registrations?.zone
   };
 
