@@ -192,13 +192,17 @@ export const requestProjectsAndClassroom = () => {
 };
 
 
-export const requestClassroomRegistration = (id: number) => {
+export const requestClassroomRegistration = (
+  id: number,
+  statusTerm?: string
+) => {
   let path = "/registration-classroom-bff";
   return http
     .get(path, {
       params: {
-        idClassroom: id
-      }
+        idClassroom: id,
+        statusTerm,
+      },
     })
     .then(response => response.data)
     .catch(err => {

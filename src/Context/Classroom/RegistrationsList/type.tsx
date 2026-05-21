@@ -1,9 +1,12 @@
+import { Dispatch, SetStateAction } from "react";
 import { Status } from "../../../Controller/controllerGlobal";
 
 export interface RegistrationClassroomTypes {
   registrations?: RegistrationsList;
   DeleteRegistration: (id: number) => void
   isLoading: boolean
+  statusTerm?: string
+  setStatusTerm: Dispatch<SetStateAction<string | undefined>>
 }
 
 export type RegistrationsList = RegistrationType[];

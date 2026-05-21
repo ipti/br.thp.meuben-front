@@ -1,4 +1,5 @@
 import { InputText } from "primereact/inputtext";
+import { Dropdown } from "primereact/dropdown";
 import { useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 import CardRegistration from "../../../../Components/Card/CardRegistration";
@@ -9,6 +10,7 @@ import RegistartionClassroomProvider, {
   RegistrationClassroomContext,
 } from "../../../../Context/Classroom/RegistrationsList/context";
 import { RegistrationClassroomTypes } from "../../../../Context/Classroom/RegistrationsList/type";
+import { StatusTermEnum } from "../../../../Controller/controllerGlobal";
 import { useFetchRequestClassroomOne } from "../../../../Services/Classroom/query";
 import { Padding, Row } from "../../../../Styles/styles";
 
@@ -28,6 +30,13 @@ const RegistrationListPage = () => {
   const { data: classroom } = useFetchRequestClassroomOne(parseInt(id!));
   const [filter, setFilter] = useState("");
   if (props.isLoading) return <Loading />;
+
+  const statusTermOptions = [
+    { id: "TERM_ANALYSIS", name: StatusTermEnum["TERM_ANALYSIS"] },
+    { id: "ACTIVE_TERM", name: StatusTermEnum["ACTIVE_TERM"] },
+    { id: "INACTIVE_TERM", name: StatusTermEnum["INACTIVE_TERM"] },
+    { id: "INVALID_TERM", name: StatusTermEnum["INVALID_TERM"] },
+  ];
 
   const search = () => {
     if (filter !== "") {
@@ -53,6 +62,18 @@ const RegistrationListPage = () => {
             value={filter}
           />
         </span>
+        <div style={{ minWidth: "240px" }}>
+          <Dropdown
+            className="w-full"
+            value={props.statusTerm}
+            options={statusTermOptions}
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Filtrar por status do termo"
+            showClear
+            onChange={(e) => props.setStatusTerm(e.value || undefined)}
+          />
+        </div>
       </Row>
       <Padding padding="16px" />
       {props?.registrations?.length! > 0 ? (

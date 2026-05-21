@@ -6,7 +6,19 @@ export const useFetchRequestProjectList = () => {
 };
 
 export const useFetchRequestClassroomRegistration = (id: number) => {
-    return useQuery(["useRequestsClassroomRegistration", id], () => requestClassroomRegistration(id));
+    return useQuery(
+      ["useRequestsClassroomRegistration", id],
+      () => requestClassroomRegistration(id)
+    );
+  };
+  export const useFetchRequestClassroomRegistrationFiltered = (
+    id: number,
+    statusTerm?: string
+  ) => {
+    return useQuery(
+      ["useRequestsClassroomRegistration", id, statusTerm],
+      () => requestClassroomRegistration(id, statusTerm)
+    );
   };
   export const useFetchRequestClassroomRegistrationOne = (id: number) => {
     return useQuery(["useRequestsClassroomRegistrationOne", id], () => requestClassroomRegistrationOne(id));
