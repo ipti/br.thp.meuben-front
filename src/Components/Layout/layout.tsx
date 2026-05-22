@@ -13,12 +13,23 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <Column style={{ height: "100%" }}>
-      <Row style={{ height: "100%" }}>
+    <Column style={{ height: "100vh", width: "100%", overflow: "hidden" }}>
+      <Row style={{ height: "100%", width: "100%", minWidth: 0, minHeight: 0 }}>
         <Menu viewdMenu={viewdMenu} />
-        <Column style={{ width: "100%" }}>
+        <Column style={{ width: "100%", minWidth: 0, minHeight: 0 }}>
           <TopBar setViewdMenu={setViewdMenu} viewdMenu={viewdMenu} />
-          <div style={{ overflowY: "auto", height: "100%" }}>{children}</div>
+          <div
+            style={{
+              overflowY: "auto",
+              overflowX: "hidden",
+              height: "100%",
+              width: "100%",
+              minWidth: 0,
+              minHeight: 0,
+            }}
+          >
+            {children}
+          </div>
         </Column>
       </Row>
     </Column>

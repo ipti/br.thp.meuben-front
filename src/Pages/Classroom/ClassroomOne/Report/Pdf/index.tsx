@@ -1,7 +1,11 @@
+import { saveAs } from "file-saver";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import img from "../../../../../Assets/images/logothp.png";
-import { useFetchRequestClassroomReport, useFetchRequestFoulsClassroomOne } from "../../../../../Services/Classroom/query";
+import {
+  useFetchRequestClassroomReport,
+  useFetchRequestFoulsClassroomOne,
+} from "../../../../../Services/Classroom/query";
 import {
   RegisterClassroom,
   ReportClassroomType,
@@ -11,36 +15,65 @@ import imgLateral from "../../../../../Assets/images/logoleftpdf.png";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
-import { convertImageUrlToBase64, formatarDataAnoDuas, loadImageFileAsBase64 } from "../../../../../Controller/controllerGlobal";
+import {
+  StatusTermEnum,
+  convertImageUrlToBase64,
+  formatarDataAnoDuas,
+  loadImageFileAsBase64,
+} from "../../../../../Controller/controllerGlobal";
 import { MediafrequencyType } from "../../../../../Context/Classroom/type";
-import styles from "../../../../../Styles";
 import { minutesToTimeStr } from "../../../../../Components/TimeInput";
+import styles from "../../../../../Styles";
 
 pdfMake.vfs = pdfFonts.vfs;
+
+const PDFJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js";
+const PDFJS_WORKER_URL =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+const JSZIP_URL = "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
+
+declare global {
+  interface Window {
+    pdfjsLib?: any;
+    JSZip?: any;
+  }
+}
+
+const loadScript = (src: string) =>
+  new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector(`script[src=\"${src}\"]`);
+    if (existing) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Falha ao carregar script: ${src}`));
+    document.body.appendChild(script);
+  });
+
 export const ReportClassroom = () => {
   const { id } = useParams();
 
   const [logoBase64, setLogoBase64] = useState<string | null>(null);
   const [logoBaseLeft64, setLogoBaseLeft64] = useState<string | null>(null);
   const [logoBaseRegua64, setLogoBaseRegua64] = useState<string | null>(null);
+  const [isGeneratingImagesZip, setIsGeneratingImagesZip] = useState(false);
 
   const [report, setReport] = useState<ReportClassroomType | undefined>();
   const { data: foulsRequest } = useFetchRequestFoulsClassroomOne(parseInt(id!));
-
   const { data } = useFetchRequestClassroomReport(parseInt(id!));
 
-  var fouls = foulsRequest as MediafrequencyType;
-
-  const approvedCount = data ? approvedRegistration(data)?.approved?.filter(item => item >= (report?.project.approval_percentage || 0)).length : 0;
+  const fouls = foulsRequest as MediafrequencyType;
 
   const totalMedia = fouls?.reduce((sum, item) => sum + item.media, 0);
-
   const totalWorkload = report?.meeting.reduce(
     (acc, meeting) => acc + (meeting.workload ?? 0),
-    0,
+    0
   );
-
-  // Calcula a média das médias
   const mediaDasMedias = totalMedia / (fouls?.length || 1);
 
   useEffect(() => {
@@ -80,10 +113,8 @@ export const ReportClassroom = () => {
       try {
         if (report?.project.ruler_url) {
           const base64 = await convertImageUrlToBase64(report?.project.ruler_url);
-
           setLogoBaseRegua64(base64);
         }
-
       } catch (error) {
         console.error("Error loading logo image:", error);
       }
@@ -91,8 +122,6 @@ export const ReportClassroom = () => {
 
     loadLogo();
   }, [report]);
-
-
 
   const bodyMeeting = (rowData: any, meeting: any) => {
     const verifyFouls = () => {
@@ -117,13 +146,47 @@ export const ReportClassroom = () => {
 
   const uniqueUsers = Array.from(uniqueUsersMap.values());
 
+  const bodyTotal = (rowData: RegisterClassroom) => {
+    let count = 0;
+    const verifyFouls = () => {
+      for (const meeting of data?.meeting) {
+        const verify = meeting?.fouls?.find(
+          (props: any) => props.registration_fk === rowData.registration_fk
+        );
 
-  const generatePDF = () => {
+        if (verify) {
+          count++;
+        }
+      }
+
+      return data.meeting.length !== 0
+        ? ((data.meeting.length - count) / data.meeting.length) * 100
+        : 0;
+    };
+    return { percentage: verifyFouls().toFixed(0), count: count };
+  };
+
+  const buildPdfDoc = () => {
+    const exportRegistrations = (report?.register_classroom || []).filter(
+      (item: any) =>
+        item?.status === "APPROVED"
+      //  && item?.registration?.register_term?.[0]?.status === "ACTIVE_TERM"
+    );
+
+    const approvedCountExport = exportRegistrations.filter(
+      (item: any) =>
+        parseInt(bodyTotal(item).percentage) >=
+        (report?.project?.approval_percentage || 0)
+    ).length;
+
     const maxMeetingsPerPage = 12;
     const maxStudentsPerPage = 25;
 
-    const createTableBody = (registrationsSubset: any, meetingSubset: any, startIndex: number) => {
-
+    const createTableBody = (
+      registrationsSubset: any,
+      meetingSubset: any,
+      startIndex: number
+    ) => {
       const headerRow = [
         { text: "Nº", style: "tableHeader" },
         { text: "NOME COMPLETO", style: "tableHeader" },
@@ -132,12 +195,14 @@ export const ReportClassroom = () => {
           style: "tableHeader",
           alignment: "center",
         })),
+        { text: "STATUS TERMO", style: "tableHeader", alignment: "center" },
         { text: "FREQUÊNCIA", style: "tableHeader", alignment: "center" },
         { text: "STATUS", style: "tableHeader", alignment: "center" },
       ];
 
       const bodyRows = registrationsSubset.map((item: any, index: number) => {
-        const isApproved = parseInt(bodyTotal(item).percentage) >= report?.project?.approval_percentage!;
+        const isApproved =
+          parseInt(bodyTotal(item).percentage) >= report?.project?.approval_percentage!;
         return [
           { text: startIndex + index + 1, style: "tableCell", alignment: "center" },
           { text: `${item.registration.name} - ${item.registration.cpf}`, style: "tableCell" },
@@ -146,6 +211,13 @@ export const ReportClassroom = () => {
             style: "tableCell",
             alignment: "center",
           })),
+          {
+            text:
+              StatusTermEnum[item?.registration?.register_term?.[0]?.status] ??
+              "Sem termo",
+            style: "tableCell",
+            alignment: "center",
+          },
           { text: `${bodyTotal(item).percentage}%`, style: "tableCell", alignment: "center" },
           {
             text: isApproved ? "Aprovado" : "Reprovado",
@@ -171,10 +243,10 @@ export const ReportClassroom = () => {
 
     const splitStudentsIntoPages = () => {
       const studentPages = [];
-      const totalStudents = report?.register_classroom.length || 0;
+      const totalStudents = exportRegistrations.length || 0;
 
       for (let i = 0; i < totalStudents; i += maxStudentsPerPage) {
-        studentPages.push(report?.register_classroom.slice(i, i + maxStudentsPerPage));
+        studentPages.push(exportRegistrations.slice(i, i + maxStudentsPerPage));
       }
 
       return studentPages;
@@ -198,7 +270,7 @@ export const ReportClassroom = () => {
         fontSize: 10,
       },
       {
-        text: "Relatório de Presença",
+        text: "Relatório de Frequência",
         style: "header",
         alignment: "center",
         fontSize: 8,
@@ -210,7 +282,7 @@ export const ReportClassroom = () => {
         fontSize: 6,
         table: {
           widths: ["*", "*"],
-          body: [[`Reaplicador: ${uniqueUsers?.map(e => { return e.name + "; " })}`, `Turma: ${report?.name}`]],
+          body: [[`Reaplicador: ${uniqueUsers?.map((e) => e.name + "; ")}`, `Turma: ${report?.name}`]],
         },
       },
       ...studentPages.flatMap((studentSubset, studentPageIndex) =>
@@ -222,8 +294,9 @@ export const ReportClassroom = () => {
             table: {
               widths: [
                 "3%",
-                "26%",
+                "22%",
                 ...meetingSubset!.map(() => "*"),
+                "8%",
                 "6%",
                 "7%",
               ],
@@ -241,7 +314,10 @@ export const ReportClassroom = () => {
               hLineColor: "#D1D5DB",
               vLineColor: "#D1D5DB",
             },
-            pageBreak: studentPageIndex === 0 && meetingPageIndex === 0 ? undefined : "before",
+            pageBreak:
+              studentPageIndex === 0 && meetingPageIndex === 0
+                ? undefined
+                : "before",
           },
           {
             style: "tableExample",
@@ -252,11 +328,11 @@ export const ReportClassroom = () => {
               body: [
                 [
                   {
-                    text: `Critério Mínimo de Aprovação: ${report?.project?.approval_percentage}%\nQuantidade de Encontros: ${report?.meeting.length}\nQuantidade de Alunos: ${report?.register_classroom?.length}`,
+                    text: `Critério Mínimo de Aprovação: ${report?.project?.approval_percentage}%\nQuantidade de Encontros: ${report?.meeting.length}\nQuantidade de Alunos: ${exportRegistrations.length}`,
                     style: "summaryCell",
                   },
                   {
-                    text: `Quantidade de aprovados: ${approvedCount}\nMédia de Presença da Turma: ${mediaDasMedias.toFixed(2)}%\nCarga horária total: ${minutesToTimeStr(totalWorkload ?? 0)}h`,
+                    text: `Quantidade de aprovados: ${approvedCountExport}\nMédia de Presença da Turma: ${mediaDasMedias.toFixed(2)}%\nCarga horária total: ${minutesToTimeStr(totalWorkload ?? 0)}h`,
                     style: "summaryCell",
                   },
                 ],
@@ -274,7 +350,7 @@ export const ReportClassroom = () => {
 
     const docDefinition: TDocumentDefinitions = {
       pageOrientation: "landscape",
-      content: content,
+      content,
       styles: {
         header: {
           fontSize: 12,
@@ -308,40 +384,29 @@ export const ReportClassroom = () => {
           margin: [0, 2, 0, 2],
         },
       },
-      header: (currentPage, pageCount) => {
-        return logoBase64
+      header: () => ({
+        image: logoBase64 || "",
+        alignment: "center",
+        marginTop: 32,
+        marginBottom: 128,
+        fit: [400, 400],
+      }),
+      footer: () =>
+        logoBaseRegua64
           ? {
-            image: logoBase64 || "",
-            alignment: "center",
-            marginTop: 32,
-            marginBottom: 128,
-            fit: [400, 400],
-          }
+              image: logoBaseRegua64 || "",
+              alignment: "center",
+              margin: [0, 0, 20, 20],
+              fit: [400, 400],
+            }
           : {
-            image: logoBase64 || "",
-            alignment: "center",
-            marginTop: 32,
-            marginBottom: 128,
-            fit: [400, 400],
-          };
-      },
-      footer: (currentPage, pageCount) => {
-        return logoBaseRegua64
-          ? {
-            image: logoBaseRegua64 || "",
-            alignment: "center",
-            margin: [0, 0, 20, 20],
-            fit: [400, 400],
-          }
-          : {
-            image: logoBase64 || "",
-            alignment: "center",
-            margin: [0, 0, 20, 20],
-            fit: [400, 400],
-          };
-      },
+              image: logoBase64 || "",
+              alignment: "center",
+              margin: [0, 0, 20, 20],
+              fit: [400, 400],
+            },
       pageMargins: [40, 100, 40, 60],
-      background: (currentPage, pageCount) => {
+      background: (currentPage) => {
         if (currentPage > 1) {
           return [
             {
@@ -350,7 +415,7 @@ export const ReportClassroom = () => {
               italics: true,
               alignment: "right",
               opacity: 0.5,
-              margin: [0, 10, 10, 0], // Adjust the margins as needed
+              margin: [0, 10, 10, 0],
             },
             {
               text: `${report?.project.name}`,
@@ -358,15 +423,16 @@ export const ReportClassroom = () => {
               italics: true,
               alignment: "right",
               opacity: 0.5,
-              margin: [0, 10, 10, 0], // Adjust the margins as needed
+              margin: [0, 10, 10, 0],
             },
             {
               image: logoBaseLeft64 || "",
               width: 16,
               absolutePosition: { x: 8, y: 360 },
-            }
+            },
           ];
         }
+
         return {
           image: logoBaseLeft64 || "",
           width: 16,
@@ -375,67 +441,75 @@ export const ReportClassroom = () => {
       },
     };
 
+    return docDefinition;
+  };
+
+  const generatePDF = () => {
+    const docDefinition = buildPdfDoc();
     pdfMake.createPdf(docDefinition).open();
   };
 
+  const generateImagesZip = async () => {
+    try {
+      setIsGeneratingImagesZip(true);
 
+      await loadScript(PDFJS_URL);
+      await loadScript(JSZIP_URL);
 
-
-
-
-
-  const bodyTotal = (rowData: RegisterClassroom) => {
-    var count = 0;
-    const verifyFouls = () => {
-      for (const meeting of data?.meeting) {
-        const verify = meeting?.fouls?.find(
-          (props: any) => props.registration_fk === rowData.registration_fk
-        );
-
-        if (verify) {
-          count++;
-        }
+      if (!window.pdfjsLib || !window.JSZip) {
+        throw new Error("Bibliotecas de geração não disponíveis.");
       }
 
-      return data.meeting.length !== 0
-        ? ((data.meeting.length - count) / data.meeting.length) * 100
-        : 0;
-    };
-    return { percentage: verifyFouls().toFixed(0), count: count };
-  };
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
 
+      const docDefinition = buildPdfDoc();
 
+      const pdfBlob: Blob = await new Promise((resolve) => {
+        pdfMake.createPdf(docDefinition).getBlob((blob: Blob) => resolve(blob));
+      });
 
-  return { generatePDF };
+      const arrayBuffer = await pdfBlob.arrayBuffer();
+      const pdfDoc = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const zip = new window.JSZip();
 
+      for (let pageNumber = 1; pageNumber <= pdfDoc.numPages; pageNumber++) {
+        const page = await pdfDoc.getPage(pageNumber);
+        const viewport = page.getViewport({ scale: 2 });
 
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
 
-};
-
-
-const approvedRegistration = (rowData: ReportClassroomType) => {
-  const count: number[] = [];
-
-  const verifyFouls = () => {
-    for (const register of rowData?.register_classroom) {
-      var countFouls = 0;
-
-      for (const meeting of rowData?.meeting) {
-        const verify = meeting?.fouls?.find(
-          (props: any) => props.registration_fk === register.registration_fk
-        );
-
-        if (verify) {
-          countFouls++;
+        if (!ctx) {
+          throw new Error("Não foi possível criar o contexto do canvas.");
         }
+
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        const imageBlob: Blob = await new Promise((resolve, reject) => {
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error("Falha ao converter página em imagem."));
+              return;
+            }
+            resolve(blob);
+          }, "image/png");
+        });
+
+        zip.file(`pagina-${String(pageNumber).padStart(2, "0")}.png`, imageBlob);
       }
 
-      count.push(rowData.meeting.length !== 0
-        ? ((rowData.meeting.length - countFouls) / rowData.meeting.length) * 100
-        : 0);
-
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      saveAs(zipBlob, `${report?.name || "relatorio"}-paginas.zip`);
+    } catch (error) {
+      console.error("Erro ao gerar ZIP de imagens do relatrio:", error);
+      alert("Não foi possível gerar o ZIP com as imagens das páginas.");
+    } finally {
+      setIsGeneratingImagesZip(false);
     }
-    return count;
   };
-  return { approved: verifyFouls() };
+
+  return { generatePDF, generateImagesZip, isGeneratingImagesZip };
 };

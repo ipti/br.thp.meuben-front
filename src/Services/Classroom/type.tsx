@@ -84,4 +84,10 @@ export interface RegisterClassroom {
 export interface Registration {
   name: string
   id: number
+  register_term?: RegisterTermStatus[]
+}
+
+export interface RegisterTermStatus {
+  status: string
+  createdAt: string
 }

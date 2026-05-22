@@ -12,13 +12,22 @@
   body,
   #root,
   .App {
-    height: 100%;
+    min-height: 100%;
     width: 100%;
     background-color: var(--white);
-    position: fixed;
     color: #333;
     -webkit-font-smoothing: antialiased !important;
     scroll-behavior: smooth;
+  }
+
+  html,
+  body {
+    overflow: hidden;
+  }
+
+  #root,
+  .App {
+    overflow: hidden;
   }
 
   

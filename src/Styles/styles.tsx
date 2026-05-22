@@ -8,6 +8,8 @@ interface PropsReverse {
 export const Column = styled.div<PropsReverse>`
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  min-height: 0;
 
   #space-between {
     justify-content: space-between;
@@ -22,7 +24,7 @@ export const Column = styled.div<PropsReverse>`
     justify-content: end;
   }
 
-  @media (max-width: 600) {
+  @media (max-width: 600px) {
     flex-direction: ${props => props.reverse ? "row" : "column"};
   }
 `;
@@ -30,6 +32,8 @@ export const Column = styled.div<PropsReverse>`
 export const Row = styled.div<PropsReverse>`
   display: flex;
   flex-direction: row;
+  min-width: 0;
+  min-height: 0;
 
   #space-between {
     justify-content: space-between;
@@ -44,7 +48,7 @@ export const Row = styled.div<PropsReverse>`
     justify-content: end;
   }
 
-  @media (max-width: 600) {
+  @media (max-width: 600px) {
     flex-direction: ${props => props.reverse ? "column" : "row"};
 
   }
@@ -62,8 +66,10 @@ export const Container = styled.div`
   min-height: 100%;
   height: auto;
   overflow-y: auto;
+  overflow-x: hidden;
   width: 100%;
-  padding: 4% ;
+  max-width: 100%;
+  padding: clamp(12px, 2.2vw, 32px);
   font-size: ${styles.typography.font.medium};
   font-family: ${styles.typography.types.inter};
 `;
