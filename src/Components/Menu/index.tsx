@@ -44,7 +44,7 @@ import log from "../../Assets/images/iconsMenu/log.svg";
 import logHover from "../../Assets/images/iconsMenu/log_active.svg";
 import { controllerYears } from "../../Controller/controllerYears";
 
-const Menu = ({ viewdMenu }: { viewdMenu: boolean }) => {
+const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean }) => {
   const [active, setActive] = useState(parseInt(getMenuItem()!));
   const [visibleModal, setVisibleModal] = useState(false);
   const props = useContext(AplicationContext) as PropsAplicationContext;
@@ -57,7 +57,7 @@ const Menu = ({ viewdMenu }: { viewdMenu: boolean }) => {
 
 
   return (
-    <Container active={viewdMenu}>
+    <Container active={viewdMenu} isMobile={isMobile}>
       <Padding padding="4px" />
       <Padding padding="16px">
         <Row id="center">

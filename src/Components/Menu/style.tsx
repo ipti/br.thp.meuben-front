@@ -3,15 +3,25 @@ import styles from "../../Styles";
 
 
 interface PropsActive {
-    active: boolean
+    active: boolean;
+    isMobile?: boolean;
 }
 
 export const Container = styled.div<PropsActive>`
     background-color: ${styles.colors.colorsBaseProductLighter};
     min-width: 256px;
-    /* @media screen and (max-width: 1080px) { */
-        display: ${props => props.active ? "" : "none" };
-    /* } */
+    height: 100%;
+    overflow-y: auto;
+    display: ${props => props.active ? "block" : "none"};
+    flex-shrink: 0;
+
+    ${props => props.isMobile && `
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        z-index: 100;
+    `}
 `;
 
 export const TopBar = styled.div`
