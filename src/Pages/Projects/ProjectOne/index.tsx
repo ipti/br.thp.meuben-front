@@ -229,14 +229,14 @@ const ProjectOnePage = () => {
         <div className="col-12 md:col-3">
           <CardQuant
             quant={props.project?.students_approved_by_frequency_count!}
-            title="Alunos Aprovados por Frequência"
+            title="Total de formandos"
             color="blue"
           />
         </div>
         <div className="col-12 md:col-3">
           <CardQuant
             quant={props.project?.students_with_presence_count!}
-            title="Alunos com Presença"
+            title="Total de participantes"
             color="navy_blue"
           />
         </div>
