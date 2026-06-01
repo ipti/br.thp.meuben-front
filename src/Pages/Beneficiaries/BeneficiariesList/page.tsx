@@ -160,30 +160,55 @@ const propsAplication = useContext(
               <div >{StatusRegistrationEnum[bodyRow.status]}</div>
             )
           }}></Column>
-          <Column header="Último termo" align={"center"} body={(bodyRow) => {
-            return (
-              <div >{bodyRow?.register_term?.length > 0 ? StatusTermEnum[ bodyRow?.register_term[bodyRow?.register_term.length - 1].status] : 'Pend. de termo'}</div>
-            )
-          }}></Column>
           <Column
+            header="Termo de adesão"
+            align="center"
             body={(rowData) => {
+              const term = rowData?.adhesion_term;
+              if (!term) return <span style={{ color: "#aaa" }}>Sem termo</span>;
+              const statusLabel = StatusTermEnum[term.status] ?? term.status;
+              const isActive = term.status === "ACTIVE_TERM";
               return (
-                <>
-                  {rowData?.register_term?.length > 0
-                    ? `${formatarData(
-                      rowData.register_term[rowData.register_term.length - 1]
-                        .dateTerm
-                    )} - ${formatarData(
-                      rowData.register_term[rowData.register_term.length - 1]
-                        .dateValid
-                    )}`
-                    : "Pend. de termo"}
-                </>
+                <span
+                  style={{
+                    padding: "2px 10px",
+                    borderRadius: 12,
+                    fontSize: 13,
+                    background: isActive ? "#dcfce7" : "#fef9c3",
+                    color: isActive ? "#166534" : "#854d0e",
+                    fontWeight: 500,
+                  }}
+                >
+                  {statusLabel}
+                </span>
               );
             }}
-            align={'center'}
-            header="Vigência do termo assinado"
-          ></Column>
+          />
+          <Column
+            header="Vigência adesão"
+            align="center"
+            body={(rowData) => {
+              const term = rowData?.adhesion_term;
+              if (!term) return <span style={{ color: "#aaa" }}>—</span>;
+              return (
+                <span>
+                  {formatarData(term.dateTerm)}
+                  {term.dateValid ? ` - ${formatarData(term.dateValid)}` : ""}
+                </span>
+              );
+            }}
+          />
+          <Column
+            header="Outros termos"
+            align="center"
+            body={(rowData) => {
+              return rowData?.has_other_terms ? (
+                <i className="pi pi-check-circle" style={{ color: "#2563eb" }} title="Possui outros termos" />
+              ) : (
+                <span style={{ color: "#aaa" }}>—</span>
+              );
+            }}
+          />
           <Column header="Ações" body={ActionBeneficiariesBody}></Column>
         </DataTable>
         <Paginator
