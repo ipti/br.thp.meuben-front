@@ -194,7 +194,8 @@ export const requestProjectsAndClassroom = () => {
 
 export const requestClassroomRegistration = (
   id: number,
-  statusTerm?: string
+  statusTerm?: string,
+  typeTerm?: string,
 ) => {
   let path = "/registration-classroom-bff";
   return http
@@ -202,6 +203,7 @@ export const requestClassroomRegistration = (
       params: {
         idClassroom: id,
         statusTerm,
+        typeTerm,
       },
     })
     .then(response => response.data)

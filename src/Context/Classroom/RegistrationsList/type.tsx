@@ -7,11 +7,11 @@ export interface RegistrationClassroomTypes {
   isLoading: boolean
   statusTerm?: string
   setStatusTerm: Dispatch<SetStateAction<string | undefined>>
+  typeTerm?: string
+  setTypeTerm: Dispatch<SetStateAction<string | undefined>>
 }
 
 export type RegistrationsList = RegistrationType[];
-
-
 
 export interface RegistrationType {
   id: number
@@ -19,8 +19,13 @@ export interface RegistrationType {
   classroom_fk: number
   createdAt: string
   updatedAt: string
-  registration: Registration,
+  registration: Registration
   status: string
+}
+
+export interface AdhesionTerm {
+  status: string
+  type: string
 }
 
 export interface Registration {
@@ -41,4 +46,6 @@ export interface Registration {
   status: string
   createdAt: string
   updatedAt: string
+  adhesion_term: AdhesionTerm | null
+  has_other_terms: boolean
 }

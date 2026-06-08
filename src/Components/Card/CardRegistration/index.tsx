@@ -4,13 +4,23 @@ import { useNavigate, useParams } from "react-router-dom";
 import avatar from "../../../Assets/images/avatar.svg";
 import { RegistrationClassroomContext } from "../../../Context/Classroom/RegistrationsList/context";
 import { RegistrationClassroomTypes } from "../../../Context/Classroom/RegistrationsList/type";
-import { ROLE, Status, StatusEnum } from "../../../Controller/controllerGlobal";
-import { Column, Padding, Row } from "../../../Styles/styles";
-import Icon from "../../Icon";
-import { Container } from "./style";
+import { ROLE, Status, StatusEnum, StatusTermEnum } from "../../../Controller/controllerGlobal";
 import { AplicationContext } from "../../../Context/Aplication/context";
 import { PropsAplicationContext } from "../../../Types/types";
 import color from "../../../Styles/colors";
+
+const termColors: Record<string, { bg: string; text: string }> = {
+  ACTIVE_TERM:   { bg: "rgba(40,161,56,0.12)",   text: color.green },
+  TERM_ANALYSIS: { bg: "rgba(252,173,9,0.16)",    text: "#9a6700" },
+  INACTIVE_TERM: { bg: "rgba(237,90,104,0.12)",   text: color.red },
+  INVALID_TERM:  { bg: "rgba(237,90,104,0.12)",   text: color.red },
+};
+
+const enrollmentBg: Record<string, string> = {
+  [Status.APPROVED]:     color.green,
+  [Status.PENDING_TERM]: color.colorCardOrange,
+  [Status.PENDING]:      color.red,
+};
 
 const CardRegistration = ({
   title,
@@ -18,108 +28,129 @@ const CardRegistration = ({
   idRegistration,
   status,
   avatar_url,
+  adhesion_term_status,
+  has_other_terms,
 }: {
   title: string;
   subtitle: string;
   idRegistration: number;
   status: string;
   avatar_url: string;
+  adhesion_term_status?: string;
+  has_other_terms?: boolean;
 }) => {
   const [visible, setVisible] = useState(false);
   const history = useNavigate();
-
-  const statuGlobal = Status;
-
   const { id } = useParams();
 
-  const propsAplication = useContext(
-    AplicationContext
-  ) as PropsAplicationContext;
+  const propsAplication = useContext(AplicationContext) as PropsAplicationContext;
+  const props = useContext(RegistrationClassroomContext) as RegistrationClassroomTypes;
 
-  const props = useContext(
-    RegistrationClassroomContext
-  ) as RegistrationClassroomTypes;
+  const canEdit =
+    propsAplication.user?.role === ROLE.ADMIN ||
+    propsAplication.user?.role === ROLE.COORDINATORS;
+
+  const termStyle = adhesion_term_status
+    ? termColors[adhesion_term_status] ?? { bg: "rgba(237,90,104,0.12)", text: color.red }
+    : { bg: "#f0f0f0", text: "#999" };
 
   return (
     <>
-      <Container
-        className="card pt-3"
-        onClick={(e) => {
-          // e.stopPropagation();
-          if (
-            propsAplication.user?.role === ROLE.ADMIN ||
-            propsAplication.user?.role === ROLE.COORDINATORS
-          ) {
-            history(`/turma/${id}/aluno/${idRegistration}`);
-          }
+      <div
+        onClick={() => canEdit && history(`/turma/${id}/aluno/${idRegistration}`)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          padding: "12px 14px",
+          borderRadius: "12px",
+          border: `1px solid rgba(219,230,255,1)`,
+          background: color.colorCard,
+          cursor: canEdit ? "pointer" : "default",
+          transition: "box-shadow 0.15s",
+          position: "relative",
+        }}
+        onMouseEnter={(e) => {
+          if (canEdit) (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLDivElement).style.boxShadow = "none";
         }}
       >
-        <Row id="end">
-          {(propsAplication.user?.role === ROLE.ADMIN ||
-            propsAplication.user?.role === ROLE.COORDINATORS) && (
-            <div
-              className="cursor-pointer"
-              // style={{ marginBottom: "-32px" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setVisible(true);
-              }}
-            >
-              <Icon icon="pi pi-trash" size="1rem" />
-            </div>
-          )}
-        </Row>
-        <Padding padding="8px" />
-        <Row>
-          <div className={`boxQuantity`}>
-            <Column id="center">
-              <img
-                src={avatar_url ?? avatar}
-                alt=""
-                style={{ height: 72, width: 72, borderRadius: "50%" }}
-              />
-            </Column>
-          </div>
-          <Padding />
-          <Column>
-            <div
-              className="status"
-              style={{
-                fontWeight: "500",
-                padding: 4,
-                textAlign: "center",
-                minWidth: "96px",
-                maxWidth: "180px",
-                color: "white",
-                borderRadius: "16px",
-                backgroundColor: `${
-                  status === statuGlobal.APPROVED
-                    ? color.green
-                    : status === statuGlobal.PENDING_TERM
-                    ? color.colorCardOrange
-                    : status === statuGlobal.PENDING
-                    ? color.red
-                    : color.colorCardOrange
-                }`,
-              }}
-            >
-              {StatusEnum[status] ? StatusEnum[status] : StatusEnum["PENDING"]}
-            </div>
-            <Padding />
-            <h4>{subtitle}</h4>
-            <Padding />
+        <img
+          src={avatar_url ?? avatar}
+          alt=""
+          style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, objectFit: "cover" }}
+        />
 
-            <div className={"boxDescriptionSchedule"}>
-              {"Id THP - " + title}
-            </div>
-          </Column>
-        </Row>
-      </Container>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+            <span style={{
+              fontWeight: 700,
+              fontSize: "0.88rem",
+              color: color.colorsBaseInkNormal,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              flex: 1,
+            }}>
+              {subtitle}
+            </span>
+            <span style={{
+              fontSize: "0.7rem",
+              fontWeight: 700,
+              padding: "2px 8px",
+              borderRadius: "999px",
+              color: "#fff",
+              backgroundColor: enrollmentBg[status] ?? color.colorCardOrange,
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}>
+              {StatusEnum[status] ?? StatusEnum["PENDING"]}
+            </span>
+          </div>
+
+          <div style={{ fontSize: "0.72rem", color: color.colorsBaseInkLight, marginTop: 2 }}>
+            {title}
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+            <span style={{
+              fontSize: "0.7rem",
+              fontWeight: 600,
+              padding: "2px 8px",
+              borderRadius: "999px",
+              background: termStyle.bg,
+              color: termStyle.text,
+            }}>
+              {adhesion_term_status
+                ? `Adesão: ${StatusTermEnum[adhesion_term_status] ?? adhesion_term_status}`
+                : "Sem termo de adesão"}
+            </span>
+            {has_other_terms && (
+              <span style={{ fontSize: "0.68rem", color: color.colorsBaseInkLight }}>
+                + outros termos
+              </span>
+            )}
+          </div>
+        </div>
+
+        {canEdit && (
+          <div
+            onClick={(e) => { e.stopPropagation(); setVisible(true); }}
+            style={{ color: "#ccc", flexShrink: 0, padding: "4px" }}
+            className="cursor-pointer"
+          >
+            <i className="pi pi-trash" style={{ fontSize: "0.85rem" }} />
+          </div>
+        )}
+      </div>
+
       <ConfirmDialog
         visible={visible}
         onHide={() => setVisible(false)}
         message="Tem certeza de que deseja prosseguir?"
-        header="Confirmation"
+        header="Confirmação"
         icon="pi pi-exclamation-triangle"
         accept={() => props.DeleteRegistration(idRegistration)}
         reject={() => setVisible(false)}

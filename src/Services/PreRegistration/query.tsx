@@ -13,11 +13,12 @@ export const useFetchRequestClassroomRegistration = (id: number) => {
   };
   export const useFetchRequestClassroomRegistrationFiltered = (
     id: number,
-    statusTerm?: string
+    statusTerm?: string,
+    typeTerm?: string,
   ) => {
     return useQuery(
-      ["useRequestsClassroomRegistration", id, statusTerm],
-      () => requestClassroomRegistration(id, statusTerm)
+      ["useRequestsClassroomRegistration", id, statusTerm, typeTerm],
+      () => requestClassroomRegistration(id, statusTerm, typeTerm)
     );
   };
   export const useFetchRequestClassroomRegistrationOne = (id: number) => {
