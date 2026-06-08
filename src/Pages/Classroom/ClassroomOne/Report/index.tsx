@@ -201,7 +201,7 @@ const ReportPage = () => {
 
   const getLatestTermStatus = (rowData: any) => {
     const latestTerm = rowData?.registration?.register_term?.[0];
-    if (!latestTerm?.status) return "Sem termo";
+    if (!latestTerm?.status) return "Sem termo de adesão";
     return StatusTermEnum[latestTerm.status] ?? latestTerm.status;
   };
 
@@ -398,7 +398,7 @@ const ReportPage = () => {
               }}
             />
             <Column
-              header={"Status do termo"}
+              header={"Status do termo de adesão"}
               style={{ width: "180px" }}
               body={(rowData) => {
                 const label = getLatestTermStatus(rowData);
@@ -429,7 +429,7 @@ const ReportPage = () => {
             />
           </DataTable>
           <div className="report-note">
-            No PDF, são exportados apenas alunos com matrícula aprovadas.
+            No PDF, são exportados apenas alunos com matrícula aprovadas e com termo de adesão assinado.
           </div>
         </div>
       </ReportWrapper>

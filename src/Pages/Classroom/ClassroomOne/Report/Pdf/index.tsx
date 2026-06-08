@@ -24,6 +24,7 @@ import {
 import { MediafrequencyType } from "../../../../../Context/Classroom/type";
 import { minutesToTimeStr } from "../../../../../Components/TimeInput";
 import styles from "../../../../../Styles";
+import Swal from "sweetalert2";
 
 pdfMake.vfs = pdfFonts.vfs;
 
@@ -166,12 +167,15 @@ export const ReportClassroom = () => {
     return { percentage: verifyFouls().toFixed(0), count: count };
   };
 
-  const buildPdfDoc = () => {
-    const exportRegistrations = (report?.register_classroom || []).filter(
+  const getExportableRegistrations = () =>
+    (report?.register_classroom || []).filter(
       (item: any) =>
-        item?.status === "APPROVED"
-      //  && item?.registration?.register_term?.[0]?.status === "ACTIVE_TERM"
+        item?.status === "APPROVED" &&
+        item?.registration?.register_term?.[0]?.status === "ACTIVE_TERM"
     );
+
+  const buildPdfDoc = () => {
+    const exportRegistrations = getExportableRegistrations();
 
     const approvedCountExport = exportRegistrations.filter(
       (item: any) =>
@@ -195,7 +199,7 @@ export const ReportClassroom = () => {
           style: "tableHeader",
           alignment: "center",
         })),
-        { text: "STATUS TERMO", style: "tableHeader", alignment: "center" },
+        { text: "STATUS TERMO ADESÃO", style: "tableHeader", alignment: "center" },
         { text: "FREQUÊNCIA", style: "tableHeader", alignment: "center" },
         { text: "STATUS", style: "tableHeader", alignment: "center" },
       ];
@@ -445,11 +449,31 @@ export const ReportClassroom = () => {
   };
 
   const generatePDF = () => {
+    if (getExportableRegistrations().length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Nenhum beneficiário elegível",
+        text: "Para exportar, o beneficiário precisa ter matrícula aprovada e termo de adesão ativo.",
+        confirmButtonText: "Entendi",
+        confirmButtonColor: styles.colors.colorsBaseProductNormal,
+      });
+      return;
+    }
     const docDefinition = buildPdfDoc();
     pdfMake.createPdf(docDefinition).open();
   };
 
   const generateImagesZip = async () => {
+    if (getExportableRegistrations().length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Nenhum beneficiário elegível",
+        text: "Para exportar, o beneficiário precisa ter matrícula aprovada e termo de adesão ativo.",
+        confirmButtonText: "Entendi",
+        confirmButtonColor: styles.colors.colorsBaseProductNormal,
+      });
+      return;
+    }
     try {
       setIsGeneratingImagesZip(true);
 

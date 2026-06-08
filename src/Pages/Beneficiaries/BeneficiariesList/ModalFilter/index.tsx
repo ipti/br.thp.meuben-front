@@ -8,6 +8,7 @@ import { BeneficiariesListContext } from "../../../../Context/Beneficiaries/Bene
 import { BeneficiariesListType } from "../../../../Context/Beneficiaries/BeneficiariesList/type";
 import { Column, Padding, Row } from "../../../../Styles/styles";
 import { PropsAplicationContext } from "../../../../Types/types";
+import { TypeTermEnum } from "../../../../Controller/controllerGlobal";
 
 const ModalFilter = ({
   onHide,
@@ -93,6 +94,23 @@ const ModalFilter = ({
                       }}
                     />
                   </div>
+                  <div className="col-12 md:col-6">
+                    <label>Filtrar por Tipo de termo</label>
+                    <Padding />
+                    <DropdownComponent
+                      placerholder="Escolha um tipo de termo"
+                      options={[
+                        { name: "Todos", id: undefined },
+                        ...Object.entries(TypeTermEnum).map(([key, label]) => ({ name: label as string, id: key })),
+                      ]}
+                      name="typeTerm"
+                      value={values.typeTerm}
+                      optionsValue="id"
+                      onChange={(e) => {
+                        handleChange(e);
+                      }}
+                    />
+                  </div>
                 </div>
               )}
               <Padding padding="16px" />
@@ -102,7 +120,7 @@ const ModalFilter = ({
                     label="Limpar filtro"
                     text
                     type="button"
-                    onClick={() => { props.setFilter({idClassroom: undefined, idProject: undefined, idTs: undefined, statusTerm: undefined, status: undefined }); onHide() }}
+                    onClick={() => { props.setFilter({idClassroom: undefined, idProject: undefined, idTs: undefined, statusTerm: undefined, status: undefined, typeTerm: undefined }); onHide() }}
                   />
                   <Padding />
                   <Button label="Filtrar" />

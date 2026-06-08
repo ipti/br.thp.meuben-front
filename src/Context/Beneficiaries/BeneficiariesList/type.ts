@@ -22,4 +22,5 @@ export interface BeneficiariesFilterType {
   idClassroom?: number;
   statusTerm?: string;
   status?: string;
+  typeTerm?: string;
 }
