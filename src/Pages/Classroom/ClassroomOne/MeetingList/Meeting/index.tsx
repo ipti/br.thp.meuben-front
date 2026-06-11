@@ -10,6 +10,7 @@ import MeetingListRegistrationProvider, {
 } from "../../../../../Context/Classroom/Meeting/MeetingListRegistration/context";
 import { MeetingListRegisterTypes } from "../../../../../Context/Classroom/Meeting/MeetingListRegistration/type";
 import { ROLE, Status } from "../../../../../Controller/controllerGlobal";
+import { usePermissions } from "../../../../../hooks/usePermissions";
 import { Column, Container, Padding } from "../../../../../Styles/styles";
 import { PropsAplicationContext } from "../../../../../Types/types";
 import Beneficiarios from "./Beneficiarios";
@@ -38,6 +39,7 @@ const MeetingPage = () => {
   const propsAplication = useContext(
     AplicationContext
   ) as PropsAplicationContext;
+  const { can } = usePermissions();
 
   if (props.isLoading) return <Loading />;
 
@@ -93,8 +95,7 @@ const MeetingPage = () => {
                 />
               </div>
             </Column>
-            {(props.meeting.justification &&
-              propsAplication.user?.role === ROLE.REAPPLICATORS) && (
+            {(props.meeting.justification && can("meeting.viewJustification")) && (
                 <div className="col-12 md:col-6">
                   <label>Justificativa</label>
                   <Padding />
@@ -123,7 +124,7 @@ const MeetingPage = () => {
               <Padding padding="16px" />
               {!(
                 props.meeting.status === Status.APPROVED &&
-                propsAplication.user?.role === ROLE.REAPPLICATORS
+                can("meeting.uploadFiles")
               ) && (
                   <div className="grid">
                     <div className="col-12">

@@ -8,7 +8,10 @@ import ContentPage from "../../../Components/ContentPage";
 import { AplicationContext } from "../../../Context/Aplication/context";
 import UsersProvider, { UsersContext } from "../../../Context/Users/context";
 import { UsersTypes } from "../../../Context/Users/type";
-import { formatarData, ROLE } from "../../../Controller/controllerGlobal";
+import { Tag } from "primereact/tag";
+import { useNavigate } from "react-router-dom";
+import { formatarData, ROLE, profileTypeLabel } from "../../../Controller/controllerGlobal";
+import { usePermissions } from "../../../hooks/usePermissions";
 import queryClient from "../../../Services/reactquery";
 import { useFetchRequestUsersOne } from "../../../Services/Users/query";
 import color from "../../../Styles/colors";
@@ -26,11 +29,6 @@ const buildEditUserSchema = (isSocialRole: boolean, isAdminRole: boolean) =>
       .required("Campo Obrigatório")
       .min(8, "Nome do usuário deve ter pelo menos 8 caracteres"),
     role: Yup.string().required("Campo Obrigatório"),
-    project: isAdminRole
-      ? Yup.array()
-      : Yup.array()
-          .min(1, "Selecione pelo menos uma tecnologia")
-          .required("Campo Obrigatório"),
     initial_date: isSocialRole
       ? Yup.string().required("Campo Obrigatório")
       : Yup.string(),
@@ -79,6 +77,7 @@ const EditUserPage = () => {
   const propsAplication = useContext(
     AplicationContext
   ) as PropsAplicationContext;
+  const history = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
@@ -94,38 +93,93 @@ const EditUserPage = () => {
 
   const { data: project } = useFetchRequestUsersOne(parseInt(id!));
 
-  const profile =
-    project?.role === ROLE.REAPPLICATORS
-      ? project?.reapplicators?.[0]
-      : project?.role === ROLE.COORDINATORS
-      ? project?.coordinators?.[0]
-      : null;
+  const profile = project?.profile ?? null;
 
-  const isSocialRole =
-    project?.role === ROLE.REAPPLICATORS || project?.role === ROLE.COORDINATORS;
+  const isSocialRole = !!project?.profile;
 
   const isAdminRole = project?.role === ROLE.ADMIN;
+  const { isAdmin } = usePermissions();
 
   const CreateUserSchema = buildEditUserSchema(isSocialRole, isAdminRole);
-
-  const selectTs = (data: any) => {
-    const array: any = [];
-    data.forEach((element: any) => {
-      array.push(element.usersocialtechnology);
-    });
-    return array;
-  };
 
   return (
     <ContentPage title="Editar usuário" description="Faça a edição do usuário.">
       <Padding />
+
+      {/* Seção de perfil operacional vinculado */}
+      <div style={{
+        marginBottom: 20,
+        border: `1px solid ${color.colorBorderCard}`,
+        borderRadius: 12,
+        overflow: "hidden",
+      }}>
+        {/* Cabeçalho da seção */}
+        <div style={{
+          background: color.colorCard,
+          borderBottom: `1px solid ${color.colorBorderCard}`,
+          padding: "10px 16px",
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+        }}>
+          <i className="pi pi-id-card" style={{ color: color.colorsBaseInkLight, fontSize: 13 }} />
+          <span style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.7px",
+            textTransform: "uppercase",
+            color: color.colorsBaseInkLight,
+          }}>
+            Perfil Operacional
+          </span>
+        </div>
+
+        {/* Conteúdo */}
+        <div style={{ padding: "14px 16px", background: "#fff" }}>
+          {profile ? (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: color.colorsBaseInkNormal }}>
+                  {profile.name}
+                </div>
+                <Tag
+                  value={profileTypeLabel[profile.current_type] ?? profile.current_type}
+                  severity={profile.current_type === "COORDINATOR" ? "info" : "warning"}
+                  style={{ marginTop: 4, fontSize: 11 }}
+                />
+              </div>
+              <Button
+                label="Ver perfil"
+                icon="pi pi-external-link"
+                size="small"
+                outlined
+                onClick={() => history("/perfis/" + profile.id)}
+              />
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+              <span style={{ fontSize: 14, color: color.colorsBaseInkLight }}>
+                Sem perfil operacional vinculado
+              </span>
+              <Button
+                label="Criar perfil"
+                icon="pi pi-plus"
+                size="small"
+                outlined
+                severity="secondary"
+                onClick={() => history("/perfis/criar?user_fk=" + id)}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
       {project ? (
         <Formik
           initialValues={{
             name: project?.name ?? "",
             username: project?.username ?? "",
             role: project?.role ?? "",
-            project: selectTs(project.user_social_technology),
             initial_date: profile?.initial_date
               ? formatarData(profile.initial_date)
               : "",
@@ -146,13 +200,9 @@ const EditUserPage = () => {
             return (
               <Form>
                 <Row
-                  id={
-                    propsAplication.user?.role === ROLE.ADMIN
-                      ? "space-between"
-                      : "end"
-                  }
+                  id={isAdmin ? "space-between" : "end"}
                 >
-                  {propsAplication.user?.role === ROLE.ADMIN && (
+                  {isAdmin && (
                     <LinkSenha>
                       <Link to={"/users/senha/" + id} className="link">
                         <LinkSenha>Alterar senha</LinkSenha>

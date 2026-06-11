@@ -31,8 +31,10 @@ import EditUser from "../Pages/Users/EditUser";
 import ListUsers from "../Pages/Users/ListUsers";
 import PrivateRoute from "./privaterouter";
 import InitialPage from "../Pages/InitialPage";
-import ReapplicatorsList from "../Pages/Reapplicators/ReapplicatorsList";
-import ReapplicatorView from "../Pages/Reapplicators/ReapplicatorView";
+import ProfileList   from "../Pages/Profiles/ProfileList";
+import ProfileCreate from "../Pages/Profiles/ProfileCreate";
+import ProfileView   from "../Pages/Profiles/ProfileView";
+import ProfileEdit   from "../Pages/Profiles/ProfileEdit";
 import ChangePassword from "../Pages/Users/ChangePassword";
 import PageAtt from "../Pages/Att/page";
 import UserLogs from "../Pages/UserLogs";
@@ -159,12 +161,20 @@ const RoutesApp = () => {
           path="/tecnologias/criar"
         />
         <Route
-          element={<PrivateRoute Component={<ReapplicatorsList />} />}
-          path="/reaplicadores"
+          element={<PrivateRoute Component={<ProfileList />} />}
+          path="/perfis"
         />
         <Route
-          element={<PrivateRoute Component={<ReapplicatorView />} />}
-          path="/reaplicadores/:id"
+          element={<PrivateRoute Component={<ProfileCreate />} />}
+          path="/perfis/criar"
+        />
+        <Route
+          element={<PrivateRoute Component={<ProfileView />} />}
+          path="/perfis/:id"
+        />
+        <Route
+          element={<PrivateRoute Component={<ProfileEdit />} />}
+          path="/perfis/:id/editar"
         />
         <Route
           element={<PrivateRoute Component={<CreateUser />} />}

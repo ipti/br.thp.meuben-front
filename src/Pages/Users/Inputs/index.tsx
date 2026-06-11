@@ -1,18 +1,13 @@
-import { useContext } from "react";
 import DropdownComponent from "../../../Components/Dropdown";
 import MaskInput from "../../../Components/InputMask";
-import MultiSelectComponet from "../../../Components/MultiSelect";
 import TextInput from "../../../Components/TextInput";
-import { AplicationContext } from "../../../Context/Aplication/context";
 import {
   color_race,
   ROLE,
   typesex,
 } from "../../../Controller/controllerGlobal";
-import { useFetchRequestSocialTechnologyLists } from "../../../Services/SocialTechnology/query";
 import color from "../../../Styles/colors";
 import { Padding } from "../../../Styles/styles";
-import { PropsAplicationContext } from "../../../Types/types";
 import styled from "styled-components";
 
 const InputWrapper = styled.div`
@@ -26,15 +21,9 @@ const InputWrapper = styled.div`
   }
 `;
 
-const ADMIN_ROLE_OPTIONS = [
+const ROLE_OPTIONS = [
   { id: ROLE.ADMIN, name: "Admin" },
-  { id: ROLE.COORDINATORS, name: "Coordenador" },
-  { id: ROLE.REAPPLICATORS, name: "Reaplicador" },
-];
-
-const COORDINATOR_ROLE_OPTIONS = [
-  { id: ROLE.COORDINATORS, name: "Coordenador" },
-  { id: ROLE.REAPPLICATORS, name: "Reaplicador" },
+  { id: ROLE.USER,  name: "Usuário" },
 ];
 
 interface InputsUserProps {
@@ -52,9 +41,6 @@ const InputsUser = ({
   touched,
   basicOnly = false,
 }: InputsUserProps) => {
-  const { data: projects } = useFetchRequestSocialTechnologyLists();
-  const props = useContext(AplicationContext) as PropsAplicationContext;
-
   const isAdmin = values.role === ROLE.ADMIN;
 
   return (
@@ -108,7 +94,7 @@ const InputsUser = ({
               optionsValue="id"
               value={values.role}
               onChange={handleChange}
-              options={props.user?.role === ROLE.ADMIN ? ADMIN_ROLE_OPTIONS : COORDINATOR_ROLE_OPTIONS}
+              options={ROLE_OPTIONS}
             />
             <Padding />
             {errors.role && touched.role ? (
@@ -118,27 +104,6 @@ const InputsUser = ({
               </div>
             ) : null}
           </div>
-          {!isAdmin && (
-            <div className="col-12 md:col-6">
-              <label>Tecnologia *</label>
-              <Padding />
-              <MultiSelectComponet
-                options={projects}
-                optionsLabel="name"
-                name="project"
-                value={values.project}
-                onChange={handleChange}
-                placerholder="Tecnologia"
-              />
-              <Padding />
-              {errors.project && touched.project ? (
-                <div style={{ color: color.red }}>
-                  {errors.project}
-                  <Padding />
-                </div>
-              ) : null}
-            </div>
-          )}
         </div>
         {!basicOnly && (
           <>

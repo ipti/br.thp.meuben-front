@@ -16,7 +16,7 @@ export const CreateMeetingState = () => {
     }
 
     const CreateMeeting = (data: CreateMeeting) => {
-        requestCreateMeetingMutation.mutate({...data, users: getId(data.users)})
+        requestCreateMeetingMutation.mutate({...data, profiles: getId(data.profiles)})
     }
 
     return {

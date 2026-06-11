@@ -16,6 +16,7 @@ import { AplicationContext } from "../../../Context/Aplication/context";
 import ClassroomProvider, { ClassroomContext } from "../../../Context/Classroom/context";
 import { ClassroomTypes, MediafrequencyType } from "../../../Context/Classroom/type";
 import { formatarData, getStatusClassroomList, ROLE } from "../../../Controller/controllerGlobal";
+import { usePermissions } from "../../../hooks/usePermissions";
 import { useFetchRequestClassroomOne, useFetchRequestFoulsClassroomOne } from "../../../Services/Classroom/query";
 import { Column, Padding, Row } from "../../../Styles/styles";
 import { PropsAplicationContext } from "../../../Types/types";
@@ -122,6 +123,7 @@ const ClassroomOnePage = () => {
   }, [classroom?.id]);
 
   const propsAplication = useContext(AplicationContext) as PropsAplicationContext;
+  const { can } = usePermissions();
 
   if (props.isLoading) return <Loading />;
 
@@ -267,8 +269,7 @@ const ClassroomOnePage = () => {
       ) : (
         <Column>
           <Row id="end">
-            {(propsAplication.user?.role === ROLE.ADMIN ||
-              propsAplication.user?.role === ROLE.COORDINATORS) && (
+            {can("classroom.actions") && (
                 <Popover
                   isOpen={actionsPopoverOpen}
                   positions={["bottom", "left", "right", "top"]}

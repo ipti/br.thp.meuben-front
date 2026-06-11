@@ -12,7 +12,8 @@ import { AplicationContext } from "../../../../../../Context/Aplication/context"
 import { MeetingListRegistrationContext } from "../../../../../../Context/Classroom/Meeting/MeetingListRegistration/context";
 import { MeetingListRegisterTypes } from "../../../../../../Context/Classroom/Meeting/MeetingListRegistration/type";
 import { ROLE, Status } from "../../../../../../Controller/controllerGlobal";
-import { useFetchRequestUsers } from "../../../../../../Services/Users/query";
+import { usePermissions } from "../../../../../../hooks/usePermissions";
+import { useFetchProfiles } from "../../../../../../Services/Profile/query";
 import { Column, Padding, Row } from "../../../../../../Styles/styles";
 import { PropsAplicationContext } from "../../../../../../Types/types";
 import TimeInput from "../../../../../../Components/TimeInput";
@@ -150,8 +151,8 @@ const sanitizeMeetingDescriptionForView = (content: string | null | undefined) =
 
 const DataMeeting = () => {
 
-  const { data: usersResponse } = useFetchRequestUsers({ perPage: 1000 });
-  const userRequest = usersResponse?.data;
+  const { data: profilesResponse } = useFetchProfiles({ page: 1, perPage: 1000 });
+  const profileRequest = profilesResponse?.data ?? [];
 
   const [edit, setEdit] = useState(false);
   const [statusInfoOpen, setStatusInfoOpen] = useState(false);
@@ -164,9 +165,8 @@ const DataMeeting = () => {
   const propsAplication = useContext(
     AplicationContext
   ) as PropsAplicationContext;
-  const canEditStatus =
-    propsAplication.user?.role === ROLE.ADMIN ||
-    propsAplication.user?.role === ROLE.COORDINATORS;
+  const { can } = usePermissions();
+  const canEditStatus = can("meeting.editStatus");
 
   const status = [
     { id: Status.APPROVED, name: "Aprovado" },
@@ -231,13 +231,13 @@ const DataMeeting = () => {
         theme: props.meeting?.theme,
         status: getStatus(props.meeting?.status!),
         meeting_date: date,
-        users: props.meeting?.meeting_user.map((item) => item.users.id) ?? [],
+        profiles: props.meeting?.meeting_profile.map((item) => item.profile.id) ?? [],
         workload: props.meeting?.workload ?? 0,
       }}
       onSubmit={(values) => {
-        props.UpdateMeetingUser({ id: props.meeting?.id!, users: values.users });
+        props.UpdateMeetingUser({ id: props.meeting?.id!, profiles: values.profiles });
         var body: any = values
-        delete body.users
+        delete body.profiles
         props.UpdateMeeting({
           ...body,
           meeting_date: (props.meeting?.meeting_date && values.meeting_date && date.getTime() === values.meeting_date.getTime())
@@ -251,10 +251,10 @@ const DataMeeting = () => {
         const safeDescriptionHtml = sanitizeMeetingDescriptionForView(
           values.description
         );
-        const selectedResponsibles = (userRequest ?? []).filter((user: any) =>
-          (values.users ?? []).includes(user.id)
+        const selectedResponsibles = (profileRequest ?? []).filter((p: any) =>
+          (values.profiles ?? []).includes(p.id)
         );
-        const fallbackResponsibles = props.meeting?.meeting_user?.map((item) => item.users) ?? [];
+        const fallbackResponsibles = props.meeting?.meeting_profile?.map((item) => item.profile) ?? [];
 
         return (
           <Form>
@@ -476,14 +476,14 @@ const DataMeeting = () => {
                   <MultiSelect
                     optionLabel="name"
                     optionValue="id"
-                    onChange={(e) => setFieldValue("users", e.value)}
+                    onChange={(e) => setFieldValue("profiles", e.value)}
                     filter
                     maxSelectedLabels={2}
                     className="w-full"
-                    name="users"
+                    name="profiles"
                     placeholder="Selecione um ou mais responsáveis"
-                    value={values.users}
-                    options={userRequest ?? []}
+                    value={values.profiles}
+                    options={profileRequest}
                     selectedItemsLabel="{0} responsáveis selecionados"
                   />
                   <small style={{ color: "#64748b", marginTop: "6px", display: "inline-block" }}>

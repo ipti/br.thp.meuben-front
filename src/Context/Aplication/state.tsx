@@ -27,7 +27,11 @@ const AplicationState = () => {
 
         }
         if (userRequest) {
-            setuser(userRequest)
+            setuser({
+                ...userRequest,
+                profileId:   userRequest.profile?.id,
+                profileType: userRequest.profile?.current_type,
+            })
         }
     }, [projects, userRequest])
 

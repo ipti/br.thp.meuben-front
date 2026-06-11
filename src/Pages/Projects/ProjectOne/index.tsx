@@ -20,6 +20,7 @@ import ProjectOneProvider, {
 } from "../../../Context/Project/ProjectOne/context";
 import { ProjectOneTypes } from "../../../Context/Project/ProjectOne/type";
 import { ROLE } from "../../../Controller/controllerGlobal";
+import { usePermissions } from "../../../hooks/usePermissions";
 import { Column, Padding, Row } from "../../../Styles/styles";
 import { PropsAplicationContext } from "../../../Types/types";
 
@@ -44,6 +45,7 @@ const ProjectOnePage = () => {
   const propsAplication = useContext(
     AplicationContext
   ) as PropsAplicationContext;
+  const { can } = usePermissions();
   const [edit, setEdit] = useState(false);
   const [submittedEdit, setSubmittedEdit] = useState(false);
 
@@ -155,8 +157,7 @@ const ProjectOnePage = () => {
         <Column>
           <Row id="end">
             <Row id="end">
-              {propsAplication.user?.role ===
-                (ROLE.ADMIN || ROLE.COORDINATORS) && (
+              {can("project.edit") && (
                   <Button
                     text
                     label="Editar"
@@ -165,8 +166,7 @@ const ProjectOnePage = () => {
                   />
                 )}
               <Padding />
-              {propsAplication.user?.role ===
-                (ROLE.ADMIN || ROLE.COORDINATORS) && (
+              {can("project.delete") && (
                   <Button
                     text
                     severity="danger"

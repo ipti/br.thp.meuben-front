@@ -17,14 +17,6 @@ const CreateUserSchema = Yup.object().shape({
   username: Yup.string().required("Usuário é obrigatório").min(8, "Nome do usuário deve ter pelo menos 8 caracteres"),
   password: Yup.string().required("Senha é obrigatória").min(8, "Senha deve ter pelo menos 8 caracteres"),
   role: Yup.string().required("Tipo de usuário é obrigatório"),
-  project: Yup.array().when("role", {
-    is: ROLE.ADMIN,
-    then: (schema) => schema,
-    otherwise: (schema) =>
-      schema
-        .min(1, "Selecione pelo menos uma tecnologia")
-        .required("Tecnologia é obrigatória"),
-  }),
   confirmPassword: Yup.string()
     .label("Confirmar senha")
     .required("Confirmação é obrigatória")
@@ -52,7 +44,6 @@ const CreateUserPage = () => {
           username: "",
           role: undefined,
           password: "",
-          project: [],
           confirmPassword: "",
         }}
         onSubmit={(values) => {

@@ -3,14 +3,12 @@ import { useNavigate } from "react-router-dom";
 import CardProject from "../../../Components/Card/CardProject";
 import ContentPage from "../../../Components/ContentPage";
 import Empty from "../../../Components/Empty";
-import { AplicationContext } from "../../../Context/Aplication/context";
 import ProjectListProvider, {
   ProjectListContext,
 } from "../../../Context/Project/ProjectList/context";
 import { ProjectListTypes } from "../../../Context/Project/ProjectList/type";
-import { ROLE } from "../../../Controller/controllerGlobal";
 import { Padding } from "../../../Styles/styles";
-import { PropsAplicationContext } from "../../../Types/types";
+import { usePermissions } from "../../../hooks/usePermissions";
 
 const ProjectsList = () => {
   return (
@@ -22,9 +20,7 @@ const ProjectsList = () => {
 
 const ProjectsListPage = () => {
   const history = useNavigate();
-  const propsAplication = useContext(
-    AplicationContext
-  ) as PropsAplicationContext;
+  const { can } = usePermissions();
 
   const props = useContext(ProjectListContext) as ProjectListTypes;
 
@@ -32,10 +28,7 @@ const ProjectsListPage = () => {
     <ContentPage
       title="Planos de trabalho"
       description="Visualização dos planos de trabalho."
-      permissionButton={
-        propsAplication.user?.role === ROLE.ADMIN ||
-        propsAplication.user?.role === ROLE.COORDINATORS
-      }
+      permissionButton={can("project.create")}
       addButton
       onClick={() => history("/projetos/criar")}
     >

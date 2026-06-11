@@ -25,23 +25,18 @@ export interface Meeting {
   createdAt: string
   updatedAt: string
   workload: number
-  meeting_user: MeetingUser[]
+  meeting_profile: MeetingProfile[]
   fouls: Foul[]
 }
 
-export interface MeetingUser {
-  users: Users
+export interface MeetingProfile {
+  profile: MeetingProfileData
 }
 
-export interface Users {
+export interface MeetingProfileData {
   id: number
   name: string
-  username: string
-  password: string
-  active: boolean
-  role: string
-  createdAt: string
-  updatedAt: string
+  current_type: 'COORDINATOR' | 'REAPPLICATOR'
 }
 
 export interface Foul {

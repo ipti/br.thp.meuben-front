@@ -6,15 +6,13 @@ import ContentPage from "../../../Components/ContentPage";
 import DropdownComponent from "../../../Components/Dropdown";
 import Empty from "../../../Components/Empty";
 import Loading from "../../../Components/Loading";
-import { AplicationContext } from "../../../Context/Aplication/context";
 import ClassroomProvider, {
   ClassroomContext,
 } from "../../../Context/Classroom/context";
 import { ClassroomTypes } from "../../../Context/Classroom/type";
-import { ROLE } from "../../../Controller/controllerGlobal";
 import { idProject } from "../../../Services/localstorage";
 import { Column, Padding } from "../../../Styles/styles";
-import { PropsAplicationContext } from "../../../Types/types";
+import { usePermissions } from "../../../hooks/usePermissions";
 
 const ListClassroom = () => {
   return (
@@ -26,9 +24,7 @@ const ListClassroom = () => {
 
 const ListClassroomPage = () => {
   const history = useNavigate();
-  const propsAplication = useContext(
-    AplicationContext
-  ) as PropsAplicationContext;
+  const { can } = usePermissions();
   const [filter, setFilter] = useState("");
 
   const props = useContext(ClassroomContext) as ClassroomTypes;
@@ -49,10 +45,7 @@ const ListClassroomPage = () => {
     <ContentPage
       title="Turmas"
       description="Visualização das turmas."
-      permissionButton={
-        propsAplication.user?.role === ROLE.ADMIN ||
-        propsAplication.user?.role === ROLE.COORDINATORS
-      }
+      permissionButton={can("classroom.create")}
       addButton
       onClick={() => history("/turma/criar/" + props.project)}
     >

@@ -25,8 +25,10 @@ export const LoginController = ({ setError }: { setError: any, }) => {
         login(data.data.access_token);
         idUser(data.data.userRegistered.id);
         // ProjectLogin(data.data.user.schools)
-        if (data.data.userRegistered.user_social_technology[0]?.social_technology_fk) {
-          idProject(data.data.userRegistered.user_social_technology[0]?.social_technology_fk);
+        const firstSocialTech =
+          data.data.userRegistered.profile?.profile_social_technology?.[0]?.social_technology_fk;
+        if (firstSocialTech) {
+          idProject(firstSocialTech);
         }
 
         history("/");

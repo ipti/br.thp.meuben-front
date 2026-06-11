@@ -192,8 +192,18 @@ export const StatusRegistrationEnum: any = {
 export const ROLE = {
   ADMIN: "ADMIN",
   USER: "USER",
-  REAPPLICATORS: "REAPPLICATORS",
-  COORDINATORS: "COORDINATORS",
+} as const;
+
+export const PROFILE_TYPE = {
+  COORDINATOR: "COORDINATOR",
+  REAPPLICATOR: "REAPPLICATOR",
+} as const;
+
+export type ProfileType = typeof PROFILE_TYPE[keyof typeof PROFILE_TYPE];
+
+export const profileTypeLabel: Record<string, string> = {
+  COORDINATOR: "Coordenador",
+  REAPPLICATOR: "Reaplicador",
 };
 
 export const kinship = [

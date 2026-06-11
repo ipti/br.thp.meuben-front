@@ -104,19 +104,28 @@ export const requestRegistrationClassroom = (data: CreateRegistrationClassroomTy
 
 
 export const requestUpdateRegistration = (data: any, id: number) => {
+  const body = {
+    ...data,
+    state_fk:   getNumberOrUndefined(data?.state   ?? data?.state_fk),
+    city_fk:    getNumberOrUndefined(data?.city    ?? data?.city_fk),
+    cep:        data?.cep?.replace(/\D/g, "").slice(0, 8) || undefined,
+    color_race: getNumberOrUndefined(data?.color_race),
+    sex:        getNumberOrUndefined(data?.sex),
+    zone:       getNumberOrUndefined(data?.zone),
+    deficiency: getBooleanOrUndefined(data?.deficiency),
+  };
 
+  delete body.state;
+  delete body.city;
 
-
- 
   return http
-    .put("/registration/" + id, data)
+    .put("/registration/" + id, body)
     .then(response => response.data)
     .catch(err => {
       if (err.response.status === 401) {
         window.location.reload()
       }
       alert(err.response.message)
-
       throw err;
     });
 };

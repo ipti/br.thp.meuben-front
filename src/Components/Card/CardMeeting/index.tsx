@@ -11,8 +11,7 @@ import { useContext, useState } from "react";
 import { MeetingListContext } from "../../../Context/Classroom/Meeting/MeetingList/context";
 import { MeetingListTypes } from "../../../Context/Classroom/Meeting/MeetingList/type";
 import { ConfirmDialog } from "primereact/confirmdialog";
-import { AplicationContext } from "../../../Context/Aplication/context";
-import { PropsAplicationContext } from "../../../Types/types";
+import { usePermissions } from "../../../hooks/usePermissions";
 import IconMeeting from "./../../../Assets/images/meeting_card.svg";
 import IconCalendar from "./../../../Assets/images/calendar.svg";
 import IconStatus from "./../../../Assets/images/published_with_changes.svg";
@@ -30,10 +29,7 @@ const CardMeeting = ({
 }) => {
   const history = useNavigate();
   const [visible, setVisible] = useState(false);
-
-  const propsAplication = useContext(
-    AplicationContext
-  ) as PropsAplicationContext;
+  const { can } = usePermissions();
 
   const { id } = useParams();
 
@@ -55,8 +51,7 @@ const CardMeeting = ({
               <h3>{title}</h3>
             </Column>
           </Row>
-          {(propsAplication.user?.role === ROLE.ADMIN ||
-            propsAplication.user?.role === ROLE.COORDINATORS) && (
+          {can("meeting.delete") && (
             <div
               className="cursor-pointer"
               onClick={(e) => {

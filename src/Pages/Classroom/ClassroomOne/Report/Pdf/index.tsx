@@ -134,18 +134,18 @@ export const ReportClassroom = () => {
     return !verifyFouls() ? "P" : "F";
   };
 
-  const uniqueUsersMap = new Map();
+  const uniqueProfilesMap = new Map();
 
   report?.meeting?.forEach((meeting: any) => {
-    meeting?.meeting_user?.forEach((entry: any) => {
-      const user = entry.users;
-      if (!uniqueUsersMap.has(user.id)) {
-        uniqueUsersMap.set(user.id, user);
+    (meeting?.meeting_profile ?? []).forEach((entry: any) => {
+      const profile = entry.profile;
+      if (profile && !uniqueProfilesMap.has(profile.id)) {
+        uniqueProfilesMap.set(profile.id, profile);
       }
     });
   });
 
-  const uniqueUsers = Array.from(uniqueUsersMap.values());
+  const uniqueUsers = Array.from(uniqueProfilesMap.values());
 
   const bodyTotal = (rowData: RegisterClassroom) => {
     let count = 0;

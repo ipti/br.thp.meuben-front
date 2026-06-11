@@ -6,14 +6,13 @@ import { InputText } from "primereact/inputtext";
 import { Paginator } from "primereact/paginator";
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Tag } from "primereact/tag";
 import ContentPage from "../../Components/ContentPage";
 import DropdownComponent from "../../Components/Dropdown";
-import { AplicationContext } from "../../Context/Aplication/context";
 import UsersProvider, { UsersContext } from "../../Context/Users/context";
 import { UsersTypes } from "../../Context/Users/type";
 import { ROLE } from "../../Controller/controllerGlobal";
 import { Padding, Row } from "../../Styles/styles";
-import { PropsAplicationContext } from "../../Types/types";
 
 const ListUsers = () => {
   return (
@@ -26,7 +25,6 @@ const ListUsers = () => {
 const ListUsersPage = () => {
   const props = useContext(UsersContext) as UsersTypes;
   const history = useNavigate();
-  const propsAplication = useContext(AplicationContext) as PropsAplicationContext;
 
 
   const [visible, setVisible] = useState<any>(false);
@@ -41,17 +39,10 @@ const ListUsersPage = () => {
   // };
 
   const typeUserBody = (rowData: any) => {
-    return (
-      <p>
-        {rowData.role === ROLE.ADMIN
-          ? "Admin"
-          : rowData.role === ROLE.COORDINATORS
-            ? "Coordenador"
-            : rowData.role === ROLE.REAPPLICATORS
-              ? "Reaplicador"
-              : null}
-      </p>
-    );
+    if (rowData.role === ROLE.ADMIN) return <p>Admin</p>;
+    if (rowData.profile?.current_type === "COORDINATOR") return <p>Coordenador</p>;
+    if (rowData.profile?.current_type === "REAPPLICATOR") return <p>Reaplicador</p>;
+    return <p>Usuário</p>;
   };
 
   const ActiveUserBody = (rowData: any) => {
@@ -60,6 +51,19 @@ const ListUsersPage = () => {
 
    const PerfilCompleteUserBody = (rowData: any) => {
     return <p>{rowData.isProfileComplete ? "Sim" : "Não"}</p>;
+  };
+
+  const profileBody = (rowData: any) => {
+    if (!rowData.profile) return <span style={{ color: "#aaa" }}>—</span>;
+    return (
+      <Button
+        label={rowData.profile.current_type === "COORDINATOR" ? "Coordenador" : "Reaplicador"}
+        text
+        size="small"
+        severity={rowData.profile.current_type === "COORDINATOR" ? "info" : "warning"}
+        onClick={() => history("/perfis/" + rowData.profile.id)}
+      />
+    );
   };
 
   const ActionsUserBody = (rowData: any) => {
@@ -85,18 +89,11 @@ const ListUsersPage = () => {
     );
   };
 
-  const roleOptions = propsAplication.user?.role === ROLE.ADMIN
-    ? [
-        { id: "TODOS", name: "Todos" },
-        { id: ROLE.ADMIN, name: "Admin" },
-        { id: ROLE.COORDINATORS, name: "Coordenador" },
-        { id: ROLE.REAPPLICATORS, name: "Reaplicador" },
-      ]
-    : [
-        { id: "TODOS", name: "Todos" },
-        { id: ROLE.COORDINATORS, name: "Coordenador" },
-        { id: ROLE.REAPPLICATORS, name: "Reaplicador" },
-      ];
+  const roleOptions = [
+    { id: "TODOS",    name: "Todos" },
+    { id: ROLE.ADMIN, name: "Admin" },
+    { id: ROLE.USER,  name: "Usuário" },
+  ];
 
   const hasActiveFilters =
     props.nameSearch.trim().length > 0 ||
@@ -201,6 +198,7 @@ const ListUsersPage = () => {
           <Column field="name" header="Nome" />
           <Column field="username" header="Usuário" />
           <Column field="role" body={typeUserBody} header="Tipo" />
+          <Column field="profile" body={profileBody} header="Perfil" />
           <Column field="isProfileComplete" body={PerfilCompleteUserBody} header="Perfil completo?" />
           <Column field="active" body={ActiveUserBody} header="Ativo" />
           <Column field="actions" body={ActionsUserBody} header="Ações" />

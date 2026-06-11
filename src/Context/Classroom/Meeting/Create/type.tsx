@@ -2,7 +2,7 @@ export interface CreateMeeting {
   name: string;
   theme?: string;
   meeting_date?: Date;
-  users?: Array<number>;
+  profiles?: Array<number>;
   classroom?: number;
   workload?: string;
 }
@@ -15,7 +15,7 @@ export interface EditMeeting {
 }
 
 export interface EditMeetingUser {
-  users: number[]
+  profiles: number[]
   id: number
 }
 

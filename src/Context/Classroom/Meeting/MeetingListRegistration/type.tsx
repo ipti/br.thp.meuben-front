@@ -22,7 +22,7 @@ export interface Meeting {
   classroom_fk: number
   fouls: any[]
   classroom: Classroom
-  meeting_user: MeetingUser[]
+  meeting_profile: MeetingProfile[]
   meeting_archives: MeetingArc[]
 }
 
@@ -58,17 +58,14 @@ export interface Registration {
 }
 
 
-export interface MeetingUser {
-  users: Users
+export interface MeetingProfile {
+  profile: MeetingProfileData
 }
 
-export interface Users {
+export interface MeetingProfileData {
   id: number
   name: string
-  username: string
-  password: string
-  active: boolean
-  role: string
+  current_type: 'COORDINATOR' | 'REAPPLICATOR'
 }
 
 export interface MeetingArc {

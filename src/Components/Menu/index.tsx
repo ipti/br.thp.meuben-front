@@ -5,6 +5,7 @@ import { Dialog } from "primereact/dialog";
 import TagLogin from "../../Assets/images/logo.svg";
 import { AplicationContext } from "../../Context/Aplication/context";
 import { ROLE } from "../../Controller/controllerGlobal";
+import { usePermissions } from "../../hooks/usePermissions";
 import {
   getMenuItem,
   getYear,
@@ -48,6 +49,7 @@ const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean 
   const [active, setActive] = useState(parseInt(getMenuItem()!));
   const [visibleModal, setVisibleModal] = useState(false);
   const props = useContext(AplicationContext) as PropsAplicationContext;
+  const { can } = usePermissions();
 
   const itemMenu = getMenuItem()
 
@@ -148,25 +150,23 @@ const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean 
             path={"/beneficiarios"}
             icon={active === 5 ? beneficiaries_hover : beneficiaries}
           />
-          {(props.user?.role === ROLE.ADMIN ||
-            props.user?.role === ROLE.COORDINATORS) && (
+          {can("menu.profiles") && (
             <>
               <Padding />
               <Item
-                text={"Reaplicadores"}
+                text={"Perfis"}
                 funcActiv={() => {
                   setActive(9);
                   menuItem("9");
                 }}
                 active={active === 9 ? true : false}
-                path={"/reaplicadores"}
+                path={"/perfis"}
                 icon={active === 9 ? reapplicatorHover : reapplicator}
               />
             </>
           )}
 
-          {props.user?.role === ROLE.ADMIN ||
-            props.user?.role === ROLE.COORDINATORS ? (
+          {can("menu.users") && (
             <>
               <Padding />
               <Item
@@ -180,8 +180,8 @@ const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean 
                 icon={active === 6 ? user_hover : user}
               />
             </>
-          ) : null}
-          {props.user?.role === ROLE.ADMIN &&
+          )}
+          {can("menu.logs") && (
             <>
               <Padding />
               <Item
@@ -194,7 +194,8 @@ const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean 
                 path={"/logs"}
                 icon={active === 8 ? logHover : log}
               />
-            </>}
+            </>
+          )}
           <Padding />
           <Item
             text={"Ajuda"}

@@ -221,7 +221,7 @@ const Beneficiarios = () => {
           marginTop: -8,
           table: {
             widths: ["*", "*"],
-            body: [[`Facilitador: ${props.meeting?.meeting_user.map((user) => user.users.name).join(", ").substring(0,40) + ((props.meeting?.meeting_user.map((user) => user.users.name).join(", ").length ?? 0)> 39 ? '...' : '')}`,`Turma: ${props.meeting?.classroom?.name}` ]],
+            body: [[`Facilitador: ${(props.meeting?.meeting_profile ?? []).map((mp) => mp.profile.name).join(", ").substring(0,40) + (((props.meeting?.meeting_profile ?? []).map((mp) => mp.profile.name).join(", ").length ?? 0)> 39 ? '...' : '')}`,`Turma: ${props.meeting?.classroom?.name}` ]],
           },
         },
         ...registrations.reduce((acc: any, curr, index) => {

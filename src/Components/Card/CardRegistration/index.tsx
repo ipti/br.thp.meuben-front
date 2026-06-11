@@ -5,8 +5,7 @@ import avatar from "../../../Assets/images/avatar.svg";
 import { RegistrationClassroomContext } from "../../../Context/Classroom/RegistrationsList/context";
 import { RegistrationClassroomTypes } from "../../../Context/Classroom/RegistrationsList/type";
 import { ROLE, Status, StatusEnum, StatusTermEnum } from "../../../Controller/controllerGlobal";
-import { AplicationContext } from "../../../Context/Aplication/context";
-import { PropsAplicationContext } from "../../../Types/types";
+import { usePermissions } from "../../../hooks/usePermissions";
 import color from "../../../Styles/colors";
 
 const termColors: Record<string, { bg: string; text: string }> = {
@@ -42,13 +41,11 @@ const CardRegistration = ({
   const [visible, setVisible] = useState(false);
   const history = useNavigate();
   const { id } = useParams();
+  const { can } = usePermissions();
 
-  const propsAplication = useContext(AplicationContext) as PropsAplicationContext;
   const props = useContext(RegistrationClassroomContext) as RegistrationClassroomTypes;
 
-  const canEdit =
-    propsAplication.user?.role === ROLE.ADMIN ||
-    propsAplication.user?.role === ROLE.COORDINATORS;
+  const canEdit = can("registration.view");
 
   const termStyle = adhesion_term_status
     ? termColors[adhesion_term_status] ?? { bg: "rgba(237,90,104,0.12)", text: color.red }

@@ -9,11 +9,10 @@ import IconClassroom from "./../../../Assets/images/cardturmas.svg";
 import { Container } from "./style";
 
 import pessoas from "../../../Assets/images/pessoasgray.svg";
-import { AplicationContext } from "../../../Context/Aplication/context";
 import { ROLE, Status } from "../../../Controller/controllerGlobal";
 import { menuItem } from "../../../Services/localstorage";
 import styles from "../../../Styles";
-import { PropsAplicationContext } from "../../../Types/types";
+import { usePermissions } from "../../../hooks/usePermissions";
 import IconStatus from "./../../../Assets/images/published_with_changes.svg";
 
 
@@ -32,10 +31,7 @@ const CardClassroom = ({
 }) => {
   const history = useNavigate();
   const [visible, setVisible] = useState(false);
-
-  const propsAplication = useContext(
-    AplicationContext
-  ) as PropsAplicationContext;
+  const { can } = usePermissions();
 
   const props = useContext(ClassroomContext) as ClassroomTypes;
 
@@ -58,8 +54,7 @@ const CardClassroom = ({
               <h3>{title}</h3>
             </Column>
           </Row>
-          {(propsAplication.user?.role === ROLE.ADMIN ||
-            propsAplication.user?.role === ROLE.COORDINATORS) && (
+          {can("classroom.delete") && (
               <div
                 className="cursor-pointer"
                 onClick={(e) => {

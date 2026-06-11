@@ -152,6 +152,7 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: 24px;
 }
 
 .steps-actions .p-button {

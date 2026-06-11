@@ -22,14 +22,19 @@ export interface CreateUser {
   name: string;
   username: string;
   password?: string;
-  project: number[];
-  role?:string,
-  email?: string,
-  phone?: string,
-  sex?: number,
-  color_race?: number,
-  initial_date?: string,
-  birthday?: string
+  role?: string;
+  email?: string;
+  phone?: string;
+  sex?: number;
+  color_race?: number;
+  initial_date?: string;
+  birthday?: string;
+}
+
+export interface UserProfileSummary {
+  id: number
+  name: string
+  current_type: 'COORDINATOR' | 'REAPPLICATOR'
 }
 
 export interface User {
@@ -38,4 +43,7 @@ export interface User {
   username: string
   active: boolean
   role: string
+  profileId?: number
+  profileType?: 'COORDINATOR' | 'REAPPLICATOR'
+  profile?: UserProfileSummary
 }

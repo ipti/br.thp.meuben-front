@@ -14,7 +14,7 @@ import CreateMeetingProvider, {
 } from "../../../../../Context/Classroom/Meeting/Create/context";
 import { CreateMeetingType } from "../../../../../Context/Classroom/Meeting/Create/type";
 import { getErrorsAsArray } from "../../../../../Controller/controllerGlobal";
-import { useFetchRequestUsers } from "../../../../../Services/Users/query";
+import { useFetchProfiles } from "../../../../../Services/Profile/query";
 import color from "../../../../../Styles/colors";
 import { Column, Padding, Row } from "../../../../../Styles/styles";
 
@@ -56,7 +56,7 @@ const schema = Yup.object().shape({
   meeting_date: Yup.date()
     .typeError("Data do encontro inválida")
     .required("Data do encontro é obrigatória"),
-  users: Yup.array()
+  profiles: Yup.array()
     .min(1, "Selecione ao menos um responsável")
     .required("Responsável é obrigatório"),
   theme: Yup.string().max(300, "Tema deve ter no máximo 300 caracteres").optional(),
@@ -74,8 +74,8 @@ const CreateMeeting = () => (
 // ─── Form ─────────────────────────────────────────────────────────────────────
 const CreateMeetingPage = () => {
   const props = useContext(CreateMeetingContext) as CreateMeetingType;
-  const { data: usersResponse } = useFetchRequestUsers({ perPage: 1000 });
-  const userRequest = usersResponse?.data;
+  const { data: profilesResponse } = useFetchProfiles({ page: 1, perPage: 1000 });
+  const profileRequest = profilesResponse?.data ?? [];
   const { id } = useParams();
   const [submitted, setSubmitted] = useState(false);
 
@@ -83,7 +83,7 @@ const CreateMeetingPage = () => {
     <ContentPage title="Criar Encontro" description="Crie um novo encontro.">
       <Padding padding="16px" />
       <Formik
-        initialValues={{ name: "", users: [], meeting_date: undefined, theme: "", workload: "" }}
+        initialValues={{ name: "", profiles: [], meeting_date: undefined, theme: "", workload: "" }}
         validationSchema={schema}
         onSubmit={(values) => {
           props.CreateMeeting({ ...values, classroom: parseInt(id!) });
@@ -163,13 +163,13 @@ const CreateMeetingPage = () => {
                   <Padding />
                   <MultiSelectComponet
                     optionsLabel="name"
-                    onChange={(e: any) => setFieldValue("users", e.value)}
-                    name="users"
+                    onChange={(e: any) => setFieldValue("profiles", e.value)}
+                    name="profiles"
                     placerholder="Responsável"
-                    value={values.users}
-                    options={userRequest}
+                    value={values.profiles}
+                    options={profileRequest}
                   />
-                  <FieldError message={fieldError("users")} />
+                  <FieldError message={fieldError("profiles")} />
                 </div>
               </div>
               <Padding padding="16px" />
