@@ -52,6 +52,8 @@ export interface Project {
   avartar_url: any
   social_technology_id: number
   ruler_url: string
+  date_initial: string | null
+  date_final: string | null
   createdAt: string
   updatedAt: string
   social_technology: SocialTechnology

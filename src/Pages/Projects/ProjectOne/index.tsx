@@ -4,6 +4,7 @@ import { ConfirmDialog } from "primereact/confirmdialog";
 import { useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 import * as Yup from "yup";
+import CalendarComponent from "../../../Components/Calendar";
 import CardClassroom from "../../../Components/Card/CardClassroom";
 import CardQuant from "../../../Components/Chart/CardQuant";
 import ContentPage from "../../../Components/ContentPage";
@@ -58,6 +59,8 @@ const ProjectOnePage = () => {
   const initialValues = {
     name: props.project?.project.name,
     approval_percentage: props.project?.project?.approval_percentage,
+    date_initial: props.project?.project.date_initial ? new Date(props.project.project.date_initial) : undefined as Date | undefined,
+    date_final: props.project?.project.date_final ? new Date(props.project.project.date_final) : undefined as Date | undefined,
     file: undefined,
   };
 
@@ -74,6 +77,8 @@ const ProjectOnePage = () => {
               {
                 approval_percentage: values.approval_percentage!,
                 name: values.name!,
+                date_initial: values.date_initial?.toISOString(),
+                date_final: values.date_final?.toISOString(),
               },
               parseInt(id!)
             );
@@ -136,6 +141,28 @@ const ProjectOnePage = () => {
                     <FieldError message={fieldError("approval_percentage")} />
                   </div>
                   <div className="col-12 md:col-6">
+                    <label>Data de início</label>
+                    <Padding />
+                    <CalendarComponent
+                      name="date_initial"
+                      dateFormat="dd/mm/yy"
+                      placeholder="Data de início"
+                      value={values.date_initial}
+                      onChange={(e: { value: Date }) => setFieldValue("date_initial", e.value)}
+                    />
+                  </div>
+                  <div className="col-12 md:col-6">
+                    <label>Data de encerramento</label>
+                    <Padding />
+                    <CalendarComponent
+                      name="date_final"
+                      dateFormat="dd/mm/yy"
+                      placeholder="Data de encerramento"
+                      value={values.date_final}
+                      onChange={(e: { value: Date }) => setFieldValue("date_final", e.value)}
+                    />
+                  </div>
+                  <div className="col-12 md:col-6">
                     <label>Adicionar ou mudar Régua do plano de trabalho</label>
                     <Padding />
                     <label>* Imagem para adicionar aos relatórios</label>
@@ -177,6 +204,28 @@ const ProjectOnePage = () => {
                 )}
             </Row>
           </Row>
+          {(props.project?.project.date_initial || props.project?.project.date_final) && (
+            <>
+              <Padding padding="8px" />
+              <Row>
+                {props.project?.project.date_initial && (
+                  <small style={{ color: "#6c757d" }}>
+                    <strong>Início:</strong>{" "}
+                    {new Date(props.project.project.date_initial).toLocaleDateString("pt-BR")}
+                  </small>
+                )}
+                {props.project?.project.date_initial && props.project?.project.date_final && (
+                  <Padding padding="16px" />
+                )}
+                {props.project?.project.date_final && (
+                  <small style={{ color: "#6c757d" }}>
+                    <strong>Encerramento:</strong>{" "}
+                    {new Date(props.project.project.date_final).toLocaleDateString("pt-BR")}
+                  </small>
+                )}
+              </Row>
+            </>
+          )}
           {props.project?.project.ruler_url && <div>
             <Padding />
             <h4>Régua de marca do plano de trabalho</h4>

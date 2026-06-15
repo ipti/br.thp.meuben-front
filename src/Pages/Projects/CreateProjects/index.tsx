@@ -3,6 +3,7 @@ import { Button } from "primereact/button";
 import { useContext, useState } from "react";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
+import CalendarComponent from "../../../Components/Calendar";
 import ContentPage from "../../../Components/ContentPage";
 import ErrorSummary from "../../../Components/ErrorSummary";
 import FieldError from "../../../Components/FieldError";
@@ -25,6 +26,8 @@ const createProjectSchema = Yup.object().shape({
 const initialValues = {
   name: "",
   approval_percentage: undefined,
+  date_initial: undefined as Date | undefined,
+  date_final: undefined as Date | undefined,
 };
 
 const CreateProjects = () => {
@@ -51,13 +54,15 @@ const CreateProjectsPage = () => {
               name: values.name,
               approval_percentage: values.approval_percentage!,
               socialTechnologyId: parseInt(GetIdTs() as string),
+              date_initial: values.date_initial?.toISOString(),
+              date_final: values.date_final?.toISOString(),
             });
           } else {
             Swal.fire("Crie ou selecione uma Tecnologia");
           }
         }}
       >
-        {({ values, errors, handleChange }) => {
+        {({ values, errors, handleChange, setFieldValue }) => {
           const fieldError = (field: string) =>
             submitted ? (errors as Record<string, string>)[field] : undefined;
           const errorArray = submitted
@@ -102,6 +107,28 @@ const CreateProjectsPage = () => {
                     value={values.approval_percentage}
                   />
                   <FieldError message={fieldError("approval_percentage")} />
+                </div>
+                <div className="col-12 md:col-6">
+                  <label>Data de início</label>
+                  <Padding />
+                  <CalendarComponent
+                    name="date_initial"
+                    dateFormat="dd/mm/yy"
+                    placeholder="Data de início"
+                    value={values.date_initial}
+                    onChange={(e: { value: Date }) => setFieldValue("date_initial", e.value)}
+                  />
+                </div>
+                <div className="col-12 md:col-6">
+                  <label>Data de encerramento</label>
+                  <Padding />
+                  <CalendarComponent
+                    name="date_final"
+                    dateFormat="dd/mm/yy"
+                    placeholder="Data de encerramento"
+                    value={values.date_final}
+                    onChange={(e: { value: Date }) => setFieldValue("date_final", e.value)}
+                  />
                 </div>
               </div>
               <Padding padding="16px" />

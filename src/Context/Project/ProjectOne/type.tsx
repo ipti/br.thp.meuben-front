@@ -25,6 +25,8 @@ export interface Project {
   avartar_url: any
   ruler_url: string
   social_technology_id: number
+  date_initial: string | null
+  date_final: string | null
   createdAt: string
   updatedAt: string
   classrooms: Classroom[]

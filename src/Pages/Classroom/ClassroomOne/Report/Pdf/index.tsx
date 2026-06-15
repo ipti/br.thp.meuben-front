@@ -167,11 +167,17 @@ export const ReportClassroom = () => {
     return { percentage: verifyFouls().toFixed(0), count: count };
   };
 
+  const projectYear = report?.project?.date_initial
+    ? new Date(report.project.date_initial).getFullYear()
+    : null;
+  const requiresTerm = projectYear === null || projectYear >= 2026;
+
   const getExportableRegistrations = () =>
     (report?.register_classroom || []).filter(
       (item: any) =>
         item?.status === "APPROVED" &&
-        item?.registration?.register_term?.[0]?.status === "ACTIVE_TERM"
+        (!requiresTerm ||
+          item?.registration?.register_term?.[0]?.status === "ACTIVE_TERM")
     );
 
   const buildPdfDoc = () => {
@@ -449,11 +455,13 @@ export const ReportClassroom = () => {
   };
 
   const generatePDF = () => {
-    if (getExportableRegistrations().length === 0) {
+    if (getExportableRegistrations().length === 0 && requiresTerm) {
       Swal.fire({
         icon: "warning",
         title: "Nenhum beneficiário elegível",
-        text: "Para exportar, o beneficiário precisa ter matrícula aprovada e termo de adesão ativo.",
+        text: requiresTerm
+            ? "Para exportar, o beneficiário precisa ter matrícula aprovada e termo de adesão ativo."
+            : "Para exportar, o beneficiário precisa ter matrícula aprovada.",
         confirmButtonText: "Entendi",
         confirmButtonColor: styles.colors.colorsBaseProductNormal,
       });
@@ -464,11 +472,13 @@ export const ReportClassroom = () => {
   };
 
   const generateImagesZip = async () => {
-    if (getExportableRegistrations().length === 0) {
+    if (getExportableRegistrations().length === 0 && requiresTerm) {
       Swal.fire({
         icon: "warning",
         title: "Nenhum beneficiário elegível",
-        text: "Para exportar, o beneficiário precisa ter matrícula aprovada e termo de adesão ativo.",
+        text: requiresTerm
+            ? "Para exportar, o beneficiário precisa ter matrícula aprovada e termo de adesão ativo."
+            : "Para exportar, o beneficiário precisa ter matrícula aprovada.",
         confirmButtonText: "Entendi",
         confirmButtonColor: styles.colors.colorsBaseProductNormal,
       });
