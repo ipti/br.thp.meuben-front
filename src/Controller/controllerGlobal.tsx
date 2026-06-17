@@ -178,7 +178,6 @@ export const StatusTermEnum: any = {
 
 export const TypeTermEnum: any = {
   IMAGE_VOICE: "Imagem e voz",
-  DATA: "Termo de dados",
   ACCESSION: "Termo de adesão",
   UNSPECIFIED: "Termo não especificado",
 };
