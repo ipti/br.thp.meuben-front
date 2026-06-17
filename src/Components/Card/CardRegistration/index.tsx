@@ -81,18 +81,22 @@ const CardRegistration = ({
         />
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-            <span style={{
-              fontWeight: 700,
-              fontSize: "0.88rem",
-              color: color.colorsBaseInkNormal,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              flex: 1,
-            }}>
-              {subtitle}
-            </span>
+          <span style={{
+            display: "block",
+            fontWeight: 700,
+            fontSize: "0.88rem",
+            color: color.colorsBaseInkNormal,
+            wordBreak: "break-word",
+            lineHeight: 1.3,
+          }}>
+            {subtitle}
+          </span>
+
+          <div style={{ fontSize: "0.72rem", color: color.colorsBaseInkLight, marginTop: 2 }}>
+            {title}
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
             <span style={{
               fontSize: "0.7rem",
               fontWeight: 700,
@@ -101,17 +105,9 @@ const CardRegistration = ({
               color: "#fff",
               backgroundColor: enrollmentBg[status] ?? color.colorCardOrange,
               whiteSpace: "nowrap",
-              flexShrink: 0,
             }}>
               {StatusEnum[status] ?? StatusEnum["PENDING"]}
             </span>
-          </div>
-
-          <div style={{ fontSize: "0.72rem", color: color.colorsBaseInkLight, marginTop: 2 }}>
-            {title}
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
             <span style={{
               fontSize: "0.7rem",
               fontWeight: 600,
