@@ -7,6 +7,7 @@ import Empty from "../../../Components/Empty";
 import Loading from "../../../Components/Loading";
 import { AplicationContext } from "../../../Context/Aplication/context";
 import { ROLE } from "../../../Controller/controllerGlobal";
+import { usePermissions } from "../../../hooks/usePermissions";
 import { idTs, menuItem } from "../../../Services/localstorage";
 import { Padding } from "../../../Styles/styles";
 import { PropsAplicationContext } from "../../../Types/types";
@@ -16,12 +17,13 @@ const TecnologySocial = () => {
   const propsAplication = useContext(
     AplicationContext
   ) as PropsAplicationContext;
+  const { can } = usePermissions();
   const [editVisible, setEditVisible] = useState(false);
   const [selectedTs, setSelectedTs] = useState<{ id: number; title: string; area_of_activity?: string } | null>(null);
 
   if (!propsAplication.project) return <Loading />;
   return (
-    <ContentPage title="Tecnologias" description="Visualização das tecnologias sociais." permissionButton={propsAplication.user?.role === ROLE.ADMIN} addButton onClick={() => history("/tecnologias/criar")} >
+    <ContentPage title="Tecnologias" description="Visualização das tecnologias sociais." permissionButton={can("socialTechnology.create")} addButton onClick={() => history("/tecnologias/criar")} >
       <Padding padding="16px" />
       {propsAplication.project.length > 0 ? (
       <div className="grid">
@@ -35,7 +37,7 @@ const TecnologySocial = () => {
               <CardTs
                 title={item.name}
                 id={item.id}
-                isAdmin={propsAplication.user?.role === ROLE.ADMIN}
+                isAdmin={can("socialTechnology.edit")}
                 area_of_activity={item.area_of_activity}
                 onEdit={(id, title) => {
                   setSelectedTs({ id, title, area_of_activity: item.area_of_activity || undefined });

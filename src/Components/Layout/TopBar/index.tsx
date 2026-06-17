@@ -12,7 +12,6 @@ import {
   PropsAplicationContext
 } from "../../../Types/types";
 import DropdownComponent from "../../Dropdown";
-import LogoutTopBar from "./Logout";
 import { Back, Container } from "./style";
 
 const TopBar = ({
@@ -72,10 +71,6 @@ const TopBar = ({
                 }}
               />
             ) : null}{" "}
-          </Column>
-          <Padding />
-          <Column id="center">
-            <LogoutTopBar />
           </Column>
         </Row>
       </Column>

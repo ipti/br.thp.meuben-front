@@ -23,6 +23,7 @@ import {
   formatarData,
   loadImageFileAsBase64
 } from "../../../../../../Controller/controllerGlobal";
+import { usePermissions } from "../../../../../../hooks/usePermissions";
 import styles from "../../../../../../Styles";
 import { Padding, Row } from "../../../../../../Styles/styles";
 pdfMake.vfs = pdfFonts.vfs;
@@ -58,6 +59,8 @@ const Beneficiarios = () => {
   const props = useContext(
     MeetingListRegistrationContext
   ) as MeetingListRegisterTypes;
+  const { can } = usePermissions();
+  const canSaveAttendance = can("meeting.uploadFiles");
 
   const [logoBase64, setLogoBase64] = useState<string | null>(null);
   const [logoBaseLeft64, setLogoBaseLeft64] = useState<string | null>(null);
@@ -134,32 +137,33 @@ const Beneficiarios = () => {
 
 
   const bodyRegisterFouls = (dataRow: RegisterClassroom) => {
+    const isPresent = !selectedProducts.find(
+      (props: any) => props.id === dataRow.registration.id
+    );
     return (
       <Row id="center">
-        {!selectedProducts.find(
-          (props: any) => props.id === dataRow.registration.id
-        ) ? (
+        {isPresent ? (
           <img
             alt=""
-            style={{ cursor: "pointer" }}
+            style={{ cursor: canSaveAttendance ? "pointer" : "default" }}
             src={Present}
-            onClick={() => {
+            onClick={canSaveAttendance ? () => {
               setSelectedProducts((prevArray: any) =>
                 prevArray.concat(dataRow.registration)
               );
-            }}
+            } : undefined}
           />
         ) : (
           <img
             alt=""
-            style={{ cursor: "pointer" }}
+            style={{ cursor: canSaveAttendance ? "pointer" : "default" }}
             src={NotPresent}
-            onClick={() => {
+            onClick={canSaveAttendance ? () => {
               const novoArray = selectedProducts.filter(
                 (obj: any) => obj.id !== dataRow.registration.id
               );
               setSelectedProducts(novoArray);
-            }}
+            } : undefined}
           />
         )}
       </Row>
@@ -367,20 +371,21 @@ const Beneficiarios = () => {
       <h2>Lista de presença</h2>
       <Padding padding="16px" />
       <Row id="space-between">
-        <Button
-          label="Salvar"
-          icon="pi pi-save"
-          tooltip={(props.meeting?.meeting_archives?.length! === 0 ||
-            props.meeting?.status === Status.APPROVED) ? "Para conseguir salvar a lista, é necessario adicionar um arquivo como uma evidencia da aula" : "Salvar as faltas do encontro"}
-          tooltipOptions={{ disabled: true }}
-          onClick={() => {
-            props.CreateFouls({
-              meeting: props.meeting?.id!,
-              registration: FilterId(selectedProducts),
-            });
-
-          }}
-        />
+        {canSaveAttendance && (
+          <Button
+            label="Salvar"
+            icon="pi pi-save"
+            tooltip={(props.meeting?.meeting_archives?.length! === 0 ||
+              props.meeting?.status === Status.APPROVED) ? "Para conseguir salvar a lista, é necessario adicionar um arquivo como uma evidencia da aula" : "Salvar as faltas do encontro"}
+            tooltipOptions={{ disabled: true }}
+            onClick={() => {
+              props.CreateFouls({
+                meeting: props.meeting?.id!,
+                registration: FilterId(selectedProducts),
+              });
+            }}
+          />
+        )}
         <Button
           label={window.innerWidth > 600 ? "Gerar Lista de presença" : ""}
           icon="pi pi-download"

@@ -11,9 +11,10 @@ export const Container = styled.div<PropsActive>`
     background-color: ${styles.colors.colorsBaseProductLighter};
     min-width: 256px;
     height: 100%;
-    overflow-y: auto;
-    display: ${props => props.active ? "block" : "none"};
+    display: ${props => props.active ? "flex" : "none"};
+    flex-direction: column;
     flex-shrink: 0;
+    overflow: hidden;
 
     ${props => props.isMobile && `
         position: fixed;
@@ -22,6 +23,11 @@ export const Container = styled.div<PropsActive>`
         height: 100%;
         z-index: 100;
     `}
+`;
+
+export const MenuScrollArea = styled.div`
+    flex: 1;
+    overflow-y: auto;
 `;
 
 export const TopBar = styled.div`

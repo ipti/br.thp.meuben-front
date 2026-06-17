@@ -12,8 +12,8 @@ export interface ProfileSocialTechnology {
 export interface ProfileTypeLogEntry {
   id: number;
   profile_fk: number;
-  previous_type: 'COORDINATOR' | 'REAPPLICATOR' | null;
-  new_type: 'COORDINATOR' | 'REAPPLICATOR';
+  previous_type: 'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'MONITORING' | 'COMMUNICATION' | null;
+  new_type: 'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'MONITORING' | 'COMMUNICATION';
   reason?: string;
   changed_by_fk?: number;
   changed_by?: {
@@ -42,7 +42,7 @@ export interface Profile {
   birthday: string;
   initial_date?: string;
   active: boolean;
-  current_type: 'COORDINATOR' | 'REAPPLICATOR';
+  current_type: 'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'MONITORING' | 'COMMUNICATION';
   user_fk?: number;
   user?: ProfileLinkedUser;
   profile_social_technology: ProfileSocialTechnology[];
@@ -60,7 +60,7 @@ export interface ProfilesResponse {
 
 export interface CreateProfileDto {
   name: string;
-  current_type: 'COORDINATOR' | 'REAPPLICATOR';
+  current_type: 'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'MONITORING' | 'COMMUNICATION';
   phone?: string;
   email?: string;
   color_race?: number;
@@ -78,7 +78,7 @@ export interface CreateUserWithProfile {
   username: string;
   password: string;
   role?: 'USER';
-  current_type: 'COORDINATOR' | 'REAPPLICATOR';
+  current_type: 'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'MONITORING' | 'COMMUNICATION';
   project?: number[];
   email?: string;
   phone?: string;
@@ -92,7 +92,7 @@ export interface ProfileFilters {
   page: number;
   perPage: number;
   name?: string;
-  current_type?: 'COORDINATOR' | 'REAPPLICATOR';
+  current_type?: 'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'MONITORING' | 'COMMUNICATION';
   active?: boolean;
 }
 
@@ -106,11 +106,11 @@ export interface ProfileContextTypes {
   page: number;
   perPage: number;
   nameSearch: string;
-  currentTypeFilter?: 'COORDINATOR' | 'REAPPLICATOR';
+  currentTypeFilter?: 'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'MONITORING' | 'COMMUNICATION';
   setPage: Dispatch<SetStateAction<number>>;
   setPerPage: Dispatch<SetStateAction<number>>;
   setNameSearch: Dispatch<SetStateAction<string>>;
-  setCurrentTypeFilter: Dispatch<SetStateAction<'COORDINATOR' | 'REAPPLICATOR' | undefined>>;
+  setCurrentTypeFilter: Dispatch<SetStateAction<'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'MONITORING' | 'COMMUNICATION' | undefined>>;
   loadOne: (id: number) => void;
   loadTypeLog: (id: number) => void;
 }

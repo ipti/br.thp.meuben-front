@@ -231,7 +231,7 @@ const ProfileViewPage = () => {
     setSelectedUserId(undefined);
   };
 
-  const isCoordinator = p.current_type === "COORDINATOR";
+  const isCoordinator = p.current_type === "COORDINATOR" || p.current_type === "COORDINATION_SUPPORT";
 
   return (
     <ContentPage title="" description="">
@@ -504,12 +504,12 @@ const ProfileViewPage = () => {
                         <>
                           <Tag
                             value={profileTypeLabel[log.previous_type] ?? log.previous_type}
-                            severity={log.previous_type === "COORDINATOR" ? "info" : "warning"}
+                            severity={log.previous_type === "COORDINATOR" || log.previous_type === "COORDINATION_SUPPORT" ? "info" : "warning"}
                           />
                           <i className="pi pi-arrow-right" style={{ fontSize: 11, color: color.colorsBaseInkLight }} />
                           <Tag
                             value={profileTypeLabel[log.new_type] ?? log.new_type}
-                            severity={log.new_type === "COORDINATOR" ? "info" : "warning"}
+                            severity={log.new_type === "COORDINATOR" || log.new_type === "COORDINATION_SUPPORT" ? "info" : "warning"}
                           />
                         </>
                       ) : (
@@ -518,7 +518,7 @@ const ProfileViewPage = () => {
                           <i className="pi pi-arrow-right" style={{ fontSize: 11, color: color.colorsBaseInkLight }} />
                           <Tag
                             value={profileTypeLabel[log.new_type] ?? log.new_type}
-                            severity={log.new_type === "COORDINATOR" ? "info" : "warning"}
+                            severity={log.new_type === "COORDINATOR" || log.new_type === "COORDINATION_SUPPORT" ? "info" : "warning"}
                           />
                         </>
                       )}

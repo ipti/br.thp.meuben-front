@@ -5,10 +5,12 @@ import { useState } from "react";
 import ContentPage from "../../Components/ContentPage";
 import DropdownComponent from "../../Components/Dropdown";
 import { formatarData, typeLog, typeLogArray } from "../../Controller/controllerGlobal";
+import { usePermissions } from "../../hooks/usePermissions";
 import { useFetchRequestUserLogs } from "../../Services/UserLogs/query";
 import { Padding, Row } from "../../Styles/styles";
 
 const UserLogs = () => {
+  const { can } = usePermissions();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [filters, setFilters] = useState({
@@ -68,6 +70,15 @@ const UserLogs = () => {
     });
     setPage(1);
   };
+
+  if (!can("logs.view")) {
+    return (
+      <ContentPage title="Logs do Sistema" description="Acesso restrito.">
+        <Padding padding="16px" />
+        <p>Você não tem permissão para acessar esta página.</p>
+      </ContentPage>
+    );
+  }
 
   return (
     <ContentPage

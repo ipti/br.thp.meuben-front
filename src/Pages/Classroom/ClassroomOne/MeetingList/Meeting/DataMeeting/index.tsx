@@ -167,6 +167,7 @@ const DataMeeting = () => {
   ) as PropsAplicationContext;
   const { can } = usePermissions();
   const canEditStatus = can("meeting.editStatus");
+  const canEdit = can("meeting.editMembers");
 
   const status = [
     { id: Status.APPROVED, name: "Aprovado" },
@@ -274,7 +275,7 @@ const DataMeeting = () => {
                   )}
                 </Column>
                 <Padding />
-                {!edit ? (
+                {!edit && canEdit ? (
                   <Button
                     text
                     label="Editar"

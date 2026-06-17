@@ -122,10 +122,8 @@ const MeetingPage = () => {
           {currentStep === 1 && (
             <>
               <Padding padding="16px" />
-              {!(
-                props.meeting.status === Status.APPROVED &&
-                can("meeting.uploadFiles")
-              ) && (
+              {can("meeting.uploadFiles") &&
+                props.meeting.status !== Status.APPROVED && (
                   <div className="grid">
                     <div className="col-12">
                       <label>Salve os arquivos do encontro</label>

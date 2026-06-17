@@ -194,15 +194,23 @@ export const ROLE = {
 } as const;
 
 export const PROFILE_TYPE = {
-  COORDINATOR: "COORDINATOR",
-  REAPPLICATOR: "REAPPLICATOR",
+  COORDINATOR:          "COORDINATOR",
+  COORDINATION_SUPPORT: "COORDINATION_SUPPORT",
+  REAPPLICATOR:         "REAPPLICATOR",
+  MONITORING:           "MONITORING",
+  COMMUNICATION:        "COMMUNICATION",
+  OTHER:                "OTHER",
 } as const;
 
 export type ProfileType = typeof PROFILE_TYPE[keyof typeof PROFILE_TYPE];
 
 export const profileTypeLabel: Record<string, string> = {
-  COORDINATOR: "Coordenador",
-  REAPPLICATOR: "Reaplicador",
+  COORDINATOR:          "Coordenação",
+  COORDINATION_SUPPORT: "Apoio à coordenação",
+  REAPPLICATOR:         "Reaplicador",
+  MONITORING:           "Monitoramento",
+  COMMUNICATION:        "Comunicação",
+  OTHER:                "Outro",
 };
 
 export const kinship = [

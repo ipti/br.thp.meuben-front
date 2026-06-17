@@ -3,9 +3,11 @@ import { User } from '../Context/Users/type';
 type PermissionRule = (user: User | undefined) => boolean;
 
 const isAdmin        = (u: User | undefined) => u?.role === 'ADMIN';
-const isCoordinator  = (u: User | undefined) => u?.profileType === 'COORDINATOR';
-const isReapplicator = (u: User | undefined) => u?.profileType === 'REAPPLICATOR';
+const isCoordinator  = (u: User | undefined) => u?.profileType === 'COORDINATOR' || u?.profileType === 'COORDINATION_SUPPORT';
+const isReapplicator = (u: User | undefined) => u?.profileType === 'REAPPLICATOR' || u?.profileType === 'OTHER';
 const adminOrCoord   = (u: User | undefined) => isAdmin(u) || isCoordinator(u);
+const ismonitoring    = (u: User | undefined) => u?.profileType === 'MONITORING';
+const isCommunication = (u: User | undefined) => u?.profileType === 'COMMUNICATION';
 
 // Para alterar quem pode fazer o quê: editar apenas este arquivo.
 export const PermissionsConfig: Record<string, PermissionRule> = {
@@ -35,15 +37,23 @@ export const PermissionsConfig: Record<string, PermissionRule> = {
   'meeting.editStatus':         adminOrCoord,
   'meeting.editMembers':        adminOrCoord,
   'meeting.viewJustification':  isReapplicator,
-  'meeting.uploadFiles':        isReapplicator,
+  'meeting.uploadFiles':        (u) => isReapplicator(u) || adminOrCoord(u),
+  'meeting.create':            (u) => adminOrCoord(u) || isReapplicator(u),
+
 
   // ── Projetos ──────────────────────────────────────────────────────────────
   'project.create': adminOrCoord,
-  'project.edit':   adminOrCoord,
+  'project.edit':   (u) => adminOrCoord(u) || isCommunication(u),
   'project.delete': adminOrCoord,
 
+  // ── Beneficiários ────────────────────────────────────────────────────────────
+  'beneficiary.view':   (u) => adminOrCoord(u) || isReapplicator(u) || ismonitoring(u),
+  'beneficiary.create': adminOrCoord,
+  'beneficiary.edit':   adminOrCoord,
+  'beneficiary.delete': adminOrCoord,
+
   // ── Matrículas ────────────────────────────────────────────────────────────
-  'registration.view':   adminOrCoord,
+  'registration.view':   (u) => adminOrCoord(u) || isReapplicator(u),
   'registration.delete': adminOrCoord,
 
   // ── Tecnologias Sociais ───────────────────────────────────────────────────
@@ -52,6 +62,9 @@ export const PermissionsConfig: Record<string, PermissionRule> = {
 
   // ── Logs ──────────────────────────────────────────────────────────────────
   'logs.view': isAdmin,
+
+  // ── Página Inicial ────────────────────────────────────────────────────────
+  'initialPage.exportCsv': isAdmin,
 
   // ── Menu ──────────────────────────────────────────────────────────────────
   'menu.profiles': adminOrCoord,

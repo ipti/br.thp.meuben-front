@@ -1,45 +1,18 @@
 import { useContext } from 'react';
 import { AplicationContext } from '../Context/Aplication/context';
 import { PermissionsConfig } from '../permissions/config';
+import { PropsAplicationContext } from '../Types/types';
 
-export type Permission = keyof typeof PermissionsConfig;
-
-export interface UsePermissionsReturn {
-  can:            (permission: Permission) => boolean;
-  canAny:         (permissions: Permission[]) => boolean;
-  canAll:         (permissions: Permission[]) => boolean;
-  isAdmin:        boolean;
-  isCoordinator:  boolean;
-  isReapplicator: boolean;
-  hasProfile:     boolean;
-}
-
-export const usePermissions = (): UsePermissionsReturn => {
-  const context = useContext(AplicationContext);
+export const usePermissions = () => {
+  const context = useContext(AplicationContext) as PropsAplicationContext | null;
   const user = context?.user;
 
-  const can = (permission: Permission): boolean => {
+  const can = (permission: string): boolean => {
     const rule = PermissionsConfig[permission];
-    if (!rule) {
-      console.warn(`[usePermissions] Permissão desconhecida: "${permission}"`);
-      return false;
-    }
-    return rule(user);
+    return rule ? rule(user) : false;
   };
 
-  const canAny = (permissions: Permission[]): boolean =>
-    permissions.some((p) => can(p));
+  const isAdmin = user?.role === 'ADMIN';
 
-  const canAll = (permissions: Permission[]): boolean =>
-    permissions.every((p) => can(p));
-
-  return {
-    can,
-    canAny,
-    canAll,
-    isAdmin:        user?.role === 'ADMIN',
-    isCoordinator:  user?.profileType === 'COORDINATOR',
-    isReapplicator: user?.profileType === 'REAPPLICATOR',
-    hasProfile:     !!user?.profileId,
-  };
+  return { can, isAdmin };
 };

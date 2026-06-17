@@ -19,8 +19,12 @@ const InputWrapper = styled.div`
 `;
 
 const TYPE_OPTIONS = [
-  { id: "COORDINATOR", name: "Coordenador" },
-  { id: "REAPPLICATOR", name: "Reaplicador" },
+  { id: "COORDINATOR",         name: "Coordenação" },
+  { id: "COORDINATION_SUPPORT", name: "Apoio à coordenação" },
+  { id: "REAPPLICATOR",        name: "Reaplicador" },
+  { id: "MONITORING",          name: "Monitoramento" },
+  { id: "COMMUNICATION",       name: "Comunicação" },
+  { id: "OTHER",               name: "Outro" },
 ];
 
 interface ProfileInputsProps {
@@ -30,7 +34,7 @@ interface ProfileInputsProps {
   touched: any;
   values: any;
   isEditing?: boolean;
-  originalType?: "COORDINATOR" | "REAPPLICATOR";
+  originalType?: "COORDINATOR" | "COORDINATION_SUPPORT" | "REAPPLICATOR" | "OTHER" | "MONITORING" | "COMMUNICATION";
 }
 
 const ProfileInputs = ({

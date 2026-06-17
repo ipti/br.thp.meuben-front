@@ -11,7 +11,8 @@ import ContentPage from "../../Components/ContentPage";
 import DropdownComponent from "../../Components/Dropdown";
 import UsersProvider, { UsersContext } from "../../Context/Users/context";
 import { UsersTypes } from "../../Context/Users/type";
-import { ROLE } from "../../Controller/controllerGlobal";
+import { ROLE, profileTypeLabel } from "../../Controller/controllerGlobal";
+import { usePermissions } from "../../hooks/usePermissions";
 import { Padding, Row } from "../../Styles/styles";
 
 const ListUsers = () => {
@@ -25,6 +26,7 @@ const ListUsers = () => {
 const ListUsersPage = () => {
   const props = useContext(UsersContext) as UsersTypes;
   const history = useNavigate();
+  const { can } = usePermissions();
 
 
   const [visible, setVisible] = useState<any>(false);
@@ -40,8 +42,7 @@ const ListUsersPage = () => {
 
   const typeUserBody = (rowData: any) => {
     if (rowData.role === ROLE.ADMIN) return <p>Admin</p>;
-    if (rowData.profile?.current_type === "COORDINATOR") return <p>Coordenador</p>;
-    if (rowData.profile?.current_type === "REAPPLICATOR") return <p>Reaplicador</p>;
+    if (rowData.profile?.current_type) return <p>{profileTypeLabel[rowData.profile.current_type] ?? rowData.profile.current_type}</p>;
     return <p>Usuário</p>;
   };
 
@@ -55,12 +56,13 @@ const ListUsersPage = () => {
 
   const profileBody = (rowData: any) => {
     if (!rowData.profile) return <span style={{ color: "#aaa" }}>—</span>;
+    const isCoordType = rowData.profile.current_type === "COORDINATOR" || rowData.profile.current_type === "COORDINATION_SUPPORT";
     return (
       <Button
-        label={rowData.profile.current_type === "COORDINATOR" ? "Coordenador" : "Reaplicador"}
+        label={profileTypeLabel[rowData.profile.current_type] ?? rowData.profile.current_type}
         text
         size="small"
-        severity={rowData.profile.current_type === "COORDINATOR" ? "info" : "warning"}
+        severity={isCoordType ? "info" : "warning"}
         onClick={() => history("/perfis/" + rowData.profile.id)}
       />
     );
@@ -69,22 +71,26 @@ const ListUsersPage = () => {
   const ActionsUserBody = (rowData: any) => {
     return (
       <Row>
-        <Button
-          icon="pi pi-pencil"
-          rounded
-          className="mr-2"
-          onClick={() => {
-            history("/users/" + rowData.id);
-          }}
-        />
-        <Button
-          severity="danger"
-          rounded
-          icon={"pi pi-trash"}
-          onClick={() => {
-            setVisible(rowData);
-          }}
-        />
+        {can("user.edit") && (
+          <Button
+            icon="pi pi-pencil"
+            rounded
+            className="mr-2"
+            onClick={() => {
+              history("/users/" + rowData.id);
+            }}
+          />
+        )}
+        {can("user.delete") && (
+          <Button
+            severity="danger"
+            rounded
+            icon={"pi pi-trash"}
+            onClick={() => {
+              setVisible(rowData);
+            }}
+          />
+        )}
       </Row>
     );
   };
@@ -125,7 +131,9 @@ const ListUsersPage = () => {
           flexWrap: "wrap",
         }}
       >
-        <Button label="Criar usuário" onClick={() => history("/users/criar")} icon="pi pi-plus" />
+        {can("user.create") && (
+          <Button label="Criar usuário" onClick={() => history("/users/criar")} icon="pi pi-plus" />
+        )}
         <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
           {hasActiveFilters ? (
             <Button

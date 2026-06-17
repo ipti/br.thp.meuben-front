@@ -23,9 +23,13 @@ const ProfileList = () => (
 );
 
 const TYPE_FILTER_OPTIONS = [
-  { id: undefined,       name: "Todos" },
-  { id: "COORDINATOR",   name: "Coordenador" },
-  { id: "REAPPLICATOR",  name: "Reaplicador" },
+  { id: undefined,             name: "Todos" },
+  { id: "COORDINATOR",         name: "Coordenação" },
+  { id: "COORDINATION_SUPPORT", name: "Apoio à coordenação" },
+  { id: "REAPPLICATOR",        name: "Reaplicador" },
+  { id: "OTHER",               name: "Outro" },
+  { id: "MONITORING",          name: "Monitoramento" },
+  { id: "COMMUNICATION",       name: "Comunicação" },
 ];
 
 const ProfileListPage = () => {
@@ -46,7 +50,7 @@ const ProfileListPage = () => {
   const typeBody = (row: Profile) => (
     <Tag
       value={profileTypeLabel[row.current_type] ?? row.current_type}
-      severity={row.current_type === "COORDINATOR" ? "info" : "warning"}
+      severity={row.current_type === "COORDINATOR" || row.current_type === "COORDINATION_SUPPORT" ? "info" : "warning"}
     />
   );
 

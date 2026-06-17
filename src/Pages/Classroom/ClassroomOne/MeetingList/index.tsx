@@ -1,6 +1,7 @@
 import { Button } from "primereact/button";
 import { useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { usePermissions } from "../../../../hooks/usePermissions";
 import CardMeeting from "../../../../Components/Card/CardMeeting";
 import ContentPage from "../../../../Components/ContentPage";
 import Empty from "../../../../Components/Empty";
@@ -33,15 +34,18 @@ const MeetingListPage = () => {
   );
 
   const history = useNavigate();
+  const { can } = usePermissions();
 
   if (props.isLoading && isLoading) return <Loading />;
   return (
     <ContentPage title={"Encontros da turma: " + classroom?.name} description="Visualização dos encontros da turma.">
       <Padding padding="16px" />
-      <Button
-        label="Criar encontro"
-        onClick={() => history(`/turma/${id}/encontros/criar`)}
-      />
+      {can("meeting.create") && (
+        <Button
+          label="Criar encontro"
+          onClick={() => history(`/turma/${id}/encontros/criar`)}
+        />
+      )}
       <Padding padding="16px" />
       {props?.meetings?.length! > 0 ? (
         <div className="grid">

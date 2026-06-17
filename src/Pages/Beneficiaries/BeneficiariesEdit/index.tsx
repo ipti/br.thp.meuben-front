@@ -48,6 +48,7 @@ import {
   isUnder18ByBirthDate,
   shouldRequireBeneficiaryPhone,
 } from "../../../Utils/beneficiaryRules";
+import { usePermissions } from "../../../hooks/usePermissions";
 
 const schema = Yup.object().shape({
   name: Yup.string().required("Nome é obrigatório"),
@@ -240,6 +241,8 @@ const StatusTermHeader = () => {
 
 const BeneficiariesEditPage = () => {
   const props = useContext(BeneficiariesEditContext) as BeneficiariesEditType;
+  const { can } = usePermissions();
+  const canEdit = can("beneficiary.edit");
   const [visible, setVisible] = useState<any>();
   const [visibleTerm, setVisibleTerm] = useState<any>();
   const [visibleDeleteTerm, setVisibleDeleteTerm] = useState<any>();
@@ -312,11 +315,13 @@ const BeneficiariesEditPage = () => {
         className="flex justify-content-between"
         style={{ background: color.colorCard }}
       >
-        <Button
-          label="Nova matricula"
-          icon="pi pi-plus"
-          onClick={() => setVisible(true)}
-        />
+        {canEdit && (
+          <Button
+            label="Nova matricula"
+            icon="pi pi-plus"
+            onClick={() => setVisible(true)}
+          />
+        )}
       </div>
     );
   };
@@ -327,12 +332,14 @@ const BeneficiariesEditPage = () => {
         className="flex justify-content-between"
         style={{ background: color.colorCard }}
       >
-        <Button
-          label={"Novo termo"}
-          icon="pi pi-plus"
-          type="button"
-          onClick={() => setVisibleTerm(true)}
-        />
+        {canEdit && (
+          <Button
+            label={"Novo termo"}
+            icon="pi pi-plus"
+            type="button"
+            onClick={() => setVisibleTerm(true)}
+          />
+        )}
       </div>
     );
   };
@@ -347,15 +354,16 @@ const BeneficiariesEditPage = () => {
   const ActionBeneficiariesBody = (rowData: any) => {
     return (
       <Row id="center">
-        {/* <Button rounded icon={"pi pi-pencil"} onClick={() => { history(`${rowData.id}`) }} /> */}
-        <Button
-          severity="danger"
-          rounded
-          icon={"pi pi-trash"}
-          onClick={() => {
-            setVisibleDelete(rowData);
-          }}
-        />
+        {canEdit && (
+          <Button
+            severity="danger"
+            rounded
+            icon={"pi pi-trash"}
+            onClick={() => {
+              setVisibleDelete(rowData);
+            }}
+          />
+        )}
       </Row>
     );
   };
@@ -391,13 +399,20 @@ const BeneficiariesEditPage = () => {
               <Form>
                 <div>
                   <Row id="end">
-                    <Button
-                      label="Salvar"
-                      type="submit"
-                      loading={props.isLoadingUpdate}
-                      onClick={() => setSubmitted(true)}
-                      icon="pi pi-save"
-                    />
+                    {!canEdit && (
+                      <p style={{ color: "#6b7280", fontSize: "13px" }}>
+                        Você está no modo de visualização.
+                      </p>
+                    )}
+                    {canEdit && (
+                      <Button
+                        label="Salvar"
+                        type="submit"
+                        loading={props.isLoadingUpdate}
+                        onClick={() => setSubmitted(true)}
+                        icon="pi pi-save"
+                      />
+                    )}
                   </Row>
                 </div>
                 <Padding padding="8px" />
@@ -433,6 +448,7 @@ const BeneficiariesEditPage = () => {
                         // value={props.file}
                         type="file"
                         placeholder="Avatar"
+                        disabled={!canEdit}
                         onChange={(e) => props.setFile(e.target.files)}
                         name="name"
                       />
@@ -474,6 +490,7 @@ const BeneficiariesEditPage = () => {
                       <TextInput
                         value={values.name}
                         placeholder="Nome"
+                        disabled={!canEdit}
                         onChange={handleChange}
                         name="name"
                       />
@@ -490,6 +507,7 @@ const BeneficiariesEditPage = () => {
                         optionsLabel="type"
                         options={typesex}
                         name="sex"
+                        disabled={!canEdit}
                         onChange={handleChange}
                       />
 
@@ -507,6 +525,7 @@ const BeneficiariesEditPage = () => {
                         mask="99/99/9999"
                         placeholder="Data de Nascimento"
                         name="birthday"
+                        disabled={!canEdit}
                         onChange={handleBirthdayChange}
                       />
 
@@ -521,6 +540,7 @@ const BeneficiariesEditPage = () => {
                         value={values.color_race}
                         options={color_race}
                         name="color_race"
+                        disabled={!canEdit}
                         onChange={handleChange}
                       />{" "}
                       {errors.color_race && touched.color_race ? (
@@ -536,6 +556,7 @@ const BeneficiariesEditPage = () => {
                         value={values.cpf}
                         mask="999.999.999-99"
                         placeholder="CPF *"
+                        disabled={!canEdit}
                         onChange={handleChange}
                         name="cpf"
                       />
@@ -550,6 +571,7 @@ const BeneficiariesEditPage = () => {
                         value={values.date_registration}
                         name="date_registration"
                         dateFormat="dd/mm/yy"
+                        disabled={!canEdit}
                         onChange={handleChange}
                       />
                       {errors.date_registration && touched.date_registration ? (
@@ -565,6 +587,7 @@ const BeneficiariesEditPage = () => {
                         value={values.telephone}
                         mask="(99) 9 9999-9999"
                         name="telephone"
+                        disabled={!canEdit}
                         onChange={handleChange}
                         placeholder="Telefone para contato"
                       />
@@ -579,6 +602,7 @@ const BeneficiariesEditPage = () => {
                         value={values.deficiency}
                         placerholder="Deficiente"
                         name="deficiency"
+                        disabled={!canEdit}
                         onChange={handleChange}
                         options={[
                           { id: true, name: "Sim" },
@@ -596,6 +620,7 @@ const BeneficiariesEditPage = () => {
                         <TextInput
                           value={values.deficiency_description}
                           name="deficiency_description"
+                          disabled={!canEdit}
                           onChange={handleChange}
                           placeholder="Qual deficiência ?"
                         />
@@ -612,6 +637,7 @@ const BeneficiariesEditPage = () => {
                           checked={values.zone === 1}
                           onChange={handleChange}
                           name="zone"
+                          disabled={!canEdit}
                           label="Rural"
                         />
                         <RadioButtonComponent
@@ -619,6 +645,7 @@ const BeneficiariesEditPage = () => {
                           checked={values.zone === 2}
                           onChange={handleChange}
                           name="zone"
+                          disabled={!canEdit}
                           label="Urbana"
                         />
                       </Row>
@@ -641,6 +668,7 @@ const BeneficiariesEditPage = () => {
                           <TextInput
                             value={values.responsable_name}
                             name="responsable_name"
+                            disabled={!canEdit}
                             onChange={handleChange}
                             placeholder="Nome do Resposável"
                           />
@@ -655,6 +683,7 @@ const BeneficiariesEditPage = () => {
                             value={values.responsable_cpf}
                             mask="999.999.999-99"
                             name="responsable_cpf"
+                            disabled={!canEdit}
                             placeholder="CPF do Responsável"
                             onChange={handleChange}
                           />
@@ -674,6 +703,7 @@ const BeneficiariesEditPage = () => {
                             name="kinship"
                             optionsValue="id"
                             optionsLabel="name"
+                            disabled={!canEdit}
                             value={values.kinship}
                           />
                           {errors.kinship && touched.kinship ? (
@@ -689,6 +719,7 @@ const BeneficiariesEditPage = () => {
                             value={values.responsable_telephone}
                             mask="(99) 9 9999-9999"
                             name="responsable_telephone"
+                            disabled={!canEdit}
                             onChange={handleChange}
                             placeholder="Telefone do Responsável"
                           />
@@ -704,6 +735,7 @@ const BeneficiariesEditPage = () => {
                           <TextInput
                             value={values.responsable_email}
                             name="responsable_email"
+                            disabled={!canEdit}
                             onChange={handleChange}
                             placeholder="E-mail do Responsável"
                           />
@@ -716,6 +748,7 @@ const BeneficiariesEditPage = () => {
                             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
                               <CheckboxComponent
                                 checked={values.is_legal_responsible}
+                                disabled={!canEdit}
                                 onChange={(e) => setFieldValue("is_legal_responsible", e.checked)}
                               />
                               <label style={{ cursor: "pointer", fontWeight: 500 }}>
@@ -746,6 +779,7 @@ const BeneficiariesEditPage = () => {
                     showRequiredAsterisk
                     touched={touched}
                     values={values}
+                    disabled={!canEdit}
                   />
                 </>)}
                 {currentStep === 3 && (<>
@@ -757,6 +791,7 @@ const BeneficiariesEditPage = () => {
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <CheckboxComponent
                           checked={values.image_sharing_not_authorized}
+                          disabled={!canEdit}
                           onChange={(e) =>
                             setFieldValue("image_sharing_not_authorized", e.checked)
                           }
@@ -836,6 +871,7 @@ const BeneficiariesEditPage = () => {
                       body={(e) => (
                         <RenderActionTerm
                           row={e}
+                          canEdit={canEdit}
                           setVisibleDeleteTerm={setVisibleDeleteTerm}
                           setVisibleTerm={setVisibleTerm}
                           onOpenPdfViewer={(url: string) => {
@@ -956,11 +992,13 @@ const RenderActionTerm = ({
   setVisibleTerm,
   setVisibleDeleteTerm,
   onOpenPdfViewer,
+  canEdit,
 }: {
   row: any,
   setVisibleTerm: any,
   setVisibleDeleteTerm: any,
-  onOpenPdfViewer: (url: string) => void
+  onOpenPdfViewer: (url: string) => void,
+  canEdit: boolean,
 }) => {
 
   const [isPopoverOpen, setIsPopoverOpen] = useState<any>();
@@ -1019,29 +1057,10 @@ const RenderActionTerm = ({
               </div>
               <p>Baixar</p>
             </Row>
-            <Row
-              onClick={() => {
-                setVisibleTerm(row);
-                setIsPopoverOpen(!isPopoverOpen);
-              }}
-              id="space-between"
-              style={{ cursor: "pointer", padding: "8px", gap: "8px" }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                }}
-              >
-                <Icon icon="pi pi-pencil" size="16px" />
-              </div>
-              <p>Editar</p>
-            </Row>
-            <div className="w-full">
+            {canEdit && (
               <Row
                 onClick={() => {
-                  setVisibleDeleteTerm(row);
+                  setVisibleTerm(row);
                   setIsPopoverOpen(!isPopoverOpen);
                 }}
                 id="space-between"
@@ -1054,11 +1073,34 @@ const RenderActionTerm = ({
                     justifyContent: "center",
                   }}
                 >
-                  <Icon icon="pi pi-trash" size="16px" />
+                  <Icon icon="pi pi-pencil" size="16px" />
                 </div>
-                <p>Excluir</p>
+                <p>Editar</p>
               </Row>
-            </div>
+            )}
+            {canEdit && (
+              <div className="w-full">
+                <Row
+                  onClick={() => {
+                    setVisibleDeleteTerm(row);
+                    setIsPopoverOpen(!isPopoverOpen);
+                  }}
+                  id="space-between"
+                  style={{ cursor: "pointer", padding: "8px", gap: "8px" }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Icon icon="pi pi-trash" size="16px" />
+                  </div>
+                  <p>Excluir</p>
+                </Row>
+              </div>
+            )}
           </div>
         }
       >

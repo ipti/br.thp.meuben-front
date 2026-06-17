@@ -4,7 +4,7 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import TagLogin from "../../Assets/images/logo.svg";
 import { AplicationContext } from "../../Context/Aplication/context";
-import { ROLE } from "../../Controller/controllerGlobal";
+import { profileTypeLabel, ROLE } from "../../Controller/controllerGlobal";
 import { usePermissions } from "../../hooks/usePermissions";
 import {
   getMenuItem,
@@ -18,7 +18,8 @@ import { PropsAplicationContext } from "../../Types/types";
 import DropdownComponent from "../Dropdown";
 import Icon from "../Icon";
 import Item from "./Item";
-import { Container } from "./style";
+import LogoutTopBar from "../Layout/TopBar/Logout";
+import { Container, MenuScrollArea } from "./style";
 import turmasHover from "../../Assets/images/turmasPessoas.svg";
 import turmas from "../../Assets/images/peoples.svg";
 import reapplicator from "../../Assets/images/iconsMenu/reapplicator.svg";
@@ -60,6 +61,7 @@ const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean 
 
   return (
     <Container active={viewdMenu} isMobile={isMobile}>
+      <MenuScrollArea>
       <Padding padding="4px" />
       <Padding padding="16px">
         <Row id="center">
@@ -139,17 +141,21 @@ const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean 
             path={"/turma"}
             icon={active === 4 ? turmasHover : turmas}
           />
-          <Padding />
-          <Item
-            text={"Beneficiários"}
-            funcActiv={() => {
-              setActive(5);
-              menuItem("5");
-            }}
-            active={active === 5 ? true : false}
-            path={"/beneficiarios"}
-            icon={active === 5 ? beneficiaries_hover : beneficiaries}
-          />
+          {can("beneficiary.view") && (
+            <>
+              <Padding />
+              <Item
+                text={"Beneficiários"}
+                funcActiv={() => {
+                  setActive(5);
+                  menuItem("5");
+                }}
+                active={active === 5 ? true : false}
+                path={"/beneficiarios"}
+                icon={active === 5 ? beneficiaries_hover : beneficiaries}
+              />
+            </>
+          )}
           {can("menu.profiles") && (
             <>
               <Padding />
@@ -209,6 +215,48 @@ const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean 
           />
         </Padding>
       ) : null}
+      </MenuScrollArea>
+
+      {props.user && (
+        <div
+          style={{
+            borderTop: `1px solid ${styles.colors.colorsBaseCloudNormal}`,
+            padding: "12px 16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+          }}
+        >
+          <div style={{ overflow: "hidden" }}>
+            <p
+              style={{
+                margin: 0,
+                fontWeight: 600,
+                fontSize: "13px",
+                color: styles.colors.colorsBaseInkNormalActive,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {props.user.name}
+            </p>
+            <p
+              style={{
+                margin: 0,
+                fontSize: "11px",
+                color: styles.colors.colorGrayElephant,
+              }}
+            >
+              {props.user.role === ROLE.ADMIN
+                ? "Administrador"
+                : profileTypeLabel[props.user.profileType ?? ""] ?? "Usuário"}
+            </p>
+          </div>
+          <LogoutTopBar />
+        </div>
+      )}
+
       <ModalYear visible={visibleModal} onHide={() => setVisibleModal(false)} />
     </Container>
   );

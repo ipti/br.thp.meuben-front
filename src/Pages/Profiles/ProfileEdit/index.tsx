@@ -14,7 +14,7 @@ import ProfileInputs from "../Inputs";
 const editSchema = Yup.object({
   name:         Yup.string().min(3, "Mínimo 3 caracteres").required("Nome obrigatório"),
   current_type: Yup.string()
-    .oneOf(["COORDINATOR", "REAPPLICATOR"], "Tipo inválido")
+    .oneOf(["COORDINATOR", "COORDINATION_SUPPORT", "REAPPLICATOR", "OTHER", "MONITORING", "COMMUNICATION"], "Tipo inválido")
     .required("Tipo obrigatório"),
   birthday:     Yup.string().required("Data de nascimento obrigatória"),
   sex:          Yup.number().required("Sexo obrigatório").typeError("Sexo obrigatório"),
@@ -67,7 +67,7 @@ const ProfileEdit = () => {
             id: numId,
             data: {
               name:         values.name,
-              current_type: values.current_type as "COORDINATOR" | "REAPPLICATOR",
+              current_type: values.current_type as "COORDINATOR" | "COORDINATION_SUPPORT" | "REAPPLICATOR" | "OTHER" | "MONITORING" | "COMMUNICATION",
               email:        values.email || undefined,
               phone:        values.phone || undefined,
               birthday:     values.birthday ? converterData(values.birthday) : undefined,

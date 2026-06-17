@@ -19,7 +19,7 @@ import { Padding, Row } from "../../Styles/styles";
 import { PropsAplicationContext } from "../../Types/types";
 
 
-import { ROLE } from "../../Controller/controllerGlobal";
+import { usePermissions } from "../../hooks/usePermissions";
 import ChartsProvider from "../../Context/Charts/context";
 
 import { ChartCard } from "./Components/ChartCard";
@@ -37,6 +37,7 @@ const InitialPage = () => {
   const propsAplication = useContext(
     AplicationContext
   ) as PropsAplicationContext;
+  const { can } = usePermissions();
 
   const [dates, setDates] = useState<Nullable<(Date | null)[]>>(null);
   const [ts, setTs] = useState<number[] | undefined>();
@@ -178,7 +179,7 @@ const InitialPage = () => {
             )}
           </div>
 
-          {propsAplication.user?.role === ROLE.ADMIN && (
+          {can("initialPage.exportCsv") && (
             <Row
               id="end"
               style={{

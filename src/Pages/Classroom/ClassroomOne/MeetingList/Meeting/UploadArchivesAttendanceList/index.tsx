@@ -9,12 +9,15 @@ import { Column, Padding, Row } from "../../../../../../Styles/styles";
 import { useContext, useState } from "react";
 import { MeetingListRegistrationContext } from "../../../../../../Context/Classroom/Meeting/MeetingListRegistration/context";
 import { Status } from "../../../../../../Controller/controllerGlobal";
+import { usePermissions } from "../../../../../../hooks/usePermissions";
 
 const ListArchivesAttendanceList = ({ item }: { item: MeetingArc }) => {
   const [visible, setVisible] = useState(false);
   const props = useContext(
     MeetingListRegistrationContext
   ) as MeetingListRegisterTypes;
+  const { can } = usePermissions();
+  const canUpload = can("meeting.uploadFiles");
 
   return (
     <>
@@ -50,20 +53,22 @@ const ListArchivesAttendanceList = ({ item }: { item: MeetingArc }) => {
             <Padding />
             <Column id="center">{item.original_name}</Column>
           </Row>
-          {!(props.meeting?.status === Status.APPROVED) && <div
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              setVisible(true);
-            }}
-          >
-            <Icon
-              icon="pi pi-trash"
-              color={styles.colors.colorGrayElephant}
-              size="1rem"
-              fontWeight="900"
-            />
-          </div>}
+          {canUpload && props.meeting?.status !== Status.APPROVED && (
+            <div
+              className="cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setVisible(true);
+              }}
+            >
+              <Icon
+                icon="pi pi-trash"
+                color={styles.colors.colorGrayElephant}
+                size="1rem"
+                fontWeight="900"
+              />
+            </div>
+          )}
         </Row>
       </div>
       <ConfirmDialog

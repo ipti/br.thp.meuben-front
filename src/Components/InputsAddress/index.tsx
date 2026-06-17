@@ -56,13 +56,15 @@ const InputAddress = ({
     values,
     setFieldValue,
     showRequiredAsterisk = false,
+    disabled = false,
 }: {
     values: any,
     handleChange: any,
     errors: any,
     touched: any,
     setFieldValue: any,
-    showRequiredAsterisk?: boolean
+    showRequiredAsterisk?: boolean,
+    disabled?: boolean,
 }) => {
 
     const props = InputAddressState();
@@ -84,6 +86,7 @@ const InputAddress = ({
                     value={values.cep}
                     mask="99999-999"
                     placeholder="Cep"
+                    disabled={disabled}
                     onChange={(e) => {
                         setFieldValue("cep", e.target.value)
                         props.dadosCep(e.target.value!, setFieldValue)
@@ -104,6 +107,7 @@ const InputAddress = ({
                     placeholder="Endereço"
                     onChange={handleChange}
                     name="address"
+                    disabled={disabled}
                 />
                 {errors.address ? (
                     <div style={{ color: "red", marginTop: "8px" }}>
@@ -119,6 +123,7 @@ const InputAddress = ({
                     placeholder="Bairro/Povoado"
                     onChange={handleChange}
                     name="neighborhood"
+                    disabled={disabled}
                 />
                 {errors.neighborhood ? (
                     <div style={{ color: "red", marginTop: "8px" }}>
@@ -134,6 +139,7 @@ const InputAddress = ({
                     placeholder="Complemento"
                     onChange={handleChange}
                     name="complement"
+                    disabled={disabled}
                 />
                 {errors.complement && touched.complement ? (
                     <div style={{ color: "red", marginTop: "8px" }}>
@@ -150,6 +156,7 @@ const InputAddress = ({
                         placerholder="Estado"
                         name="state"
                         optionsValue="id"
+                        disabled={disabled}
                         onChange={(e) => {
                             setFieldValue("state", e.target.value)
                             props.setStateId(e.target.value.id)
@@ -170,6 +177,7 @@ const InputAddress = ({
                         placerholder="Cidade"
                         name="city"
                         optionsValue="id"
+                        disabled={disabled}
                         onChange={handleChange}
                         options={props.state.find(item => item.id === props.stateId)?.city}
                     />

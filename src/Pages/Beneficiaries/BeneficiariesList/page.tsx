@@ -20,6 +20,7 @@ import { Padding, Row } from "../../../Styles/styles";
 import ModalFilter from "./ModalFilter";
 import { AplicationContext } from "../../../Context/Aplication/context";
 import { PropsAplicationContext } from "../../../Types/types";
+import { usePermissions } from "../../../hooks/usePermissions";
 
 export const BeneficiariesListPage = () => {
   const props = useContext(BeneficiariesListContext) as BeneficiariesListType;
@@ -29,21 +30,32 @@ const propsAplication = useContext(
   ) as PropsAplicationContext;
 
   const history = useNavigate();
+  const { can } = usePermissions();
 
   const [visible, setVisible] = useState<any>();
-
   const [visibleFilter, setVisibleFilter] = useState<any>();
+
+  if (!can("beneficiary.view")) {
+    return (
+      <ContentPage title="Beneficiários" description="Acesso restrito.">
+        <Padding padding="16px" />
+        <p>Você não tem permissão para acessar esta página.</p>
+      </ContentPage>
+    );
+  }
 
   const renderHeader = () => {
     return (
       <div
         className="flex justify-content-between"
       >
-        <Button
-          label={window.innerWidth > 800 ? "Adicionar beneficiario" : undefined}
-          icon="pi pi-plus"
-          onClick={() => history("criar")}
-        />
+        {can("beneficiary.create") && (
+          <Button
+            label={window.innerWidth > 800 ? "Adicionar beneficiario" : undefined}
+            icon="pi pi-plus"
+            onClick={() => history("criar")}
+          />
+        )}
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
           <InputText
@@ -61,19 +73,22 @@ const propsAplication = useContext(
       <Row id="center" style={{ gap: "8px" }}>
         <Button
           rounded
-          icon={"pi pi-pencil"}
+          severity="secondary"
+          icon={"pi pi-eye"}
           onClick={() => {
             history(`${rowData.id}`);
           }}
         />
-        <Button
-          severity="danger"
-          rounded
-          icon={"pi pi-trash"}
-          onClick={() => {
-            setVisible(rowData);
-          }}
-        />
+        {can("beneficiary.delete") && (
+          <Button
+            severity="danger"
+            rounded
+            icon={"pi pi-trash"}
+            onClick={() => {
+              setVisible(rowData);
+            }}
+          />
+        )}
       </Row>
     );
   };
@@ -181,31 +196,6 @@ const propsAplication = useContext(
                 >
                   {statusLabel}
                 </span>
-              );
-            }}
-          />
-          <Column
-            header="Vigência adesão"
-            align="center"
-            body={(rowData) => {
-              const term = rowData?.adhesion_term;
-              if (!term) return <span style={{ color: "#aaa" }}>—</span>;
-              return (
-                <span>
-                  {formatarData(term.dateTerm)}
-                  {term.dateValid ? ` - ${formatarData(term.dateValid)}` : ""}
-                </span>
-              );
-            }}
-          />
-          <Column
-            header="Outros termos"
-            align="center"
-            body={(rowData) => {
-              return rowData?.has_other_terms ? (
-                <i className="pi pi-check-circle" style={{ color: "#2563eb" }} title="Possui outros termos" />
-              ) : (
-                <span style={{ color: "#aaa" }}>—</span>
               );
             }}
           />

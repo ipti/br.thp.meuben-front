@@ -144,7 +144,7 @@ const EditUserPage = () => {
                 </div>
                 <Tag
                   value={profileTypeLabel[profile.current_type] ?? profile.current_type}
-                  severity={profile.current_type === "COORDINATOR" ? "info" : "warning"}
+                  severity={profile.current_type === "COORDINATOR" || profile.current_type === "COORDINATION_SUPPORT" ? "info" : "warning"}
                   style={{ marginTop: 4, fontSize: 11 }}
                 />
               </div>
