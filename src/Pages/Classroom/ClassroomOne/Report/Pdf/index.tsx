@@ -16,7 +16,6 @@ import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
 import {
-  StatusTermEnum,
   convertImageUrlToBase64,
   formatarDataAnoDuas,
   loadImageFileAsBase64,
@@ -205,7 +204,6 @@ export const ReportClassroom = () => {
           style: "tableHeader",
           alignment: "center",
         })),
-        { text: "STATUS TERMO ADESÃO", style: "tableHeader", alignment: "center" },
         { text: "FREQUÊNCIA", style: "tableHeader", alignment: "center" },
         { text: "STATUS", style: "tableHeader", alignment: "center" },
       ];
@@ -221,13 +219,6 @@ export const ReportClassroom = () => {
             style: "tableCell",
             alignment: "center",
           })),
-          {
-            text:
-              StatusTermEnum[item?.registration?.register_term?.[0]?.status] ??
-              "Sem termo",
-            style: "tableCell",
-            alignment: "center",
-          },
           { text: `${bodyTotal(item).percentage}%`, style: "tableCell", alignment: "center" },
           {
             text: isApproved ? "Aprovado" : "Reprovado",
