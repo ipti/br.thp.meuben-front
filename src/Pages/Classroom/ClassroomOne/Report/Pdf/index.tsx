@@ -297,7 +297,6 @@ export const ReportClassroom = () => {
                 "3%",
                 "22%",
                 ...meetingSubset!.map(() => "*"),
-                "8%",
                 "6%",
                 "7%",
               ],
