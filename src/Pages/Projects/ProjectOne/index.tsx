@@ -249,8 +249,8 @@ const ProjectOnePage = () => {
         </div>
         <div className="col-12 md:col-3">
           <CardQuant
-            quant={props.project?.project.classrooms.length!}
-            title="Total de Turmas"
+            quant={props.project?.active_classroom_count!}
+            title="Total de Turmas Ativas"
             color="blue"
           />
         </div>
@@ -270,9 +270,23 @@ const ProjectOnePage = () => {
         </div>
         <div className="col-12 md:col-3">
           <CardQuant
-            quant={props.project?.irregular_term_count!}
-            title="Total de Termos Irregulares"
+            quant={props.project?.active_term_count!}
+            title="Termos de Adesão Ativos"
+            color="blue"
+          />
+        </div>
+        <div className="col-12 md:col-3">
+          <CardQuant
+            quant={props.project?.invalid_term_count!}
+            title="Termos de Adesão Inválidos"
             color="orange"
+          />
+        </div>
+        <div className="col-12 md:col-3">
+          <CardQuant
+            quant={props.project?.pending_term_count!}
+            title="Termos de Adesão Pendentes"
+            color="navy_blue"
           />
         </div>
         <div className="col-12 md:col-3">
