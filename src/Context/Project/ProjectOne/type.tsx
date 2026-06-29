@@ -17,6 +17,7 @@ export interface ApiProject {
   active_term_count: number
   invalid_term_count: number
   pending_term_count: number
+  no_term_count: number
   students_approved_by_frequency_count: number
 }
 

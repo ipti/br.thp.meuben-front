@@ -285,8 +285,15 @@ const ProjectOnePage = () => {
         <div className="col-12 md:col-3">
           <CardQuant
             quant={props.project?.pending_term_count!}
-            title="Termos de Adesão Pendentes"
+            title="Termos de Adesão em Análise"
             color="navy_blue"
+          />
+        </div>
+        <div className="col-12 md:col-3">
+          <CardQuant
+            quant={props.project?.no_term_count!}
+            title="Sem Termo de Adesão"
+            color="orange"
           />
         </div>
         <div className="col-12 md:col-3">
