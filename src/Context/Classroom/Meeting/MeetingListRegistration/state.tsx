@@ -4,6 +4,8 @@ import { useFetchRequestMeetingOne } from "../../../../Services/Meeting/query";
 import { Meeting } from "./type";
 import { CreateFouls, EditMeeting, EditMeetingUser } from "../Create/type";
 import { MeetingController } from "../../../../Services/Meeting/controller";
+import { requestArchivesMeeting } from "../../../../Services/Meeting/request";
+import queryClient from "../../../../Services/reactquery";
 export const MeetingListRegistrationState = () => {
 
   const { idMeeting } = useParams();
@@ -25,10 +27,15 @@ export const MeetingListRegistrationState = () => {
     requestDeleteArchivesMeetingMutation.mutate(id)
   }
 
-  const ArchivesMeeting = (data: any, id: number) => {
-    const formData = new FormData();
-    formData.append('file', data);
-    requestArchvesMeetingMutation.mutate({data: formData, id: id})
+  const ArchivesMeeting = async (files: File[], id: number) => {
+    await Promise.all(
+      files.map((file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return requestArchivesMeeting(formData, id);
+      })
+    );
+    queryClient.refetchQueries("useRequestsMeetingOne");
   }
 
   const CreateFouls = (data: CreateFouls) => {

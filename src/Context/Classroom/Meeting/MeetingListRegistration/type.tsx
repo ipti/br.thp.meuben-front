@@ -4,7 +4,7 @@ export interface MeetingListRegisterTypes {
   meeting: Meeting | undefined;
   UpdateMeeting: (data: EditMeeting, id: number) => void
   CreateFouls: (data: CreateFouls) => void
-  ArchivesMeeting: (data: any, id: number) => void
+  ArchivesMeeting: (files: File[], id: number) => Promise<void>
   isLoading: boolean
   DeleteArchiveMeeting: (id: number) => void
   UpdateMeetingUser: (data: EditMeetingUser) => void
