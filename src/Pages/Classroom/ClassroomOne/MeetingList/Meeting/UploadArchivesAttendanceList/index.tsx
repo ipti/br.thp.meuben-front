@@ -329,6 +329,7 @@ const ListArchivesAttendanceList = ({ item }: { item: MeetingArc }) => {
         message="Tem certeza de que deseja excluir este arquivo?"
         header="Excluir arquivo"
         icon="pi pi-exclamation-triangle"
+        dismissableMask={false}
         accept={() => props.DeleteArchiveMeeting(item.id)}
         reject={() => setVisible(false)}
       />
