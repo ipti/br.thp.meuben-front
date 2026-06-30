@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { MeetingArc } from "../../../../../../Context/Classroom/Meeting/MeetingListRegistration/type";
@@ -51,6 +51,11 @@ const NavigationButtons = styled.div`
 
 const ModalFiles = ({ item, onHide, visible, index }: ModalFilesProps) => {
   const [currentIndex, setCurrentIndex] = useState(index);
+
+  // Sincroniza quando o usuário clica num arquivo diferente
+  useEffect(() => {
+    setCurrentIndex(index);
+  }, [index]);
 
   if (!item || item.length === 0) {
     return (
