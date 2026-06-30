@@ -245,6 +245,7 @@ const ProjectOnePage = () => {
             quant={props.project?.project.approval_percentage + "%"}
             title="Parâmetro para aprovação do plano de trabalho"
             color="navy_blue"
+            tooltip="Frequência mínima que o aluno precisa atingir em uma turma para ser considerado aprovado neste plano de trabalho."
           />
         </div>
         <div className="col-12 md:col-3">
@@ -252,6 +253,7 @@ const ProjectOnePage = () => {
             quant={props.project?.active_classroom_count!}
             title="Total de Turmas Ativas"
             color="blue"
+            tooltip="Quantidade de turmas vinculadas a este plano de trabalho que não estão canceladas."
           />
         </div>
         <div className="col-12 md:col-3">
@@ -259,6 +261,7 @@ const ProjectOnePage = () => {
             quant={props.project?.total_register_count!}
             title="Total de Matriculas"
             color="orange"
+            tooltip="Total de matrículas em turmas ativas. Um mesmo aluno em duas turmas conta como duas matrículas."
           />
         </div>
         <div className="col-12 md:col-3">
@@ -266,6 +269,7 @@ const ProjectOnePage = () => {
             quant={props.project?.approved_register_count!}
             title="Total de Matriculas aprovadas"
             color="navy_blue"
+            tooltip="Matrículas com termo de adesão ativo e frequência igual ou superior ao parâmetro de aprovação."
           />
         </div>
         <div className="col-12 md:col-3">
@@ -273,6 +277,7 @@ const ProjectOnePage = () => {
             quant={props.project?.active_term_count!}
             title="Termos de Adesão Ativos"
             color="blue"
+            tooltip="Matrículas que possuem ao menos um Termo de Adesão com status Ativo, confirmando o vínculo formal do aluno com o programa."
           />
         </div>
         <div className="col-12 md:col-3">
@@ -280,6 +285,7 @@ const ProjectOnePage = () => {
             quant={props.project?.invalid_term_count!}
             title="Termos de Adesão Inválidos"
             color="orange"
+            tooltip="Matrículas cujo Termo de Adesão foi marcado como inválido — o documento precisa ser corrigido e reenviado."
           />
         </div>
         <div className="col-12 md:col-3">
@@ -287,6 +293,7 @@ const ProjectOnePage = () => {
             quant={props.project?.pending_term_count!}
             title="Termos de Adesão em Análise"
             color="navy_blue"
+            tooltip="Matrículas com Termo de Adesão enviado e aguardando análise ou aprovação pela equipe responsável."
           />
         </div>
         <div className="col-12 md:col-3">
@@ -294,6 +301,7 @@ const ProjectOnePage = () => {
             quant={props.project?.no_term_count!}
             title="Sem Termo de Adesão"
             color="orange"
+            tooltip="Matrículas que ainda não possuem nenhum Termo de Adesão enviado. Esses alunos precisam regularizar o documento para participar oficialmente do programa."
           />
         </div>
         <div className="col-12 md:col-3">
@@ -301,6 +309,7 @@ const ProjectOnePage = () => {
             quant={props.project?.students_approved_by_frequency_count!}
             title="Total de formandos"
             color="blue"
+            tooltip="Matrículas com frequência igual ou superior ao parâmetro de aprovação, independente do status do termo de adesão."
           />
         </div>
         <div className="col-12 md:col-3">
@@ -308,6 +317,7 @@ const ProjectOnePage = () => {
             quant={props.project?.students_with_presence_count!}
             title="Total de participantes"
             color="navy_blue"
+            tooltip="Matrículas com ao menos uma presença registrada nos encontros aprovados da turma."
           />
         </div>
       </div>
