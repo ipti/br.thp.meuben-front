@@ -156,22 +156,21 @@ const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean 
               />
             </>
           )}
-          {can("menu.profiles") && (
+          {can("menu.reapplicators") && (
             <>
               <Padding />
               <Item
-                text={"Perfis"}
+                text={"Reaplicadores"}
                 funcActiv={() => {
                   setActive(9);
                   menuItem("9");
                 }}
                 active={active === 9 ? true : false}
-                path={"/perfis"}
+                path={"/reaplicadores"}
                 icon={active === 9 ? reapplicatorHover : reapplicator}
               />
             </>
           )}
-
           {can("menu.users") && (
             <>
               <Padding />

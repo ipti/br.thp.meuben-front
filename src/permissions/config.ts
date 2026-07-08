@@ -6,7 +6,6 @@ const isAdmin        = (u: User | undefined) => u?.role === 'ADMIN';
 const isCoordinator  = (u: User | undefined) => u?.profileType === 'COORDINATOR' || u?.profileType === 'COORDINATION_SUPPORT';
 const isReapplicator = (u: User | undefined) => u?.profileType === 'REAPPLICATOR' || u?.profileType === 'OTHER';
 const adminOrCoord   = (u: User | undefined) => isAdmin(u) || isCoordinator(u);
-const ismonitoring    = (u: User | undefined) => u?.profileType === 'MONITORING';
 const isCommunication = (u: User | undefined) => u?.profileType === 'COMMUNICATION';
 
 // Para alterar quem pode fazer o quê: editar apenas este arquivo.
@@ -47,7 +46,7 @@ export const PermissionsConfig: Record<string, PermissionRule> = {
   'project.delete': adminOrCoord,
 
   // ── Beneficiários ────────────────────────────────────────────────────────────
-  'beneficiary.view':   (u) => adminOrCoord(u) || isReapplicator(u) || ismonitoring(u),
+  'beneficiary.view':   (u) => adminOrCoord(u) || isReapplicator(u),
   'beneficiary.create': adminOrCoord,
   'beneficiary.edit':   adminOrCoord,
   'beneficiary.delete': adminOrCoord,
@@ -67,7 +66,7 @@ export const PermissionsConfig: Record<string, PermissionRule> = {
   'initialPage.exportCsv': isAdmin,
 
   // ── Menu ──────────────────────────────────────────────────────────────────
-  'menu.profiles': adminOrCoord,
-  'menu.users':    adminOrCoord,
+  'menu.reapplicators': adminOrCoord,
+  'menu.users':         adminOrCoord,
   'menu.logs':     isAdmin,
 };

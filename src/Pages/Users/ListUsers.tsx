@@ -11,7 +11,7 @@ import ContentPage from "../../Components/ContentPage";
 import DropdownComponent from "../../Components/Dropdown";
 import UsersProvider, { UsersContext } from "../../Context/Users/context";
 import { UsersTypes } from "../../Context/Users/type";
-import { ROLE, profileTypeLabel } from "../../Controller/controllerGlobal";
+import { PROFILE_TYPE, ROLE, profileTypeLabel } from "../../Controller/controllerGlobal";
 import { usePermissions } from "../../hooks/usePermissions";
 import { Padding, Row } from "../../Styles/styles";
 
@@ -56,14 +56,19 @@ const ListUsersPage = () => {
 
   const profileBody = (rowData: any) => {
     if (!rowData.profile) return <span style={{ color: "#aaa" }}>—</span>;
-    const isCoordType = rowData.profile.current_type === "COORDINATOR" || rowData.profile.current_type === "COORDINATION_SUPPORT";
+    const isReapplicator = rowData.profile.current_type === PROFILE_TYPE.REAPPLICATOR;
+    const isCoordType    = rowData.profile.current_type === PROFILE_TYPE.COORDINATOR ||
+                           rowData.profile.current_type === PROFILE_TYPE.COORDINATION_SUPPORT;
+    const path = isReapplicator
+      ? "/reaplicadores/" + rowData.profile.id
+      : "/perfis/"       + rowData.profile.id;
     return (
       <Button
         label={profileTypeLabel[rowData.profile.current_type] ?? rowData.profile.current_type}
         text
         size="small"
         severity={isCoordType ? "info" : "warning"}
-        onClick={() => history("/perfis/" + rowData.profile.id)}
+        onClick={() => history(path)}
       />
     );
   };
@@ -96,9 +101,14 @@ const ListUsersPage = () => {
   };
 
   const roleOptions = [
-    { id: "TODOS",    name: "Todos" },
-    { id: ROLE.ADMIN, name: "Admin" },
-    { id: ROLE.USER,  name: "Usuário" },
+    { id: "TODOS",                              name: "Todos" },
+    { id: ROLE.ADMIN,                           name: "Admin" },
+    { id: PROFILE_TYPE.COORDINATOR,             name: "Coordenação" },
+    { id: PROFILE_TYPE.COORDINATION_SUPPORT,    name: "Apoio à Coordenação" },
+    { id: PROFILE_TYPE.REAPPLICATOR,            name: "Reaplicador" },
+    { id: PROFILE_TYPE.COMMUNICATION,           name: "Comunicação" },
+    { id: PROFILE_TYPE.ACCOUNTABILITY,          name: "Prestação de Contas" },
+    { id: PROFILE_TYPE.OTHER,                   name: "Outro" },
   ];
 
   const hasActiveFilters =

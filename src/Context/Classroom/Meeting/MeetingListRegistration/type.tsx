@@ -65,7 +65,7 @@ export interface MeetingProfile {
 export interface MeetingProfileData {
   id: number
   name: string
-  current_type: 'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'MONITORING' | 'COMMUNICATION'
+  current_type: 'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'COMMUNICATION' | 'ACCOUNTABILITY'
 }
 
 export interface MeetingArc {

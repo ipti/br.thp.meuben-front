@@ -5,13 +5,13 @@ import {
   useFetchProfileTypeLog,
 } from '../../Services/Profile/query';
 
-export const ProfileState = () => {
+export const ProfileState = (fixedType?: 'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'COMMUNICATION' | 'ACCOUNTABILITY') => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [nameSearch, setNameSearch] = useState('');
   const [currentTypeFilter, setCurrentTypeFilter] = useState<
-    'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'MONITORING' | 'COMMUNICATION' | undefined
-  >();
+    'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'COMMUNICATION' | 'ACCOUNTABILITY' | undefined
+  >(fixedType);
   const [selectedId, setSelectedId] = useState(0);
   const [logProfileId, setLogProfileId] = useState(0);
 

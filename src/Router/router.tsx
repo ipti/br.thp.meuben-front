@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import BeneficiariesCreate from "../Pages/Beneficiaries/BeneficiariesCreate";
 import BeneficiariesEdit from "../Pages/Beneficiaries/BeneficiariesEdit";
 import BeneficiariesList from "../Pages/Beneficiaries/BeneficiariesList";
@@ -31,10 +31,10 @@ import EditUser from "../Pages/Users/EditUser";
 import ListUsers from "../Pages/Users/ListUsers";
 import PrivateRoute from "./privaterouter";
 import InitialPage from "../Pages/InitialPage";
-import ProfileList   from "../Pages/Profiles/ProfileList";
-import ProfileCreate from "../Pages/Profiles/ProfileCreate";
-import ProfileView   from "../Pages/Profiles/ProfileView";
-import ProfileEdit   from "../Pages/Profiles/ProfileEdit";
+import ReapplicatorList   from "../Pages/Reapplicators/ReapplicatorList";
+import ReapplicatorCreate from "../Pages/Reapplicators/ReapplicatorCreate";
+import ReapplicatorView   from "../Pages/Reapplicators/ReapplicatorView";
+import ReapplicatorEdit   from "../Pages/Reapplicators/ReapplicatorEdit";
 import ChangePassword from "../Pages/Users/ChangePassword";
 import PageAtt from "../Pages/Att/page";
 import UserLogs from "../Pages/UserLogs";
@@ -161,21 +161,22 @@ const RoutesApp = () => {
           path="/tecnologias/criar"
         />
         <Route
-          element={<PrivateRoute Component={<ProfileList />} />}
-          path="/perfis"
+          element={<PrivateRoute Component={<ReapplicatorList />} />}
+          path="/reaplicadores"
         />
         <Route
-          element={<PrivateRoute Component={<ProfileCreate />} />}
-          path="/perfis/criar"
+          element={<PrivateRoute Component={<ReapplicatorCreate />} />}
+          path="/reaplicadores/criar"
         />
         <Route
-          element={<PrivateRoute Component={<ProfileView />} />}
-          path="/perfis/:id"
+          element={<PrivateRoute Component={<ReapplicatorView />} />}
+          path="/reaplicadores/:id"
         />
         <Route
-          element={<PrivateRoute Component={<ProfileEdit />} />}
-          path="/perfis/:id/editar"
+          element={<PrivateRoute Component={<ReapplicatorEdit />} />}
+          path="/reaplicadores/:id/editar"
         />
+        <Route path="/perfis/*" element={<Navigate to="/reaplicadores" replace />} />
         <Route
           element={<PrivateRoute Component={<CreateUser />} />}
           path="/users/criar"

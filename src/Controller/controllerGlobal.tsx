@@ -197,8 +197,8 @@ export const PROFILE_TYPE = {
   COORDINATOR:          "COORDINATOR",
   COORDINATION_SUPPORT: "COORDINATION_SUPPORT",
   REAPPLICATOR:         "REAPPLICATOR",
-  MONITORING:           "MONITORING",
   COMMUNICATION:        "COMMUNICATION",
+  ACCOUNTABILITY:       "ACCOUNTABILITY",
   OTHER:                "OTHER",
 } as const;
 
@@ -208,8 +208,8 @@ export const profileTypeLabel: Record<string, string> = {
   COORDINATOR:          "Coordenação",
   COORDINATION_SUPPORT: "Apoio à coordenação",
   REAPPLICATOR:         "Reaplicador",
-  MONITORING:           "Monitoramento",
   COMMUNICATION:        "Comunicação",
+  ACCOUNTABILITY:       "Prestação de Contas",
   OTHER:                "Outro",
 };
 

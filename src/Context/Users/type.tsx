@@ -34,7 +34,7 @@ export interface CreateUser {
 export interface UserProfileSummary {
   id: number
   name: string
-  current_type: 'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'MONITORING' | 'COMMUNICATION'
+  current_type: 'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'COMMUNICATION' | 'ACCOUNTABILITY'
 }
 
 export interface User {
@@ -44,6 +44,6 @@ export interface User {
   active: boolean
   role: string
   profileId?: number
-  profileType?: 'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'MONITORING' | 'COMMUNICATION'
+  profileType?: 'COORDINATOR' | 'COORDINATION_SUPPORT' | 'REAPPLICATOR' | 'OTHER' | 'COMMUNICATION' | 'ACCOUNTABILITY'
   profile?: UserProfileSummary
 }

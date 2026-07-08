@@ -10,6 +10,10 @@ import {
   requestDeleteProfile,
 } from './request';
 import { CreateProfileDto, CreateUserWithProfile } from '../../Context/Profile/type';
+import { PROFILE_TYPE } from '../../Controller/controllerGlobal';
+
+const profilePath = (type: string | undefined, id: number) =>
+  type === PROFILE_TYPE.REAPPLICATOR ? `/reaplicadores/${id}` : `/users`;
 
 const invalidateProfiles = (profileId?: number) => {
   queryClient.refetchQueries('useRequestsProfiles');
@@ -40,7 +44,7 @@ export const ControllerProfile = () => {
           confirmButtonColor: styles.colors.colorsBaseProductNormal,
         }).then(() => {
           invalidateProfiles();
-          history('/perfis/' + data.id);
+          history(profilePath(data.current_type, data.id));
         });
       },
     }
@@ -63,9 +67,11 @@ export const ControllerProfile = () => {
           confirmButtonColor: styles.colors.colorsBaseProductNormal,
         }).then(() => {
           invalidateProfiles();
-          const profileId = data?.profile?.id ?? data?.id;
-          if (profileId) history('/perfis/' + profileId);
-          else history('/perfis');
+          const profile = data?.profile ?? data;
+          const profileId = profile?.id;
+          const profileType = profile?.current_type;
+          if (profileId) history(profilePath(profileType, profileId));
+          else history('/users');
         });
       },
     }
@@ -92,7 +98,7 @@ export const ControllerProfile = () => {
           confirmButtonColor: styles.colors.colorsBaseProductNormal,
         }).then(() => {
           invalidateProfiles(vars.id);
-          history('/perfis/' + vars.id);
+          history(profilePath(data?.current_type, vars.id));
         });
       },
     }

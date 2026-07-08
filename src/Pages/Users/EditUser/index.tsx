@@ -1,57 +1,31 @@
 import { Form, Formik } from "formik";
 import { Button } from "primereact/button";
-import { useContext, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Divider } from "primereact/divider";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import * as Yup from "yup";
 import ContentPage from "../../../Components/ContentPage";
-import { AplicationContext } from "../../../Context/Aplication/context";
-import UsersProvider, { UsersContext } from "../../../Context/Users/context";
-import { UsersTypes } from "../../../Context/Users/type";
-import { Tag } from "primereact/tag";
-import { useNavigate } from "react-router-dom";
-import { formatarData, ROLE, profileTypeLabel } from "../../../Controller/controllerGlobal";
+import DropdownComponent from "../../../Components/Dropdown";
+import Loading from "../../../Components/Loading";
+import ProfileFields from "../../../Components/ProfileFields";
+import TextInput from "../../../Components/TextInput";
+import {
+  converterData,
+  formatarData,
+  PROFILE_TYPE,
+  profileTypeLabel,
+  ROLE,
+} from "../../../Controller/controllerGlobal";
+import { isSocialProfile } from "../../../hooks/useProfileFieldRules";
 import { usePermissions } from "../../../hooks/usePermissions";
-import queryClient from "../../../Services/reactquery";
+import { useFetchProfileOne } from "../../../Services/Profile/query";
+import { ControllerUser } from "../../../Services/Users/controller";
 import { useFetchRequestUsersOne } from "../../../Services/Users/query";
 import color from "../../../Styles/colors";
 import { Padding, Row } from "../../../Styles/styles";
 import typography from "../../../Styles/typography";
-import { PropsAplicationContext } from "../../../Types/types";
-import InputsUser from "../Inputs";
 
-const buildEditUserSchema = (isSocialRole: boolean, isAdminRole: boolean) =>
-  Yup.object().shape({
-    name: Yup.string()
-      .required("Campo Obrigatório")
-      .min(8, "Nome deve ter pelo menos 8 caracteres"),
-    username: Yup.string()
-      .required("Campo Obrigatório")
-      .min(8, "Nome do usuário deve ter pelo menos 8 caracteres"),
-    role: Yup.string().required("Campo Obrigatório"),
-    initial_date: isSocialRole
-      ? Yup.string().required("Campo Obrigatório")
-      : Yup.string(),
-    birthday: isSocialRole
-      ? Yup.string().required("Campo Obrigatório")
-      : Yup.string(),
-    phone: Yup.string().required("Campo Obrigatório"),
-    email: Yup.string().required("Campo Obrigatório"),
-    sex: isSocialRole
-      ? Yup.string().required("Campo Obrigatório")
-      : Yup.string(),
-    color_race: isSocialRole
-      ? Yup.string().required("Campo Obrigatório")
-      : Yup.string(),
-  });
-
-const EditUser = () => {
-  return (
-    <UsersProvider>
-      <EditUserPage />
-    </UsersProvider>
-  );
-};
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const LinkSenha = styled.div`
   display: flex;
@@ -66,169 +40,244 @@ const LinkSenha = styled.div`
     cursor: pointer;
     font-family: ${typography.types.inter};
     color: ${color.colorsBaseProductNormal};
-    :hover {
-      text-decoration: underline;
-    }
+    :hover { text-decoration: underline; }
   }
 `;
 
-const EditUserPage = () => {
-  const props = useContext(UsersContext) as UsersTypes;
-  const propsAplication = useContext(
-    AplicationContext
-  ) as PropsAplicationContext;
+// ─── Validação dinâmica ───────────────────────────────────────────────────────
+
+const accessSchema = {
+  name:     Yup.string().required("Nome é obrigatório").min(3, "Mínimo 3 caracteres"),
+  username: Yup.string().required("Usuário é obrigatório").min(5, "Mínimo 5 caracteres"),
+  role:     Yup.string().required("Tipo de usuário é obrigatório"),
+};
+
+const profileBaseSchema = {
+  current_type:        Yup.string().required("Tipo de perfil é obrigatório"),
+  social_technologies: Yup.array().min(1, "Selecione ao menos uma tecnologia social"),
+};
+
+const reapplicatorSchema = {
+  color_race: Yup.number().required("Cor/Raça é obrigatória").typeError("Cor/Raça é obrigatória"),
+  sex:        Yup.number().required("Gênero é obrigatório").typeError("Gênero é obrigatório"),
+  birthday:   Yup.string().required("Data de nascimento é obrigatória"),
+  phone:      Yup.string().required("Telefone é obrigatório"),
+};
+
+const otherProfileSchema = {
+  email: Yup.string().email("E-mail inválido").required("E-mail é obrigatório"),
+};
+
+const buildSchema = (role: string, currentType: string) => {
+  if (role !== ROLE.USER) return Yup.object(accessSchema);
+  const profileFields = isSocialProfile(currentType as any)
+    ? { ...profileBaseSchema, ...reapplicatorSchema }
+    : { ...profileBaseSchema, ...otherProfileSchema };
+  return Yup.object({ ...accessSchema, ...profileFields });
+};
+
+const ROLE_OPTIONS = [
+  { id: ROLE.ADMIN, name: "Admin" },
+  { id: ROLE.USER,  name: "Usuário" },
+];
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+const EditUser = () => {
+  const { id } = useParams<{ id: string }>();
   const history = useNavigate();
+  const numId = parseInt(id!, 10);
 
-  const [loading, setLoading] = useState(true);
-  const [submitted, setSubmitted] = useState(false);
-
-  useEffect(() => {
-    if (loading) {
-      queryClient.removeQueries("useRequestsUsersOne");
-      setLoading(false);
-    }
-  }, [loading]);
-
-  const { id } = useParams();
-
-  const { data: project } = useFetchRequestUsersOne(parseInt(id!));
-
-  const profile = project?.profile ?? null;
-
-  const isSocialRole = !!project?.profile;
-
-  const isAdminRole = project?.role === ROLE.ADMIN;
+  const { data: user, isLoading: loadingUser } = useFetchRequestUsersOne(numId);
+  const profileId = user?.profile?.id;
+  const { data: fullProfile, isLoading: loadingProfile } = useFetchProfileOne(profileId!);
+  const { requestUpdateUserMutation } = ControllerUser();
   const { isAdmin } = usePermissions();
 
-  const CreateUserSchema = buildEditUserSchema(isSocialRole, isAdminRole);
+  const isLoading = loadingUser || (!!profileId && loadingProfile);
+
+  if (isLoading) return <Loading />;
+  if (!user) {
+    return (
+      <ContentPage title="Editar usuário" description="">
+        <Padding padding="16px" />
+        <p>Usuário não encontrado.</p>
+      </ContentPage>
+    );
+  }
+
+  const profile      = fullProfile ?? null;
+  const originalType = profile?.current_type as typeof PROFILE_TYPE[keyof typeof PROFILE_TYPE] | undefined;
 
   return (
     <ContentPage title="Editar usuário" description="Faça a edição do usuário.">
       <Padding />
 
-      {/* Seção de perfil operacional vinculado */}
-      <div style={{
-        marginBottom: 20,
-        border: `1px solid ${color.colorBorderCard}`,
-        borderRadius: 12,
-        overflow: "hidden",
-      }}>
-        {/* Cabeçalho da seção */}
-        <div style={{
-          background: color.colorCard,
-          borderBottom: `1px solid ${color.colorBorderCard}`,
-          padding: "10px 16px",
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-        }}>
-          <i className="pi pi-id-card" style={{ color: color.colorsBaseInkLight, fontSize: 13 }} />
-          <span style={{
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: "0.7px",
-            textTransform: "uppercase",
-            color: color.colorsBaseInkLight,
-          }}>
-            Perfil Operacional
-          </span>
-        </div>
+      <Formik
+        initialValues={{
+          name:                user.name ?? "",
+          username:            user.username ?? "",
+          role:                user.role ?? "",
+          current_type:        profile?.current_type ?? "",
+          email:               profile?.email ?? "",
+          phone:               profile?.phone ?? "",
+          birthday:            profile?.birthday ? formatarData(profile.birthday) : "",
+          initial_date:        profile?.initial_date ? formatarData(profile.initial_date) : "",
+          sex:                 profile?.sex as number | undefined,
+          color_race:          profile?.color_race as number | undefined,
+          active:              user.active ?? true,
+          reason:              "",
+          social_technologies: profile?.profile_social_technology?.map((s: any) => s.social_technology_fk) ?? [],
+        }}
+        validate={(values) => {
+          try {
+            buildSchema(values.role, values.current_type).validateSync(values, { abortEarly: false });
+            return {};
+          } catch (err: any) {
+            const errors: Record<string, string> = {};
+            err.inner?.forEach((e: any) => { errors[e.path] = e.message; });
+            return errors;
+          }
+        }}
+        onSubmit={(values) => {
+          const body: Record<string, any> = {
+            name:     values.name,
+            username: values.username,
+            role:     values.role,
+            active:   values.active,
+          };
 
-        {/* Conteúdo */}
-        <div style={{ padding: "14px 16px", background: "#fff" }}>
-          {profile ? (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 14, color: color.colorsBaseInkNormal }}>
-                  {profile.name}
-                </div>
-                <Tag
-                  value={profileTypeLabel[profile.current_type] ?? profile.current_type}
-                  severity={profile.current_type === "COORDINATOR" || profile.current_type === "COORDINATION_SUPPORT" ? "info" : "warning"}
-                  style={{ marginTop: 4, fontSize: 11 }}
+          if (values.role === ROLE.USER && values.current_type) {
+            body.current_type  = values.current_type;
+            body.email         = values.email || undefined;
+            body.phone         = values.phone || undefined;
+            body.sex           = values.sex;
+            body.color_race    = values.color_race;
+            body.birthday      = values.birthday ? converterData(values.birthday) : undefined;
+            body.initial_date  = values.initial_date ? converterData(values.initial_date) : undefined;
+            body.reason        = values.reason || undefined;
+            body.project       = values.social_technologies;
+          }
+
+          requestUpdateUserMutation.mutate({ data: body as any, id: numId });
+        }}
+      >
+        {({ values, handleChange, errors, touched, setFieldValue }) => (
+          <Form>
+            {/* ── Cabeçalho de ações ─────────────────────────────────── */}
+            <Row id={isAdmin ? "space-between" : "end"}>
+              {isAdmin && (
+                <LinkSenha>
+                  <Link to={"/users/senha/" + id} className="link">
+                    Alterar senha
+                  </Link>
+                </LinkSenha>
+              )}
+              <div style={{ display: "flex", gap: 8 }}>
+                <Button
+                  type="button"
+                  label="Cancelar"
+                  severity="secondary"
+                  outlined
+                  onClick={() => history("/users")}
+                />
+                <Button
+                  label="Salvar"
+                  type="submit"
+                  icon="pi pi-save"
+                  loading={requestUpdateUserMutation.isLoading}
                 />
               </div>
-              <Button
-                label="Ver perfil"
-                icon="pi pi-external-link"
-                size="small"
-                outlined
-                onClick={() => history("/perfis/" + profile.id)}
-              />
-            </div>
-          ) : (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-              <span style={{ fontSize: 14, color: color.colorsBaseInkLight }}>
-                Sem perfil operacional vinculado
-              </span>
-              <Button
-                label="Criar perfil"
-                icon="pi pi-plus"
-                size="small"
-                outlined
-                severity="secondary"
-                onClick={() => history("/perfis/criar?user_fk=" + id)}
-              />
-            </div>
-          )}
-        </div>
-      </div>
+            </Row>
 
-      {project ? (
-        <Formik
-          initialValues={{
-            name: project?.name ?? "",
-            username: project?.username ?? "",
-            role: project?.role ?? "",
-            initial_date: profile?.initial_date
-              ? formatarData(profile.initial_date)
-              : "",
-            phone: profile?.phone ?? "",
-            email: profile?.email ?? "",
-            color_race: profile?.color_race ?? "",
-            sex: profile?.sex ?? "",
-            birthday: profile?.birthday
-              ? formatarData(profile.birthday)
-              : "",
-          }}
-          onSubmit={(values) => {
-            props.UpdateUser(values, parseInt(id!));
-          }}
-          validationSchema={CreateUserSchema}
-        >
-          {({ values, handleChange, errors, touched }) => {
-            return (
-              <Form>
-                <Row
-                  id={isAdmin ? "space-between" : "end"}
-                >
-                  {isAdmin && (
-                    <LinkSenha>
-                      <Link to={"/users/senha/" + id} className="link">
-                        <LinkSenha>Alterar senha</LinkSenha>
-                      </Link>
-                    </LinkSenha>
-                  )}
-                  <Button
-                    label="Salvar"
-                    type="submit"
-                    icon="pi pi-save"
-                    onClick={() => setSubmitted(true)}
-                  />
-                </Row>
-                <Padding padding="16px" />
-                <InputsUser
-                  errors={submitted ? errors : {}}
-                  handleChange={handleChange}
-                  touched={touched}
-                  values={values}
-                  basicOnly={!isSocialRole}
+            <Padding padding="16px" />
+
+            {/* ── Seção 1: Acesso ─────────────────────────────────────── */}
+            <div className="grid">
+              <div className="col-12 md:col-6">
+                <label>Nome completo *</label>
+                <Padding />
+                <TextInput
+                  placeholder="Nome completo"
+                  name="name"
+                  value={values.name}
+                  onChange={handleChange}
                 />
-              </Form>
-            );
-          }}
-        </Formik>
-      ) : null}
+                <Padding />
+                {errors.name && touched.name && (
+                  <div style={{ color: color.red }}>{errors.name as string}</div>
+                )}
+              </div>
+
+              <div className="col-12 md:col-6">
+                <label>Usuário *</label>
+                <Padding />
+                <TextInput
+                  placeholder="Nome de usuário"
+                  name="username"
+                  value={values.username}
+                  onChange={handleChange}
+                />
+                <Padding />
+                {errors.username && touched.username && (
+                  <div style={{ color: color.red }}>{errors.username as string}</div>
+                )}
+              </div>
+
+              <div className="col-12 md:col-6">
+                <label>Tipo de usuário *</label>
+                <Padding />
+                <DropdownComponent
+                  name="role"
+                  placerholder="Selecione o tipo"
+                  optionsLabel="name"
+                  optionsValue="id"
+                  value={values.role}
+                  onChange={(e) => {
+                    handleChange(e);
+                    if (e.target.value === ROLE.ADMIN) {
+                      setFieldValue("current_type", "");
+                      setFieldValue("social_technologies", []);
+                    }
+                  }}
+                  options={ROLE_OPTIONS}
+                />
+                <Padding />
+                {errors.role && touched.role && (
+                  <div style={{ color: color.red }}>{errors.role as string}</div>
+                )}
+              </div>
+            </div>
+
+            {/* ── Seção 2: Perfil Operacional (só para USER) ─────────── */}
+            {values.role === ROLE.USER && (
+              <>
+                <Divider align="left">
+                  <span style={{ fontWeight: 600, fontSize: 14 }}>Perfil Operacional</span>
+                </Divider>
+
+                {!profile && (
+                  <div style={{ marginBottom: 12, padding: "8px 12px", background: "#fef9c3", borderRadius: 8, fontSize: 13 }}>
+                    Nenhum perfil vinculado — preencha os campos abaixo para criar um.
+                  </div>
+                )}
+
+                <ProfileFields
+                  mode="full"
+                  hideName
+                  values={values}
+                  handleChange={handleChange}
+                  setFieldValue={setFieldValue}
+                  errors={errors}
+                  touched={touched}
+                  isEditing={!!profile}
+                  originalType={originalType}
+                />
+              </>
+            )}
+          </Form>
+        )}
+      </Formik>
     </ContentPage>
   );
 };
