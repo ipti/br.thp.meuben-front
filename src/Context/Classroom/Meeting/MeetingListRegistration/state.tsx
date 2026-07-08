@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useFetchRequestMeetingOne } from "../../../../Services/Meeting/query";
-import { Meeting } from "./type";
-import { CreateFouls, EditMeeting, EditMeetingUser } from "../Create/type";
 import { MeetingController } from "../../../../Services/Meeting/controller";
+import { useFetchRequestMeetingOne } from "../../../../Services/Meeting/query";
 import { requestArchivesMeeting } from "../../../../Services/Meeting/request";
 import queryClient from "../../../../Services/reactquery";
+import { CreateFouls, EditMeeting, EditMeetingUser } from "../Create/type";
+import { Meeting } from "./type";
 export const MeetingListRegistrationState = () => {
 
   const { idMeeting } = useParams();

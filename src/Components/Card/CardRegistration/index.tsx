@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import avatar from "../../../Assets/images/avatar.svg";
 import { RegistrationClassroomContext } from "../../../Context/Classroom/RegistrationsList/context";
 import { RegistrationClassroomTypes } from "../../../Context/Classroom/RegistrationsList/type";
-import { ROLE, Status, StatusEnum, StatusTermEnum } from "../../../Controller/controllerGlobal";
+import { Status, StatusEnum, StatusTermEnum } from "../../../Controller/controllerGlobal";
 import { usePermissions } from "../../../hooks/usePermissions";
 import color from "../../../Styles/colors";
 

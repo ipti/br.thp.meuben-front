@@ -20,7 +20,6 @@ import ProjectOneProvider, {
   ProjectOneContext,
 } from "../../../Context/Project/ProjectOne/context";
 import { ProjectOneTypes } from "../../../Context/Project/ProjectOne/type";
-import { ROLE } from "../../../Controller/controllerGlobal";
 import { usePermissions } from "../../../hooks/usePermissions";
 import { Column, Padding, Row } from "../../../Styles/styles";
 import { PropsAplicationContext } from "../../../Types/types";

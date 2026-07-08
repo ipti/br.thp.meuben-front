@@ -6,7 +6,6 @@ import { InputText } from "primereact/inputtext";
 import { Paginator } from "primereact/paginator";
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Tag } from "primereact/tag";
 import ContentPage from "../../Components/ContentPage";
 import DropdownComponent from "../../Components/Dropdown";
 import UsersProvider, { UsersContext } from "../../Context/Users/context";

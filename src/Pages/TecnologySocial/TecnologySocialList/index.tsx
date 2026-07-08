@@ -2,15 +2,14 @@ import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CardTs from "../../../Components/Card/CardTs";
 import ContentPage from "../../../Components/ContentPage";
-import EditTsDialog from "./EditTsDialog";
 import Empty from "../../../Components/Empty";
 import Loading from "../../../Components/Loading";
 import { AplicationContext } from "../../../Context/Aplication/context";
-import { ROLE } from "../../../Controller/controllerGlobal";
 import { usePermissions } from "../../../hooks/usePermissions";
 import { idTs, menuItem } from "../../../Services/localstorage";
 import { Padding } from "../../../Styles/styles";
 import { PropsAplicationContext } from "../../../Types/types";
+import EditTsDialog from "./EditTsDialog";
 
 const TecnologySocial = () => {
   const history = useNavigate();

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useFetchRequestUsers } from "../../Services/Users/query";
-import { ControllerUser } from "../../Services/Users/controller";
-import { CreateUser } from "./type";
 import { converterData } from "../../Controller/controllerGlobal";
+import { ControllerUser } from "../../Services/Users/controller";
+import { useFetchRequestUsers } from "../../Services/Users/query";
+import { CreateUser } from "./type";
 
 export const UsersState = () => {
   const [users, setusers] = useState<any[]>([]);
