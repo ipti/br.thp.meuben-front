@@ -34,7 +34,7 @@ export const PermissionsConfig: Record<string, PermissionRule> = {
   // ── Reuniões ──────────────────────────────────────────────────────────────
   'meeting.delete':             adminOrCoord,
   'meeting.editStatus':         adminOrCoord,
-  'meeting.editMembers':        adminOrCoord,
+  'meeting.editMembers':        (u) => adminOrCoord(u) || isReapplicator(u),
   'meeting.viewJustification':  isReapplicator,
   'meeting.uploadFiles':        (u) => isReapplicator(u) || adminOrCoord(u),
   'meeting.create':            (u) => adminOrCoord(u) || isReapplicator(u),
