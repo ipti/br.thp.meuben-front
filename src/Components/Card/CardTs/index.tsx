@@ -15,6 +15,7 @@ const CardTs = ({
   title,
   id,
   onEdit,
+  onDelete,
   isAdmin,
   area_of_activity,
 }: {
@@ -23,6 +24,7 @@ const CardTs = ({
   registrationCount?: number;
   id: number;
   onEdit?: (id: number, title: string) => void;
+  onDelete?: (id: number, title: string) => void;
   isAdmin?: boolean;
   area_of_activity?: string;
 }) => {
@@ -44,14 +46,25 @@ const CardTs = ({
           </Column>
         </Row>
         {isAdmin && (
-          <div
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit?.(id, title);
-            }}
-          >
-            <Icon icon="pi pi-pencil" color={styles.colors.colorGrayElephant} size="1rem" fontWeight="900" />
+          <div style={{ display: "flex", gap: 12 }}>
+            <div
+              className="cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit?.(id, title);
+              }}
+            >
+              <Icon icon="pi pi-pencil" color={styles.colors.colorGrayElephant} size="1rem" fontWeight="900" />
+            </div>
+            <div
+              className="cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete?.(id, title);
+              }}
+            >
+              <Icon icon="pi pi-trash" color={styles.colors.colorError ?? "#ef4444"} size="1rem" fontWeight="900" />
+            </div>
           </div>
         )}
       </Row>

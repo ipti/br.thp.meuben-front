@@ -40,11 +40,9 @@ export const requestCreateSocialTechnology = async (body: {name: string}) => {
       .post("/social-technology-bff", body)
       .then((response) => response.data)
       .catch((err) => {
-        // if(err.response.status === 401){
-        //   logout()
-        //   window.location.reload()
-        // }
-
         throw err;
       });
 };
+
+export const requestDeleteSocialTechnology = async (stId: number) =>
+  http.delete("/social-technology-bff", { params: { stId } }).then((r) => r.data);

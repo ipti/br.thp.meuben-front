@@ -58,6 +58,7 @@ export const PermissionsConfig: Record<string, PermissionRule> = {
   // ── Tecnologias Sociais ───────────────────────────────────────────────────
   'socialTechnology.create': isAdmin,
   'socialTechnology.edit':   isAdmin,
+  'socialTechnology.delete': isAdmin,
 
   // ── Logs ──────────────────────────────────────────────────────────────────
   'logs.view': isAdmin,
