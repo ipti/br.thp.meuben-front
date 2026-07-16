@@ -38,6 +38,8 @@ import beneficiaries_hover from "../../Assets/images/iconsMenu/diversity_hover.s
 
 import ajuda from "../../Assets/images/question_mark.svg";
 import ajuda_hover from "../../Assets/images/iconsMenu/question_mark_active.svg";
+import termType from "../../Assets/images/iconsMenu/term_type.svg";
+import termTypeHover from "../../Assets/images/iconsMenu/term_type_active.svg";
 
 import user from "../../Assets/images/iconsMenu/person.svg";
 import user_hover from "../../Assets/images/iconsMenu/person_active.svg";
@@ -197,7 +199,7 @@ const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean 
                 }}
                 active={active === 10 ? true : false}
                 path={"/tipos-de-termo"}
-                icon={active === 10 ? ajuda_hover : ajuda}
+                icon={active === 10 ? termTypeHover : termType}
               />
             </>
           )}
