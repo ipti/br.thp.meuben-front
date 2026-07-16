@@ -63,7 +63,7 @@ const CardTs = ({
                 onDelete?.(id, title);
               }}
             >
-              <Icon icon="pi pi-trash" color={styles.colors.colorError ?? "#ef4444"} size="1rem" fontWeight="900" />
+              <Icon icon="pi pi-trash" color={styles.colors.red} size="1rem" fontWeight="900" />
             </div>
           </div>
         )}
