@@ -39,6 +39,7 @@ import ChangePassword from "../Pages/Users/ChangePassword";
 import PageAtt from "../Pages/Att/page";
 import UserLogs from "../Pages/UserLogs";
 import MeubenPrivacyPolicy from "../Pages/Public/MeubenPrivacyPolicy";
+import TermTypePage from "../Pages/TermType";
 
 const RoutesApp = () => {
   return (
@@ -159,6 +160,10 @@ const RoutesApp = () => {
         <Route
           element={<PrivateRoute Component={<CreateTechnologySocial />} />}
           path="/tecnologias/criar"
+        />
+        <Route
+          element={<PrivateRoute Component={<TermTypePage />} />}
+          path="/tipos-de-termo"
         />
         <Route
           element={<PrivateRoute Component={<ReapplicatorList />} />}

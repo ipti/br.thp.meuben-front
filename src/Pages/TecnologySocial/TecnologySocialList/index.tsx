@@ -39,7 +39,7 @@ const TecnologySocial = () => {
           title: "Tecnologia social excluída com sucesso!",
           confirmButtonColor: styles.colors.colorsBaseProductNormal,
         });
-        queryClient.refetchQueries("useRequestsSocialTecnologyList");
+        queryClient.invalidateQueries("useRequestSocialTechnologyList");
       },
     }
   );

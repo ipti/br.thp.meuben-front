@@ -19,7 +19,7 @@ import {
   StatusRegistrationEnum,
   StatusTermEnum,
   typesex,
-  TypeTermEnum
+
 } from "../../../../../Controller/controllerGlobal";
 import { useFetchRequestClassroomOne } from "../../../../../Services/Classroom/query";
 import { Padding } from "../../../../../Styles/styles";
@@ -142,7 +142,7 @@ const RegistrationPage = () => {
           >
             <Column body={(row) => formatarData(row?.dateTerm!)} header="Data de assinatura" />
             <Column body={(row) => formatarData(row?.dateValid ?? "")} header="Data de validade" />
-            <Column body={(row) => TypeTermEnum[row?.type ?? ""] ?? ""} header="Tipo do termo" />
+            <Column body={(row) => row?.term_type?.label ?? row?.type ?? ""} header="Tipo do termo" />
             <Column body={(row) => StatusTermEnum[row?.status ?? ""] ?? ""} header="Status" />
             <Column body={(row) => row?.observation} header="Observações" />
           </DataTable>

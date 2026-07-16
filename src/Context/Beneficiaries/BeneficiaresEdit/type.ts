@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction } from "react";
 import { UpdateRegisterTerm } from "../../../Services/Beneficiaries/type";
 import { CreateRegistrationClassroomType } from "../../../Services/PreRegistration/types";
 import { UpdateRegister } from "../../Classroom/Registration/type";
+import type { RegisterTerm, BlobFile } from "../../../Services/RegisterTerm/type";
 
 export interface BeneficiariesEditType {
   registrations: Registration | undefined;
@@ -56,26 +57,6 @@ export interface Registration {
   date_registration: any
   register_term: RegisterTerm[]
   register_classroom: RegisterClassroom[]
-}
-
-export interface RegisterTerm {
-  id: number
-  dateTerm: string
-  dateValid: any
-  has_original_format_change?: boolean
-  createdAt: string
-  updatedAt: string
-  registration_fk: number
-  blob_file_fk: number
-  blob_file: BlobFile
-}
-
-export interface BlobFile {
-  id: number
-  blob_url: string
-  key: string
-  createdAt: string
-  updatedAt: string
 }
 
 export interface RegisterClassroom {

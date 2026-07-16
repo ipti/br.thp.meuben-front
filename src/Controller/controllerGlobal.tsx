@@ -176,11 +176,7 @@ export const StatusTermEnum: any = {
   INVALID_TERM: "Termo inválido",
 };
 
-export const TypeTermEnum: any = {
-  IMAGE_VOICE: "Imagem e voz",
-  ACCESSION: "Termo de adesão",
-  UNSPECIFIED: "Termo não especificado",
-};
+// TypeTermEnum removido — usar useTermTypes() para lista dinâmica (TASK-05)
 
 export const StatusRegistrationEnum: any = {
   ACTIVE: "Ativo",

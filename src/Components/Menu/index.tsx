@@ -186,6 +186,21 @@ const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean 
               />
             </>
           )}
+          {can("menu.termTypes") && (
+            <>
+              <Padding />
+              <Item
+                text="Tipos de Termo"
+                funcActiv={() => {
+                  setActive(10);
+                  menuItem("10");
+                }}
+                active={active === 10 ? true : false}
+                path={"/tipos-de-termo"}
+                icon={active === 10 ? ajuda_hover : ajuda}
+              />
+            </>
+          )}
           {can("menu.logs") && (
             <>
               <Padding />

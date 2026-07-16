@@ -8,7 +8,7 @@ import { BeneficiariesListContext } from "../../../../Context/Beneficiaries/Bene
 import { BeneficiariesListType } from "../../../../Context/Beneficiaries/BeneficiariesList/type";
 import { Column, Padding, Row } from "../../../../Styles/styles";
 import { PropsAplicationContext } from "../../../../Types/types";
-import { TypeTermEnum } from "../../../../Controller/controllerGlobal";
+import { useTermTypes } from "../../../../hooks/useTermTypes";
 
 const ModalFilter = ({
   onHide,
@@ -21,6 +21,8 @@ const ModalFilter = ({
   const propsAplication = useContext(
     AplicationContext
   ) as PropsAplicationContext;
+  const { termTypes } = useTermTypes();
+
   return (
     <Dialog
       onHide={onHide}
@@ -101,7 +103,7 @@ const ModalFilter = ({
                       placerholder="Escolha um tipo de termo"
                       options={[
                         { name: "Todos", id: undefined },
-                        ...Object.entries(TypeTermEnum).map(([key, label]) => ({ name: label as string, id: key })),
+                        ...termTypes.map((t) => ({ name: t.label, id: t.code })),
                       ]}
                       name="typeTerm"
                       value={values.typeTerm}

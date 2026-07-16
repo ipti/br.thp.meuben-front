@@ -60,6 +60,11 @@ export const PermissionsConfig: Record<string, PermissionRule> = {
   'socialTechnology.edit':   isAdmin,
   'socialTechnology.delete': isAdmin,
 
+  // ── Tipos de Termo ───────────────────────────────────────────────────────
+  'termType.create': isAdmin,
+  'termType.edit':   isAdmin,
+  'termType.delete': isAdmin,
+
   // ── Logs ──────────────────────────────────────────────────────────────────
   'logs.view': isAdmin,
 
@@ -69,5 +74,6 @@ export const PermissionsConfig: Record<string, PermissionRule> = {
   // ── Menu ──────────────────────────────────────────────────────────────────
   'menu.reapplicators': adminOrCoord,
   'menu.users':         adminOrCoord,
-  'menu.logs':     isAdmin,
+  'menu.logs':          isAdmin,
+  'menu.termTypes':     isAdmin,
 };

@@ -32,7 +32,7 @@ import {
   StatusRegistrationEnum,
   StatusTermEnum,
   typesex,
-  TypeTermEnum
+
 } from "../../../Controller/controllerGlobal";
 import { validaCPF } from "../../../Controller/controllerValidCPF";
 import styles from "../../../Styles";
@@ -827,7 +827,7 @@ const BeneficiariesEditPage = () => {
                         return (
 
                           <>
-                            {TypeTermEnum[row?.type ?? ""] && `${TypeTermEnum[row?.type ?? ""]}`}
+                            {row?.term_type?.label ?? row?.type ?? ""}
                           </>
                         );
                       }}

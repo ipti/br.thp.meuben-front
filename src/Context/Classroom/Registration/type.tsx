@@ -1,3 +1,5 @@
+import type { RegisterTerm } from "../../../Services/RegisterTerm/type";
+
 export interface RegistrationDetailsTypes {
   registration?: RegistrationType;
   initialValue: UpdateRegister
@@ -99,16 +101,4 @@ export interface State {
   id: number
   acronym: string
   name: string
-}
-
-export interface RegisterTerm {
-  id: number
-  dateTerm: string
-  dateValid: string
-  observation: string
-  has_original_format_change?: boolean
-  createdAt: string
-  updatedAt: string
-  registration_fk: number
-  blob_file_fk: number
 }

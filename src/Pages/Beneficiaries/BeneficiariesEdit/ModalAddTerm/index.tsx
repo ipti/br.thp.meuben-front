@@ -12,7 +12,8 @@ import TextInput from "../../../../Components/TextInput";
 import { AplicationContext } from "../../../../Context/Aplication/context";
 import { BeneficiariesEditContext } from "../../../../Context/Beneficiaries/BeneficiaresEdit/context";
 import { BeneficiariesEditType } from "../../../../Context/Beneficiaries/BeneficiaresEdit/type";
-import { ROLE, TypeTermEnum } from "../../../../Controller/controllerGlobal";
+import { ROLE } from "../../../../Controller/controllerGlobal";
+import { useTermTypes } from "../../../../hooks/useTermTypes";
 import { ControllerUpdateRegistration } from "../../../../Services/PreRegistration/controller";
 import { Column, Padding, Row } from "../../../../Styles/styles";
 import { PropsAplicationContext } from "../../../../Types/types";
@@ -130,6 +131,7 @@ const ModalAddTerm = ({
   const propsAplication = useContext(AplicationContext) as PropsAplicationContext;
   const isAdmin = propsAplication.user?.role === ROLE.ADMIN;
   const isEdit = !!visible?.dateTerm;
+  const { termTypes, adhesionType } = useTermTypes();
 
   const { requestRegisterTermMutation } = ControllerUpdateRegistration();
 
@@ -137,40 +139,39 @@ const ModalAddTerm = ({
     requestRegisterTermMutation.mutate({ data });
   };
 
+  const adhesionTypeId = adhesionType?.id;
+
   const schemaCreate = Yup.object().shape({
-    type: Yup.string().required("Tipo é obrigatório"),
+    term_type_id: Yup.number().required("Tipo é obrigatório"),
     dateTerm: Yup.string().required("Data de assinatura é obrigatório"),
-    dateValid: Yup.string().when("type", {
-      is: (type: string) => type === "ACCESSION",
-      then: (schema) => schema.optional().nullable(),
-      otherwise: (schema) => schema.required("Data de validade é obrigatório"),
+    dateValid: Yup.string().when("term_type_id", {
+      is: (id: number) => id !== adhesionTypeId,
+      then: (schema) => schema.required("Data de validade é obrigatório"),
+      otherwise: (schema) => schema.optional().nullable(),
     }),
     file: Yup.string().required("Arquivo com termo é obrigatório"),
   });
 
   const schemaEdit = Yup.object().shape({
-    type: Yup.string().required("Tipo é obrigatório"),
+    term_type_id: Yup.number().required("Tipo é obrigatório"),
     dateTerm: Yup.string().required("Data de assinatura é obrigatório"),
-    dateValid: Yup.string().when("type", {
-      is: (type: string) => type === "ACCESSION",
-      then: (schema) => schema.optional().nullable(),
-      otherwise: (schema) => schema.required("Data de validade é obrigatório"),
+    dateValid: Yup.string().when("term_type_id", {
+      is: (id: number) => id !== adhesionTypeId,
+      then: (schema) => schema.required("Data de validade é obrigatório"),
+      otherwise: (schema) => schema.optional().nullable(),
     }),
   });
 
-  const optionsType = Object.keys(TypeTermEnum).map((key) => ({
-    id: key,
-    name: TypeTermEnum[key],
-  }));
+  const optionsType = termTypes.map((t) => ({ id: t.id, name: t.label }));
 
-  // Admin pode aprovar ou invalidar — apenas essas duas ações manuais
   const optionsStatusAdmin = termStatusInfo
     .filter((s) => s.key === "ACTIVE_TERM" || s.key === "INVALID_TERM")
     .map((s) => ({ id: s.key, name: s.label }));
 
   const currentStatusInfo = termStatusInfo.find((s) => s.key === visible?.status);
 
-  const isAccessionTerm = visible?.type === "ACCESSION";
+  const isAccessionTerm = visible?.term_type?.is_adhesion_term ?? false;
+  const initialTermTypeId = visible?.term_type?.id ?? undefined;
 
   return (
     <Dialog
@@ -181,29 +182,30 @@ const ModalAddTerm = ({
     >
       <Formik
         initialValues={{
-          type: visible?.type ?? "",
+          term_type_id: initialTermTypeId as number | undefined,
           dateTerm: new Date(visible?.dateTerm || Date.now()),
           dateValid: isAccessionTerm ? undefined : new Date(visible?.dateValid || Date.now()),
           file: undefined,
           observation: visible?.observation ?? "",
           has_original_format_change: visible?.has_original_format_change ?? false,
-          // Novo termo: fixo em TERM_ANALYSIS. Edição: herda status atual
           status: isEdit ? (visible?.status ?? "") : "TERM_ANALYSIS",
         }}
         validationSchema={isEdit ? schemaEdit : schemaCreate}
+        enableReinitialize
         onSubmit={(values) => {
-          const isAccession = values.type === "ACCESSION";
+          const selectedType = termTypes.find((t) => t.id === values.term_type_id);
+          const isAdhesion = selectedType?.is_adhesion_term ?? false;
 
           if (!isEdit && values.file) {
             const formData = new FormData();
             formData.append("dateTerm", values.dateTerm.toString());
-            if (!isAccession && values.dateValid) {
+            if (!isAdhesion && values.dateValid) {
               formData.append("dateValid", values.dateValid?.toString());
             }
             formData.append("registration", id?.toString());
             formData.append("observation", values.observation);
             formData.append("status", "TERM_ANALYSIS");
-            formData.append("type", values.type);
+            formData.append("term_type_id", String(values.term_type_id));
             formData.append(
               "has_original_format_change",
               values.has_original_format_change ? "true" : "false"
@@ -217,11 +219,11 @@ const ModalAddTerm = ({
               dateTerm: values.dateTerm,
               observation: values.observation,
               status: values.status,
-              type: values.type,
+              term_type_id: values.term_type_id,
               has_original_format_change: values.has_original_format_change,
             };
 
-            if (!isAccession) {
+            if (!isAdhesion) {
               payload.dateValid = values.dateValid;
             }
 
@@ -231,186 +233,189 @@ const ModalAddTerm = ({
           onHide();
         }}
       >
-        {({ values, handleChange, errors, touched, setFieldValue }) => (
-          <Form>
-            <div className="grid">
-              {/* Tipo */}
-              <div className="col-12 md:col-6">
-                <label>Tipo *</label>
-                <Padding />
-                <Dropdown
-                  value={values.type}
-                  options={optionsType}
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="Tipo"
-                  onChange={(e) => {
-                    setFieldValue("type", e.value);
-                    if (e.value === "ACCESSION") {
-                      setFieldValue("dateValid", undefined);
-                    }
-                  }}
-                  name="type"
-                  className="w-full"
-                  disabled={isEdit && !isAdmin}
-                />
-                {errors.type && touched.type && (
-                  <div style={{ color: "red", marginTop: "8px" }}>{String(errors.type)}</div>
-                )}
-              </div>
+        {({ values, handleChange, errors, touched, setFieldValue }) => {
+          const selectedType = termTypes.find((t) => t.id === values.term_type_id);
+          const isAdhesion = selectedType?.is_adhesion_term ?? false;
 
-              {/* Datas */}
-              <div className="col-12 md:col-6">
-                <label>Data de assinatura *</label>
-                <Padding />
-                <CalendarComponent
-                  value={values.dateTerm}
-                  name="dateTerm"
-                  dateFormat="dd/mm/yy"
-                  placeholder="Data de assinatura"
-                  onChange={handleChange}
-                />
-                {errors.dateTerm && touched.dateTerm && (
-                  <div style={{ color: "red", marginTop: "8px" }}>{String(errors.dateTerm)}</div>
-                )}
-              </div>
-              {values.type !== "ACCESSION" && (
+          return (
+            <Form>
+              <div className="grid">
+                {/* Tipo */}
                 <div className="col-12 md:col-6">
-                  <label>Data de validade *</label>
+                  <label>Tipo *</label>
                   <Padding />
-                  <CalendarComponent
-                    value={values.dateValid}
-                    name="dateValid"
-                    dateFormat="dd/mm/yy"
-                    placeholder="Data de validade"
-                    onChange={handleChange}
-                  />
-                  {errors.dateValid && touched.dateValid && (
-                    <div style={{ color: "red", marginTop: "8px" }}>{String(errors.dateValid)}</div>
-                  )}
-                </div>
-              )}
-
-              {/* Arquivo — somente criação */}
-              {!isEdit && (
-                <div className="col-12 md:col-6">
-                  <label>Termo *</label>
-                  <Padding />
-                  <TextInput
-                    type="file"
-                    placeholder="Termo"
-                    onChange={(e) => setFieldValue("file", e.target.files)}
-                    name="file"
-                  />
-                  {errors.file && touched.file && (
-                    <div style={{ color: "red", marginTop: "8px" }}>{String(errors.file)}</div>
-                  )}
-                </div>
-              )}
-
-              {/* Status */}
-              <div className="col-12 md:col-6">
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <label style={{ margin: 0 }}>Status</label>
-                  <StatusLegendButton />
-                </div>
-                <Padding />
-
-                {/* Novo termo: badge fixo + mensagem */}
-                {!isEdit && (
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 0" }}>
-                      <i className="pi pi-clock" style={{ color: "#f59e0b", fontSize: "16px" }} />
-                      <Tag value="Termo em análise" severity="warning" />
-                    </div>
-                    <div style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: "6px",
-                      marginTop: "6px",
-                      background: "#fffbeb",
-                      border: "1px solid #fde68a",
-                      borderRadius: "6px",
-                      padding: "8px 10px",
-                    }}>
-                      <i className="pi pi-info-circle" style={{ color: "#d97706", fontSize: "13px", marginTop: "1px", flexShrink: 0 }} />
-                      <span style={{ fontSize: "12px", color: "#92400e", lineHeight: "1.5" }}>
-                        Após o envio, a equipe de M&A irá analisar o documento e atualizará o status do termo.
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Edição — admin: dropdown com aprovação/invalidação */}
-                {isEdit && isAdmin && (
                   <Dropdown
-                    value={values.status}
-                    options={optionsStatusAdmin}
+                    value={values.term_type_id}
+                    options={optionsType}
                     optionLabel="name"
                     optionValue="id"
-                    placeholder="Selecione o status"
-                    onChange={(e) => setFieldValue("status", e.value)}
-                    name="status"
+                    placeholder="Tipo"
+                    onChange={(e) => {
+                      setFieldValue("term_type_id", e.value);
+                      const picked = termTypes.find((t) => t.id === e.value);
+                      if (picked?.is_adhesion_term) {
+                        setFieldValue("dateValid", undefined);
+                      }
+                    }}
+                    name="term_type_id"
                     className="w-full"
+                    disabled={isEdit && !isAdmin}
                   />
-                )}
+                  {errors.term_type_id && touched.term_type_id && (
+                    <div style={{ color: "red", marginTop: "8px" }}>{String(errors.term_type_id)}</div>
+                  )}
+                </div>
 
-                {/* Edição — não admin: somente leitura */}
-                {isEdit && !isAdmin && (
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 0" }}>
-                    {currentStatusInfo && (
-                      <i
-                        className={currentStatusInfo.icon}
-                        style={{ color: currentStatusInfo.color, fontSize: "16px" }}
-                      />
-                    )}
-                    <Tag
-                      value={currentStatusInfo?.label ?? visible?.status}
-                      severity={currentStatusInfo?.severity ?? "info"}
+                {/* Datas */}
+                <div className="col-12 md:col-6">
+                  <label>Data de assinatura *</label>
+                  <Padding />
+                  <CalendarComponent
+                    value={values.dateTerm}
+                    name="dateTerm"
+                    dateFormat="dd/mm/yy"
+                    placeholder="Data de assinatura"
+                    onChange={handleChange}
+                  />
+                  {errors.dateTerm && touched.dateTerm && (
+                    <div style={{ color: "red", marginTop: "8px" }}>{String(errors.dateTerm)}</div>
+                  )}
+                </div>
+                {!isAdhesion && (
+                  <div className="col-12 md:col-6">
+                    <label>Data de validade *</label>
+                    <Padding />
+                    <CalendarComponent
+                      value={values.dateValid}
+                      name="dateValid"
+                      dateFormat="dd/mm/yy"
+                      placeholder="Data de validade"
+                      onChange={handleChange}
                     />
-                    <span style={{ fontSize: "12px", color: "#6b7280" }}>
-                      (apenas M&A pode alterar)
-                    </span>
+                    {errors.dateValid && touched.dateValid && (
+                      <div style={{ color: "red", marginTop: "8px" }}>{String(errors.dateValid)}</div>
+                    )}
                   </div>
                 )}
-              </div>
 
-              {/* Observações */}
-              <div className="col-12 md:col-6">
-                <label>Observações</label>
-                <Padding />
-                <TextInput
-                  value={values.observation}
-                  placeholder="Observações"
-                  onChange={handleChange}
-                  name="observation"
-                />
-              </div>
-              <div className="col-12 md:col-6">
-                <label>Modelo do termo</label>
-                <Padding />
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <CheckboxComponent
-                    checked={values.has_original_format_change}
-                    onChange={(e) =>
-                      setFieldValue("has_original_format_change", e.checked)
-                    }
+                {/* Arquivo — somente criação */}
+                {!isEdit && (
+                  <div className="col-12 md:col-6">
+                    <label>Termo *</label>
+                    <Padding />
+                    <TextInput
+                      type="file"
+                      placeholder="Termo"
+                      onChange={(e) => setFieldValue("file", e.target.files)}
+                      name="file"
+                    />
+                    {errors.file && touched.file && (
+                      <div style={{ color: "red", marginTop: "8px" }}>{String(errors.file)}</div>
+                    )}
+                  </div>
+                )}
+
+                {/* Status */}
+                <div className="col-12 md:col-6">
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <label style={{ margin: 0 }}>Status</label>
+                    <StatusLegendButton />
+                  </div>
+                  <Padding />
+
+                  {!isEdit && (
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 0" }}>
+                        <i className="pi pi-clock" style={{ color: "#f59e0b", fontSize: "16px" }} />
+                        <Tag value="Termo em análise" severity="warning" />
+                      </div>
+                      <div style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: "6px",
+                        marginTop: "6px",
+                        background: "#fffbeb",
+                        border: "1px solid #fde68a",
+                        borderRadius: "6px",
+                        padding: "8px 10px",
+                      }}>
+                        <i className="pi pi-info-circle" style={{ color: "#d97706", fontSize: "13px", marginTop: "1px", flexShrink: 0 }} />
+                        <span style={{ fontSize: "12px", color: "#92400e", lineHeight: "1.5" }}>
+                          Após o envio, a equipe de M&A irá analisar o documento e atualizará o status do termo.
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {isEdit && isAdmin && (
+                    <Dropdown
+                      value={values.status}
+                      options={optionsStatusAdmin}
+                      optionLabel="name"
+                      optionValue="id"
+                      placeholder="Selecione o status"
+                      onChange={(e) => setFieldValue("status", e.value)}
+                      name="status"
+                      className="w-full"
+                    />
+                  )}
+
+                  {isEdit && !isAdmin && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 0" }}>
+                      {currentStatusInfo && (
+                        <i
+                          className={currentStatusInfo.icon}
+                          style={{ color: currentStatusInfo.color, fontSize: "16px" }}
+                        />
+                      )}
+                      <Tag
+                        value={currentStatusInfo?.label ?? visible?.status}
+                        severity={currentStatusInfo?.severity ?? "info"}
+                      />
+                      <span style={{ fontSize: "12px", color: "#6b7280" }}>
+                        (apenas M&A pode alterar)
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Observações */}
+                <div className="col-12 md:col-6">
+                  <label>Observações</label>
+                  <Padding />
+                  <TextInput
+                    value={values.observation}
+                    placeholder="Observações"
+                    onChange={handleChange}
+                    name="observation"
                   />
-                  <label style={{ cursor: "pointer", fontWeight: 500 }}>
-                    O termo anexado sofreu alterações e não está no modelo original THP
-                  </label>
+                </div>
+                <div className="col-12 md:col-6">
+                  <label>Modelo do termo</label>
+                  <Padding />
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <CheckboxComponent
+                      checked={values.has_original_format_change}
+                      onChange={(e) =>
+                        setFieldValue("has_original_format_change", e.checked)
+                      }
+                    />
+                    <label style={{ cursor: "pointer", fontWeight: 500 }}>
+                      O termo anexado sofreu alterações e não está no modelo original THP
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <Padding padding="16px" />
-            <Column style={{ width: "100%" }}>
-              <Row id="end">
-                <Button type="submit" label={isEdit ? "Salvar" : "Adicionar"} />
-              </Row>
-            </Column>
-          </Form>
-        )}
+              <Padding padding="16px" />
+              <Column style={{ width: "100%" }}>
+                <Row id="end">
+                  <Button type="submit" label={isEdit ? "Salvar" : "Adicionar"} />
+                </Row>
+              </Column>
+            </Form>
+          );
+        }}
       </Formik>
     </Dialog>
   );

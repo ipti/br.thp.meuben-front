@@ -10,9 +10,10 @@ import RegistartionClassroomProvider, {
   RegistrationClassroomContext,
 } from "../../../../Context/Classroom/RegistrationsList/context";
 import { RegistrationClassroomTypes } from "../../../../Context/Classroom/RegistrationsList/type";
-import { StatusTermEnum, TypeTermEnum } from "../../../../Controller/controllerGlobal";
+import { StatusTermEnum } from "../../../../Controller/controllerGlobal";
 import { useFetchRequestClassroomOne } from "../../../../Services/Classroom/query";
 import { Padding, Row } from "../../../../Styles/styles";
+import { useTermTypes } from "../../../../hooks/useTermTypes";
 
 const RegistrationList = () => {
   return (
@@ -29,6 +30,8 @@ const RegistrationListPage = () => {
   const { id } = useParams();
   const { data: classroom } = useFetchRequestClassroomOne(parseInt(id!));
   const [filter, setFilter] = useState("");
+  const { termTypes } = useTermTypes();
+
   if (props.isLoading) return <Loading />;
 
   const statusTermOptions = [
@@ -38,9 +41,9 @@ const RegistrationListPage = () => {
     { id: "INVALID_TERM", name: StatusTermEnum["INVALID_TERM"] },
   ];
 
-  const typeTermOptions = Object.entries(TypeTermEnum).map(([key, label]) => ({
-    id: key,
-    name: label as string,
+  const typeTermOptions = termTypes.map((t) => ({
+    id: t.code,
+    name: t.label,
   }));
 
   const search = () => {
