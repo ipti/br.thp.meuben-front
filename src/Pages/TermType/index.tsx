@@ -61,8 +61,8 @@ const TermTypePage = () => {
 
   return (
     <ContentPage
-      title="Tipos de Termo"
-      description="Gerencie os tipos de termo de uso."
+      title="Gestão de Termos"
+      description="Gerencie os tipos de termos utilizados no sistema."
       permissionButton={can("termType.create")}
       addButton
       onClick={() => setCreateVisible(true)}
@@ -77,7 +77,7 @@ const TermTypePage = () => {
           onDelete={handleDelete}
         />
       ) : (
-        <Empty title="Tipos de Termo" />
+        <Empty title="Gestão de Termos" />
       )}
 
       <CreateTermTypeDialog

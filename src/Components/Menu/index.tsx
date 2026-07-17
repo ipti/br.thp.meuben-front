@@ -192,7 +192,7 @@ const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean 
             <>
               <Padding />
               <Item
-                text="Tipos de Termo"
+                text="Gestão de Termos"
                 funcActiv={() => {
                   setActive(10);
                   menuItem("10");
