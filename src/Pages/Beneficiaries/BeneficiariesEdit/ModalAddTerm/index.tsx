@@ -4,7 +4,7 @@ import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { Tag } from "primereact/tag";
-import { useContext, useRef } from "react";
+import { useContext, useMemo, useRef } from "react";
 import * as Yup from "yup";
 import CalendarComponent from "../../../../Components/Calendar";
 import CheckboxComponent from "../../../../Components/Checkbox";
@@ -135,28 +135,41 @@ const ModalAddTerm = ({
 
   const { requestRegisterTermMutation } = ControllerUpdateRegistration();
 
-  const CreateRegisterTerm = (data: FormData) => {
-    requestRegisterTermMutation.mutate({ data });
-  };
-
   const adhesionTypeId = adhesionType?.id;
+
+  // Memoize initial values so Date.now() is evaluated only once per open,
+  // preventing enableReinitialize from resetting the form on every re-render.
+  const initialValues = useMemo(() => {
+    const isAccessionTerm = visible?.term_type?.is_adhesion_term ?? false;
+    return {
+      term_type_id: (visible?.term_type?.id ?? undefined) as number | undefined,
+      dateTerm: new Date(visible?.dateTerm || Date.now()),
+      dateValid: isAccessionTerm ? undefined : new Date(visible?.dateValid || Date.now()),
+      file: undefined as FileList | undefined,
+      observation: visible?.observation ?? "",
+      has_original_format_change: visible?.has_original_format_change ?? false,
+      status: isEdit ? (visible?.status ?? "") : "TERM_ANALYSIS",
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible?.id, isEdit]);
 
   const schemaCreate = Yup.object().shape({
     term_type_id: Yup.number().required("Tipo é obrigatório"),
-    dateTerm: Yup.string().required("Data de assinatura é obrigatório"),
-    dateValid: Yup.string().when("term_type_id", {
-      is: (id: number) => id !== adhesionTypeId,
+    dateTerm: Yup.mixed().required("Data de assinatura é obrigatório"),
+    dateValid: Yup.mixed().when("term_type_id", {
+      is: (typeId: number) => adhesionTypeId !== undefined && typeId !== adhesionTypeId,
       then: (schema) => schema.required("Data de validade é obrigatório"),
       otherwise: (schema) => schema.optional().nullable(),
     }),
-    file: Yup.string().required("Arquivo com termo é obrigatório"),
+    // Yup.mixed() accepts FileList; .required() fails only on null/undefined
+    file: Yup.mixed().required("Arquivo com termo é obrigatório"),
   });
 
   const schemaEdit = Yup.object().shape({
     term_type_id: Yup.number().required("Tipo é obrigatório"),
-    dateTerm: Yup.string().required("Data de assinatura é obrigatório"),
-    dateValid: Yup.string().when("term_type_id", {
-      is: (id: number) => id !== adhesionTypeId,
+    dateTerm: Yup.mixed().required("Data de assinatura é obrigatório"),
+    dateValid: Yup.mixed().when("term_type_id", {
+      is: (typeId: number) => adhesionTypeId !== undefined && typeId !== adhesionTypeId,
       then: (schema) => schema.required("Data de validade é obrigatório"),
       otherwise: (schema) => schema.optional().nullable(),
     }),
@@ -170,9 +183,6 @@ const ModalAddTerm = ({
 
   const currentStatusInfo = termStatusInfo.find((s) => s.key === visible?.status);
 
-  const isAccessionTerm = visible?.term_type?.is_adhesion_term ?? false;
-  const initialTermTypeId = visible?.term_type?.id ?? undefined;
-
   return (
     <Dialog
       onHide={onHide}
@@ -181,15 +191,7 @@ const ModalAddTerm = ({
       style={{ width: window.innerWidth > 800 ? "50vw" : "70vw" }}
     >
       <Formik
-        initialValues={{
-          term_type_id: initialTermTypeId as number | undefined,
-          dateTerm: new Date(visible?.dateTerm || Date.now()),
-          dateValid: isAccessionTerm ? undefined : new Date(visible?.dateValid || Date.now()),
-          file: undefined,
-          observation: visible?.observation ?? "",
-          has_original_format_change: visible?.has_original_format_change ?? false,
-          status: isEdit ? (visible?.status ?? "") : "TERM_ANALYSIS",
-        }}
+        initialValues={initialValues}
         validationSchema={isEdit ? schemaEdit : schemaCreate}
         enableReinitialize
         onSubmit={(values) => {
@@ -211,7 +213,7 @@ const ModalAddTerm = ({
               values.has_original_format_change ? "true" : "false"
             );
             formData.append("file", (values.file as any)[0]);
-            CreateRegisterTerm(formData);
+            requestRegisterTermMutation.mutate({ data: formData });
           }
 
           if (isEdit) {
@@ -222,11 +224,9 @@ const ModalAddTerm = ({
               term_type_id: values.term_type_id,
               has_original_format_change: values.has_original_format_change,
             };
-
             if (!isAdhesion) {
               payload.dateValid = values.dateValid;
             }
-
             props.UpdateRegisterTerm(visible.id, payload);
           }
 
@@ -249,7 +249,7 @@ const ModalAddTerm = ({
                     options={optionsType}
                     optionLabel="name"
                     optionValue="id"
-                    placeholder="Tipo"
+                    placeholder="Selecione o tipo"
                     onChange={(e) => {
                       setFieldValue("term_type_id", e.value);
                       const picked = termTypes.find((t) => t.id === e.value);
@@ -281,6 +281,7 @@ const ModalAddTerm = ({
                     <div style={{ color: "red", marginTop: "8px" }}>{String(errors.dateTerm)}</div>
                   )}
                 </div>
+
                 {!isAdhesion && (
                   <div className="col-12 md:col-6">
                     <label>Data de validade *</label>
