@@ -268,7 +268,7 @@ const ProjectOnePage = () => {
             quant={props.project?.approved_register_count!}
             title="Total de Matriculas aprovadas"
             color="navy_blue"
-            tooltip="Matrículas com termo de adesão ativo e frequência igual ou superior ao parâmetro de aprovação."
+            tooltip="Total de matrículas em turmas ativas com status de matrícula 'aprovado'."
           />
         </div>
         <div className="col-12 md:col-3">
@@ -308,7 +308,7 @@ const ProjectOnePage = () => {
             quant={props.project?.students_approved_by_frequency_count!}
             title="Total de formandos"
             color="blue"
-            tooltip="Matrículas com frequência igual ou superior ao parâmetro de aprovação, independente do status do termo de adesão."
+            tooltip="Matrículas com status 'aprovado' e frequência igual ou superior ao parâmetro de aprovação, independente do status do Termo de Adesão."
           />
         </div>
         <div className="col-12 md:col-3">
@@ -316,7 +316,7 @@ const ProjectOnePage = () => {
             quant={props.project?.students_with_presence_count!}
             title="Total de participantes"
             color="navy_blue"
-            tooltip="Matrículas com ao menos uma presença registrada nos encontros aprovados da turma."
+            tooltip="Matrículas com status 'aprovado' e ao menos uma presença registrada nos encontros aprovados da turma, independente do status do Termo de Adesão."
           />
         </div>
       </div>
