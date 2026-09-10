@@ -233,9 +233,6 @@ const CreateUser = () => {
                   touched={touched}
                 />
 
-                {errors.current_type && touched.current_type && (
-                  <FieldError message={errors.current_type as string} />
-                )}
               </>
             )}
 

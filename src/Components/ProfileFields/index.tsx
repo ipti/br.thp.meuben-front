@@ -196,19 +196,6 @@ const ProfileFields = ({
           )}
         </div>
 
-        {/* Data de início — sempre opcional */}
-        <div className="col-12 md:col-6">
-          <label>Data de Início</label>
-          <Padding />
-          <MaskInput
-            mask="99/99/9999"
-            placeholder="DD/MM/AAAA"
-            name="initial_date"
-            value={values.initial_date ?? ""}
-            onChange={handleChange}
-          />
-        </div>
-
         {/* Tecnologias Sociais — sempre obrigatório (mínimo 1) */}
         <div className="col-12">
           <label>Tecnologias Sociais *</label>
