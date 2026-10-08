@@ -1,5 +1,5 @@
 import { Form, Formik } from "formik";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import TagImage from "../../Assets/images/logo.svg";
 
@@ -12,7 +12,7 @@ import PasswordInput from "../../Components/TextPassword";
 import LoginProvider, { LoginContext } from "../../Context/Login/context";
 import { LoginContextText } from "../../Context/Login/types";
 import { controllerYears } from "../../Controller/controllerYears";
-import { setYear } from "../../Services/localstorage";
+import { idUser, login, logout, setYear } from "../../Services/localstorage";
 import { Padding, Row } from "../../Styles/styles";
 import { ContainerLogin } from "./styles";
 
@@ -24,12 +24,20 @@ const Login = () => {
   );
 };
 
+const MICROSOFT_ERROR_MESSAGES: Record<string, string> = {
+  email_not_registered:
+    "Seu e-mail não está cadastrado no Meuben. Solicite ao administrador que cadastre seu e-mail no seu perfil.",
+  email_not_found:
+    "Não foi possível obter o e-mail da sua conta Microsoft. Tente novamente.",
+};
+
 const LoginPage = () => {
   const props = useContext(LoginContext) as LoginContextText;
+  const [searchParams] = useSearchParams();
 
-  const years = controllerYears()
-
+  const years = controllerYears();
   const [year, setYearState] = useState<any>();
+  const [microsoftError, setMicrosoftError] = useState<string | null>(null);
 
   const LoginSchema = Yup.object().shape({
     password: Yup.string().required("Campo Obrigatório"),
@@ -40,6 +48,32 @@ const LoginPage = () => {
     setYear(years.yearsOptions[years.yearsOptions.length - 1].value.toString());
     setYearState(years.yearsOptions[years.yearsOptions.length - 1].value);
   }, [years.yearsOptions]);
+
+  useEffect(() => {
+    const token = searchParams.get("token");
+    const error = searchParams.get("error");
+
+    if (token) {
+      logout();
+      login(token);
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        if (payload?.sub) idUser(payload.sub);
+      } catch {
+        // payload inválido — token ainda é salvo
+      }
+      window.location.replace("/");
+      return;
+    }
+
+    if (error) {
+      setMicrosoftError(MICROSOFT_ERROR_MESSAGES[error] ?? "Erro ao autenticar com Microsoft.");
+    }
+  }, [searchParams]);
+
+  const handleMicrosoftLogin = () => {
+    window.location.href = `${process.env.REACT_APP_API_PATH}auth/microsoft`;
+  };
 
   return (
     <ContainerLogin>
@@ -173,6 +207,23 @@ const LoginPage = () => {
                           />
                         </div>
                       </div>
+                      <div className="p-2" />
+                      <div>
+                        <Button
+                          type="button"
+                          label="Entrar com Microsoft"
+                          icon="pi pi-microsoft"
+                          severity="secondary"
+                          outlined
+                          style={{ width: "100%" }}
+                          onClick={handleMicrosoftLogin}
+                        />
+                      </div>
+                      {microsoftError && (
+                        <div style={{ color: "red", marginTop: "12px", fontSize: "13px" }}>
+                          {microsoftError}
+                        </div>
+                      )}
                       <div className="p-2" />
                     </Form>
                   );
