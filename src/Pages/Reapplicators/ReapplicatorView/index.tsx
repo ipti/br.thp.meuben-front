@@ -74,7 +74,7 @@ const ReapplicatorView = () => {
       <div className="grid">
         <Field label="Nome" value={profile.name} />
         <Field label="Tipo" value={profileTypeLabel[profile.current_type] ?? profile.current_type} />
-        <Field label="E-mail" value={profile.email} />
+        <Field label="E-mail" value={profile.user?.email} />
         <Field label="Telefone" value={profile.phone} />
         <Field label="Data de Nascimento" value={profile.birthday ? formatarData(profile.birthday) : undefined} />
         <Field label="Gênero" value={VerifySex(profile.sex ?? 0)?.type} />

@@ -48,7 +48,7 @@ const ReapplicatorEdit = () => {
       <Formik
         initialValues={{
           name:                profile.name,
-          email:               profile.email ?? "",
+          email:               profile.user?.email ?? "",
           phone:               profile.phone ?? "",
           birthday:            profile.birthday ? formatarData(profile.birthday) : "",
           initial_date:        profile.initial_date ? formatarData(profile.initial_date) : "",

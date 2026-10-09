@@ -122,7 +122,7 @@ const EditUser = () => {
           username:            user.username ?? "",
           role:                user.role ?? "",
           current_type:        profile?.current_type ?? "",
-          email:               profile?.email ?? "",
+          email:               user?.email ?? "",
           phone:               profile?.phone ?? "",
           birthday:            profile?.birthday ? formatarData(profile.birthday) : "",
           initial_date:        profile?.initial_date ? formatarData(profile.initial_date) : "",

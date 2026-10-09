@@ -30,13 +30,13 @@ export interface ProfileLinkedUser {
   username: string;
   active: boolean;
   role: 'ADMIN' | 'USER';
+  email?: string;
 }
 
 export interface Profile {
   id: number;
   name: string;
   phone?: string;
-  email?: string;
   color_race?: number;
   sex?: number;
   birthday?: string;

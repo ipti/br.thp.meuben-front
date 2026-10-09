@@ -121,7 +121,7 @@ const ReapplicatorListPage = () => {
             emptyMessage="Nenhum reaplicador encontrado."
           >
             <Column field="name"  header="Nome" />
-            <Column field="email" header="E-mail" />
+            <Column header="E-mail" body={(row) => row.user?.email ?? "—"} />
             <Column field="phone" header="Telefone" />
             <Column header="Tec. Sociais" body={socialTechBody} />
             <Column header="Usuário"      body={userBody} />
