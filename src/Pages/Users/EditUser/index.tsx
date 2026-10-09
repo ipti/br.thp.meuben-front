@@ -67,8 +67,12 @@ const otherProfileSchema = {
   email: Yup.string().email("E-mail inválido").required("E-mail é obrigatório"),
 };
 
+const adminSchema = {
+  email: Yup.string().email("E-mail inválido").optional(),
+};
+
 const buildSchema = (role: string, currentType: string) => {
-  if (role !== ROLE.USER) return Yup.object(accessSchema);
+  if (role === ROLE.ADMIN) return Yup.object({ ...accessSchema, ...adminSchema });
   const profileFields = isSocialProfile(currentType as any)
     ? { ...profileBaseSchema, ...reapplicatorSchema }
     : { ...profileBaseSchema, ...otherProfileSchema };
@@ -145,6 +149,10 @@ const EditUser = () => {
             role:     values.role,
             active:   values.active,
           };
+
+          if (values.role === ROLE.ADMIN) {
+            body.email = values.email || undefined;
+          }
 
           if (values.role === ROLE.USER && values.current_type) {
             body.current_type  = values.current_type;
@@ -247,6 +255,26 @@ const EditUser = () => {
                 )}
               </div>
             </div>
+
+            {/* ── Email para ADMIN ───────────────────────────────────── */}
+            {values.role === ROLE.ADMIN && (
+              <div className="grid">
+                <div className="col-12 md:col-6">
+                  <label>E-mail (opcional)</label>
+                  <Padding />
+                  <TextInput
+                    placeholder="E-mail"
+                    name="email"
+                    value={values.email}
+                    onChange={handleChange}
+                  />
+                  <Padding />
+                  {errors.email && touched.email && (
+                    <div style={{ color: color.red }}>{errors.email as string}</div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* ── Seção 2: Perfil Operacional (só para USER) ─────────── */}
             {values.role === ROLE.USER && (

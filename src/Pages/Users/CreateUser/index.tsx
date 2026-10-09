@@ -51,8 +51,12 @@ const otherProfileSchema = {
   email: Yup.string().email("E-mail inválido").required("E-mail é obrigatório"),
 };
 
+const adminSchema = {
+  email: Yup.string().email("E-mail inválido").optional(),
+};
+
 const buildSchema = (role: string, currentType: string) => {
-  if (role !== ROLE.USER) return Yup.object(accessSchema);
+  if (role === ROLE.ADMIN) return Yup.object({ ...accessSchema, ...adminSchema });
   const profileFields = isSocialProfile(currentType as any)
     ? { ...profileBaseSchema, ...reapplicatorSchema }
     : { ...profileBaseSchema, ...otherProfileSchema };
@@ -115,13 +119,14 @@ const CreateUser = () => {
               project:             values.social_technologies,
             });
           } else {
-            // POST /user-bff — só dados de acesso (ADMIN ou USER sem perfil)
+            // POST /user-bff — dados de acesso + email opcional (ADMIN)
             requestUserMutation.mutate({
               name:     values.name,
               username: values.username,
               password: values.password,
               role:     values.role as any,
-            });
+              ...(values.email ? { email: values.email } : {}),
+            } as any);
           }
         }}
       >
@@ -215,6 +220,26 @@ const CreateUser = () => {
                 )}
               </div>
             </div>
+
+            {/* ── Email para ADMIN ───────────────────────────────────────── */}
+            {values.role === ROLE.ADMIN && (
+              <div className="grid">
+                <div className="col-12 md:col-6">
+                  <label>E-mail (opcional)</label>
+                  <Padding />
+                  <TextInput
+                    placeholder="E-mail"
+                    name="email"
+                    value={values.email}
+                    onChange={handleChange}
+                  />
+                  <Padding />
+                  {errors.email && touched.email && (
+                    <div style={{ color: color.red }}>{errors.email}</div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* ── Seção 2: Perfil Operacional (só para USER) ─────────────── */}
             {values.role === ROLE.USER && (
