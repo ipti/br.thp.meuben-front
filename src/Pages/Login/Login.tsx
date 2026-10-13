@@ -96,32 +96,50 @@ const LoginPage = () => {
 
             <div className="resetPassword textCenter">
               <div className="buttonLogin">
-                Faça sua matricula
+                Faça sua matrícula
                 <Link className="link" to="/register">
                   clique aqui
                 </Link>
               </div>
             </div>
           </Row>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100%",
-              width: "100%",
-              position: "relative",
-              overflowY: "auto"
-            }}
-          >
-            <div className="col-11 md:col-9">
+          <div className="loginPanelBody">
+            <div className="col-11 md:col-9 loginContent">
               {/* <div className={classes.marginMobile20} /> */}
-              <Row style={{ justifyContent: "center" }}>
-                <img src={TagImage} alt=""></img>
+              <Row className="loginLogo" style={{ justifyContent: "center" }}>
+                <img src={TagImage} alt="MeuBen"></img>
               </Row>
-              {/* <div className={classes.marginMobile} /> */}
-              <div className="p-4" />
+
+              <section className="microsoftAccess" aria-labelledby="microsoft-login-title">
+                <span className="recommendedAccess">Acesso recomendado</span>
+                <h1 id="microsoft-login-title">Entre com sua conta Microsoft</h1>
+                <p>Acesse o MeuBen de forma rápida e segura com sua conta institucional.</p>
+                <button
+                  className="microsoftLoginButton"
+                  type="button"
+                  onClick={handleMicrosoftLogin}
+                >
+                  <span className="microsoftMark" aria-hidden="true">
+                    <span className="microsoftRed" />
+                    <span className="microsoftGreen" />
+                    <span className="microsoftBlue" />
+                    <span className="microsoftYellow" />
+                  </span>
+                  <span>Entrar com Microsoft</span>
+                  <i className="pi pi-arrow-right" aria-hidden="true" />
+                </button>
+                {microsoftError && (
+                  <div className="microsoftError" role="alert">
+                    <i className="pi pi-exclamation-circle" aria-hidden="true" />
+                    <span>{microsoftError}</span>
+                  </div>
+                )}
+              </section>
+
+              <div className="loginDivider" aria-hidden="true">
+                <span>ou entre com seu acesso MeuBen</span>
+              </div>
+
               <Formik
                 initialValues={props.initialValue}
                 onSubmit={(values) => {
@@ -132,7 +150,7 @@ const LoginPage = () => {
               >
                 {({ values, errors, handleChange, touched }) => {
                   return (
-                    <Form>
+                    <Form className="localLoginForm">
                       <div>
                         <div>
                           <label>Usuário</label>
@@ -201,29 +219,12 @@ const LoginPage = () => {
                       <div>
                         <div>
                           <Button
-                            className={"t-button-primary"}
+                            className="localLoginButton"
                             type="submit"
-                            label="Entrar"
+                            label="Entrar com usuário e senha"
                           />
                         </div>
                       </div>
-                      <div className="p-2" />
-                      <div>
-                        <Button
-                          type="button"
-                          label="Entrar com Microsoft"
-                          icon="pi pi-microsoft"
-                          severity="secondary"
-                          outlined
-                          style={{ width: "100%" }}
-                          onClick={handleMicrosoftLogin}
-                        />
-                      </div>
-                      {microsoftError && (
-                        <div style={{ color: "red", marginTop: "12px", fontSize: "13px" }}>
-                          {microsoftError}
-                        </div>
-                      )}
                       <div className="p-2" />
                     </Form>
                   );

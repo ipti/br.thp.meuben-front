@@ -5,12 +5,228 @@ import Background from "../../Assets/images/background-signup.png";
 import styles from "../../Styles";
 
 export const ContainerLogin = styled.div`
-     width: 100%;
+    width: 100%;
     height: 100%;
     font-family: ${typography.types.light};
     background-repeat: no-repeat;
     background-position: right top;
     position: fixed;
+
+    .loginPanelBody {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: calc(100% - 82px);
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .loginPanelBody::-webkit-scrollbar {
+      display: none;
+    }
+
+    .loginContent {
+      width: 100%;
+      max-width: 620px;
+      padding-bottom: 32px;
+    }
+
+    .loginLogo img {
+      width: min(330px, 78%);
+      height: auto;
+    }
+
+    .microsoftAccess {
+      position: relative;
+      overflow: hidden;
+      margin-top: 28px;
+      padding: 24px 28px 26px;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      text-align: center;
+    }
+
+    .microsoftRed {
+      background-color: #f25022;
+    }
+
+    .microsoftGreen {
+      background-color: #7fba00;
+    }
+
+    .microsoftBlue {
+      background-color: #00a4ef;
+    }
+
+    .microsoftYellow {
+      background-color: #ffb900;
+    }
+
+    .recommendedAccess {
+      display: inline-flex;
+      align-items: center;
+      margin-bottom: 8px;
+      color: #64748b;
+      font-family: ${typography.types.bold};
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .microsoftAccess h1 {
+      margin: 0;
+      color: #1f2937;
+      font-family: ${typography.types.bold};
+      font-size: 22px;
+      line-height: 1.3;
+    }
+
+    .microsoftAccess p {
+      max-width: 420px;
+      margin: 8px auto 20px;
+      color: #5f6f86;
+      font-family: ${typography.types.inter};
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .microsoftLoginButton {
+      display: grid;
+      grid-template-columns: 34px 1fr 18px;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      min-height: 56px;
+      padding: 10px 18px;
+      border: 1px solid #0067b8;
+      border-radius: 10px;
+      background: #0078d4;
+      color: #fff;
+      box-shadow: 0 5px 12px rgba(0, 103, 184, 0.16);
+      cursor: pointer;
+      font-family: ${typography.types.bold};
+      font-size: 16px;
+      transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    .microsoftLoginButton:hover {
+      background: #006cbe;
+      box-shadow: 0 7px 16px rgba(0, 103, 184, 0.22);
+      transform: translateY(-1px);
+    }
+
+    .microsoftLoginButton:focus-visible {
+      outline: 3px solid rgba(0, 120, 212, 0.3);
+      outline-offset: 3px;
+    }
+
+    .microsoftLoginButton .pi-arrow-right {
+      justify-self: end;
+      font-size: 14px;
+    }
+
+    .microsoftMark {
+      display: grid;
+      grid-template-columns: repeat(2, 10px);
+      grid-template-rows: repeat(2, 10px);
+      gap: 2px;
+      width: 28px;
+      height: 28px;
+      padding: 3px;
+      border-radius: 4px;
+      background: #fff;
+    }
+
+    .microsoftMark span {
+      display: block;
+    }
+
+    .microsoftError {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      margin-top: 14px;
+      padding: 10px 12px;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      background: #fff5f5;
+      color: #b42318;
+      font-family: ${typography.types.inter};
+      font-size: 13px;
+      line-height: 1.4;
+      text-align: left;
+    }
+
+    .microsoftError .pi {
+      margin-top: 2px;
+    }
+
+    .loginDivider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 24px 0 20px;
+      color: #7a8699;
+      font-family: ${typography.types.inter};
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .loginDivider::before,
+    .loginDivider::after {
+      width: 100%;
+      height: 1px;
+      background: #d9dee7;
+      content: "";
+    }
+
+    .localLoginForm label {
+      color: #4b5563;
+      font-family: ${typography.types.inter};
+      font-size: 14px;
+    }
+
+    .localLoginButton.p-button {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid #98a2b3;
+      background: #fff;
+      color: #526176;
+      box-shadow: none;
+    }
+
+    .localLoginButton.p-button:hover {
+      border-color: #667085;
+      background: #f8fafc;
+      color: #344054;
+    }
+
+    @media (max-width: 991px) {
+      .loginContent {
+        max-width: 600px;
+      }
+    }
+
+    @media (max-width: 575px) {
+      .microsoftAccess {
+        margin-top: 22px;
+        padding: 24px 18px 22px;
+      }
+
+      .microsoftAccess h1 {
+        font-size: 20px;
+      }
+
+      .loginDivider {
+        gap: 10px;
+      }
+    }
 
     .TextLarge{
       font-family: ${styles.typography.types.bold};
@@ -140,6 +356,3 @@ export const TopColors = styled.div<{ color: string }>`
     height: 4px;
     background: ${props => props.color}
 `;
-
-
-
