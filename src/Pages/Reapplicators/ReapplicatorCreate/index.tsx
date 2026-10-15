@@ -10,6 +10,10 @@ import ProfileFields from "../../../Components/ProfileFields";
 import TextInput from "../../../Components/TextInput";
 import PasswordInput from "../../../Components/TextPassword";
 import { converterData } from "../../../Controller/controllerGlobal";
+import {
+  normalizeInstitutionalEmail,
+  normalizeUsername,
+} from "../../../hooks/useProfileFieldRules";
 import { ControllerProfile } from "../../../Services/Profile/controller";
 import { Padding } from "../../../Styles/styles";
 
@@ -23,8 +27,8 @@ const baseSchema = Yup.object({
 });
 
 const withLoginSchema = baseSchema.shape({
-  username:        Yup.string().min(3, "Mínimo 3 caracteres").required("Usuário obrigatório"),
-  password:        Yup.string().min(8, "Mínimo 8 caracteres").required("Senha obrigatória"),
+  username:        Yup.string().trim().min(5, "Mínimo 5 caracteres").max(32, "Máximo 32 caracteres").required("Usuário obrigatório"),
+  password:        Yup.string().min(8, "Mínimo 8 caracteres").max(60, "Máximo 60 caracteres").required("Senha obrigatória"),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password")], "As senhas não coincidem")
     .required("Confirmação obrigatória"),
@@ -66,12 +70,12 @@ const ReapplicatorCreate = () => {
         onSubmit={(values) => {
           if (withLogin && values.username) {
             createUserWithProfileMutation.mutate({
-              name:                values.name,
-              username:            values.username,
+              name:                values.name.trim(),
+              username:            normalizeUsername(values.username),
               password:            values.password,
               role:                "USER",
               current_type:        "REAPPLICATOR",
-              email:               values.email || undefined,
+              email:               normalizeInstitutionalEmail(values.email) || undefined,
               phone:               values.phone || undefined,
               sex:                 values.sex,
               color_race:          values.color_race,
@@ -81,9 +85,9 @@ const ReapplicatorCreate = () => {
             });
           } else {
             createProfileMutation.mutate({
-              name:                values.name,
+              name:                values.name.trim(),
               current_type:        "REAPPLICATOR",
-              email:               values.email || undefined,
+              email:               normalizeInstitutionalEmail(values.email) || undefined,
               phone:               values.phone || undefined,
               birthday:            values.birthday ? converterData(values.birthday) : undefined,
               initial_date:        values.initial_date ? converterData(values.initial_date) : undefined,

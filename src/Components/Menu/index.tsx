@@ -1,4 +1,6 @@
 import { useContext, useEffect, useState } from "react";
+import { useAdminAccessRequestCounts } from "../../Services/AccessRequestAdmin/query";
+import { FEATURE_ACCESS_REQUEST } from "../../featureFlags";
 
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
@@ -53,6 +55,7 @@ const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean 
   const [visibleModal, setVisibleModal] = useState(false);
   const props = useContext(AplicationContext) as PropsAplicationContext;
   const { can } = usePermissions();
+  const { data: arCounts } = useAdminAccessRequestCounts(FEATURE_ACCESS_REQUEST && can("menu.accessRequests"));
 
   const itemMenu = getMenuItem()
 
@@ -173,6 +176,21 @@ const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean 
               />
             </>
           )}
+          {can("menu.perfis") && (
+            <>
+              <Padding />
+              <Item
+                text={"Perfis"}
+                funcActiv={() => {
+                  setActive(10);
+                  menuItem("10");
+                }}
+                active={active === 10 ? true : false}
+                path={"/perfis"}
+                icon={active === 10 ? reapplicatorHover : reapplicator}
+              />
+            </>
+          )}
           {can("menu.users") && (
             <>
               <Padding />
@@ -200,6 +218,25 @@ const Menu = ({ viewdMenu, isMobile }: { viewdMenu: boolean; isMobile?: boolean 
                 active={active === 10 ? true : false}
                 path={"/tipos-de-termo"}
                 icon={active === 10 ? termTypeHover : termType}
+              />
+            </>
+          )}
+          {FEATURE_ACCESS_REQUEST && can("menu.accessRequests") && (
+            <>
+              <Padding />
+              <Item
+                text={
+                  arCounts && (arCounts.pendingReview + arCounts.pendingReviewWithResponse + arCounts.needsInformation) > 0
+                    ? `Solicitações de acesso (${arCounts.pendingReview + arCounts.pendingReviewWithResponse + arCounts.needsInformation})`
+                    : "Solicitações de acesso"
+                }
+                funcActiv={() => {
+                  setActive(11);
+                  menuItem("11");
+                }}
+                active={active === 11 ? true : false}
+                path={"/solicitacoes-acesso"}
+                icon={active === 11 ? user_hover : user}
               />
             </>
           )}

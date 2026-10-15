@@ -16,7 +16,13 @@ import {
   ROLE
 } from "../../../Controller/controllerGlobal";
 import { usePermissions } from "../../../hooks/usePermissions";
-import { isSocialProfile } from "../../../hooks/useProfileFieldRules";
+import {
+  normalizeInstitutionalEmail,
+  normalizeUsername,
+  requiresInstitutionalEmail,
+  requiresPhone,
+  requiresSocialDemographics,
+} from "../../../hooks/useProfileFieldRules";
 import { useFetchProfileOne } from "../../../Services/Profile/query";
 import { ControllerUser } from "../../../Services/Users/controller";
 import { useFetchRequestUsersOne } from "../../../Services/Users/query";
@@ -46,14 +52,15 @@ const LinkSenha = styled.div`
 // ─── Validação dinâmica ───────────────────────────────────────────────────────
 
 const accessSchema = {
-  name:     Yup.string().required("Nome é obrigatório").min(3, "Mínimo 3 caracteres"),
-  username: Yup.string().required("Usuário é obrigatório").min(5, "Mínimo 5 caracteres"),
+  name:     Yup.string().trim().required("Nome é obrigatório").min(3, "Mínimo 3 caracteres"),
+  username: Yup.string().trim().required("Usuário é obrigatório").min(5, "Mínimo 5 caracteres").max(32, "Máximo 32 caracteres"),
   role:     Yup.string().required("Tipo de usuário é obrigatório"),
 };
 
 const profileBaseSchema = {
   current_type:        Yup.string().required("Tipo de perfil é obrigatório"),
   social_technologies: Yup.array().min(1, "Selecione ao menos uma tecnologia social"),
+  email:               Yup.string().trim().email("E-mail inválido").optional(),
 };
 
 const reapplicatorSchema = {
@@ -63,19 +70,24 @@ const reapplicatorSchema = {
   phone:      Yup.string().required("Telefone é obrigatório"),
 };
 
-const otherProfileSchema = {
-  email: Yup.string().email("E-mail inválido").required("E-mail é obrigatório"),
-};
-
 const adminSchema = {
-  email: Yup.string().email("E-mail inválido").optional(),
+  email: Yup.string().trim().email("E-mail inválido").optional(),
 };
 
-const buildSchema = (role: string, currentType: string) => {
+const buildSchema = (role: string, currentType: string, email = "") => {
   if (role === ROLE.ADMIN) return Yup.object({ ...accessSchema, ...adminSchema });
-  const profileFields = isSocialProfile(currentType as any)
-    ? { ...profileBaseSchema, ...reapplicatorSchema }
-    : { ...profileBaseSchema, ...otherProfileSchema };
+  const emailSchema = requiresInstitutionalEmail(currentType as any)
+    ? Yup.string().trim().email("E-mail inválido").required("E-mail é obrigatório")
+    : profileBaseSchema.email;
+  const phoneSchema = requiresPhone(currentType as any, email)
+    ? Yup.string().required("Telefone é obrigatório")
+    : Yup.string().optional();
+  const profileFields = {
+    ...profileBaseSchema,
+    email: emailSchema,
+    phone: phoneSchema,
+    ...(requiresSocialDemographics(currentType as any) ? reapplicatorSchema : {}),
+  };
   return Yup.object({ ...accessSchema, ...profileFields });
 };
 
@@ -134,7 +146,7 @@ const EditUser = () => {
         }}
         validate={(values) => {
           try {
-            buildSchema(values.role, values.current_type).validateSync(values, { abortEarly: false });
+            buildSchema(values.role, values.current_type, values.email).validateSync(values, { abortEarly: false });
             return {};
           } catch (err: any) {
             const errors: Record<string, string> = {};
@@ -144,19 +156,19 @@ const EditUser = () => {
         }}
         onSubmit={(values) => {
           const body: Record<string, any> = {
-            name:     values.name,
-            username: values.username,
+            name:     values.name.trim(),
+            username: normalizeUsername(values.username),
             role:     values.role,
             active:   values.active,
           };
 
           if (values.role === ROLE.ADMIN) {
-            body.email = values.email || undefined;
+            body.email = normalizeInstitutionalEmail(values.email) || undefined;
           }
 
           if (values.role === ROLE.USER && values.current_type) {
             body.current_type  = values.current_type;
-            body.email         = values.email || undefined;
+            body.email         = normalizeInstitutionalEmail(values.email) || undefined;
             body.phone         = values.phone || undefined;
             body.sex           = values.sex;
             body.color_race    = values.color_race;

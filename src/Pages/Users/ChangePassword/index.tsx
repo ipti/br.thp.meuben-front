@@ -34,7 +34,8 @@ const ChangePasswordPage = () => {
   const CreateUserSchema = Yup.object().shape({
     password: Yup.string()
       .required("Campo Obrigatório")
-      .min(8, "Senha deve ter pelo menos 8 caracteres"),
+      .min(8, "Senha deve ter pelo menos 8 caracteres")
+      .max(60, "Senha deve ter no máximo 60 caracteres"),
     confirmPassword: Yup.string()
       .label("Confirmar senha")
       .required("Campo Obrigatório")

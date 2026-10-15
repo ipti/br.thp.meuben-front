@@ -29,6 +29,8 @@ const MICROSOFT_ERROR_MESSAGES: Record<string, string> = {
     "Seu e-mail não está cadastrado no Meuben. Solicite ao administrador que cadastre seu e-mail no seu perfil.",
   email_not_found:
     "Não foi possível obter o e-mail da sua conta Microsoft. Tente novamente.",
+  microsoft_context_expired:
+    "Não foi possível concluir o acesso com a Microsoft. Tente entrar novamente.",
 };
 
 const LoginPage = () => {
@@ -67,7 +69,9 @@ const LoginPage = () => {
     }
 
     if (error) {
-      setMicrosoftError(MICROSOFT_ERROR_MESSAGES[error] ?? "Erro ao autenticar com Microsoft.");
+      setMicrosoftError(
+        MICROSOFT_ERROR_MESSAGES[error] ?? "Erro ao autenticar com Microsoft."
+      );
     }
   }, [searchParams]);
 
@@ -78,8 +82,6 @@ const LoginPage = () => {
   return (
     <ContainerLogin>
       <div className="grid h-full">
-
-
         <div
           // style={{
           //   display: "flex",
@@ -90,10 +92,9 @@ const LoginPage = () => {
           //   width: "100%",
           //   position: "relative",
           // }}
-          className="col-12 lg:col-5"
+          className="col-12 lg:col-5 loginColumn"
         >
-          <Row style={{justifyContent: "center"}}>
-
+          <Row style={{ justifyContent: "center" }}>
             <div className="resetPassword textCenter">
               <div className="buttonLogin">
                 Faça sua matrícula
@@ -110,10 +111,18 @@ const LoginPage = () => {
                 <img src={TagImage} alt="MeuBen"></img>
               </Row>
 
-              <section className="microsoftAccess" aria-labelledby="microsoft-login-title">
+              <section
+                className="microsoftAccess"
+                aria-labelledby="microsoft-login-title"
+              >
                 <span className="recommendedAccess">Acesso recomendado</span>
-                <h1 id="microsoft-login-title">Entre com sua conta Microsoft</h1>
-                <p>Acesse o MeuBen de forma rápida e segura com sua conta institucional.</p>
+                <h1 id="microsoft-login-title">
+                  Entre com sua conta Microsoft
+                </h1>
+                <p>
+                  Acesse o MeuBen de forma rápida e segura com sua conta
+                  institucional.
+                </p>
                 <button
                   className="microsoftLoginButton"
                   type="button"
@@ -130,7 +139,10 @@ const LoginPage = () => {
                 </button>
                 {microsoftError && (
                   <div className="microsoftError" role="alert">
-                    <i className="pi pi-exclamation-circle" aria-hidden="true" />
+                    <i
+                      className="pi pi-exclamation-circle"
+                      aria-hidden="true"
+                    />
                     <span>{microsoftError}</span>
                   </div>
                 )}
@@ -226,6 +238,10 @@ const LoginPage = () => {
                         </div>
                       </div>
                       <div className="p-2" />
+                      <div className="accessHelpActions">
+                        <Link to="/solicitar-acesso">Preciso de ajuda para acessar</Link>
+                        <Link to="/acompanhar-solicitacao">Acompanhar minha solicitação</Link>
+                      </div>
                     </Form>
                   );
                 }}
@@ -233,8 +249,7 @@ const LoginPage = () => {
             </div>
           </div>
         </div>
-        <div className="col-0 lg:col-7 w-auto"
-        >
+        <div className="col-0 lg:col-7 w-auto">
           <div className="imgBack">
             <div className="divBlue" />
             <div className="formSignUp">
@@ -243,7 +258,11 @@ const LoginPage = () => {
               </div>
               <Padding padding="8px" />
               <Row id="center" style={{ width: "65%" }}>
-                <p className="pLogin">Solução completa para otimizar a distribuição de benefícios, promover a transparência e fortalecer a confiança das comunidades nos programas do THP.</p>
+                <p className="pLogin">
+                  Solução completa para otimizar a distribuição de benefícios,
+                  promover a transparência e fortalecer a confiança das
+                  comunidades nos programas do THP.
+                </p>
               </Row>
             </div>
           </div>

@@ -35,11 +35,21 @@ import ReapplicatorList   from "../Pages/Reapplicators/ReapplicatorList";
 import ReapplicatorCreate from "../Pages/Reapplicators/ReapplicatorCreate";
 import ReapplicatorView   from "../Pages/Reapplicators/ReapplicatorView";
 import ReapplicatorEdit   from "../Pages/Reapplicators/ReapplicatorEdit";
+import ProfileList   from "../Pages/Profile/ProfileList";
+import ProfileView   from "../Pages/Profile/ProfileView";
+import ProfileCreate from "../Pages/Profile/ProfileCreate";
+import ProfileEdit   from "../Pages/Profile/ProfileEdit";
 import ChangePassword from "../Pages/Users/ChangePassword";
 import PageAtt from "../Pages/Att/page";
 import UserLogs from "../Pages/UserLogs";
 import MeubenPrivacyPolicy from "../Pages/Public/MeubenPrivacyPolicy";
 import TermTypePage from "../Pages/TermType";
+import AccessRequestTrack from "../Pages/AccessRequest/Track";
+import AccessRequestActivate from "../Pages/AccessRequest/Activate";
+import AccessRequestCreate from "../Pages/AccessRequest/Create";
+import AccessRequestAdminList from "../Pages/AccessRequest/Admin/List";
+import AccessRequestAdminDetail from "../Pages/AccessRequest/Admin/Detail";
+import { FEATURE_ACCESS_REQUEST } from "../featureFlags";
 
 const RoutesApp = () => {
   return (
@@ -181,7 +191,10 @@ const RoutesApp = () => {
           element={<PrivateRoute Component={<ReapplicatorEdit />} />}
           path="/reaplicadores/:id/editar"
         />
-        <Route path="/perfis/*" element={<Navigate to="/reaplicadores" replace />} />
+        <Route element={<PrivateRoute Component={<ProfileList />} />}   path="/perfis" />
+        <Route element={<PrivateRoute Component={<ProfileCreate />} />} path="/perfis/criar" />
+        <Route element={<PrivateRoute Component={<ProfileView />} />}   path="/perfis/:id" />
+        <Route element={<PrivateRoute Component={<ProfileEdit />} />}   path="/perfis/:id/editar" />
         <Route
           element={<PrivateRoute Component={<CreateUser />} />}
           path="/users/criar"
@@ -194,6 +207,15 @@ const RoutesApp = () => {
           element={<PrivateRoute Component={<ChangePassword />} />}
           path="/users/senha/:id"
         />
+        {FEATURE_ACCESS_REQUEST && (
+          <>
+            <Route element={<AccessRequestCreate />} path="/solicitar-acesso" />
+            <Route element={<AccessRequestTrack />} path="/acompanhar-solicitacao" />
+            <Route element={<AccessRequestActivate />} path="/ativar-acesso" />
+            <Route element={<PrivateRoute Component={<AccessRequestAdminList />} />} path="/solicitacoes-acesso" />
+            <Route element={<PrivateRoute Component={<AccessRequestAdminDetail />} />} path="/solicitacoes-acesso/:id" />
+          </>
+        )}
         <Route element={<SignUp />} path="/register" />
         <Route element={<Login />} path="/login" />
         <Route element={<Register />} path="/matricula" />

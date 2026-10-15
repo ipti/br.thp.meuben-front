@@ -80,9 +80,15 @@ export const PermissionsConfig: Record<string, PermissionRule> = {
   // ── Página Inicial ────────────────────────────────────────────────────────
   'initialPage.exportCsv': isAdmin,
 
+  // ── Solicitações de acesso ────────────────────────────────────────────────
+  'accessRequest.view':   isAdmin,
+  'accessRequest.review': isAdmin,
+
   // ── Menu ──────────────────────────────────────────────────────────────────
-  'menu.reapplicators': adminOrCoord,
-  'menu.users':         adminOrCoord,
-  'menu.logs':          isAdmin,
-  'menu.termTypes':     isAdmin,
+  'menu.reapplicators':    adminOrCoord,
+  'menu.perfis':           adminOrCoord,
+  'menu.users':            adminOrCoord,
+  'menu.logs':             isAdmin,
+  'menu.termTypes':        isAdmin,
+  'menu.accessRequests':   isAdmin,
 };

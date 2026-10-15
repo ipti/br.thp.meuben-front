@@ -2,66 +2,26 @@ import { Form, Formik } from "formik";
 import { Button } from "primereact/button";
 import { Divider } from "primereact/divider";
 import { useNavigate } from "react-router-dom";
-import * as Yup from "yup";
 import ContentPage from "../../../Components/ContentPage";
 import DropdownComponent from "../../../Components/Dropdown";
-import FieldError from "../../../Components/FieldError";
 import ProfileFields from "../../../Components/ProfileFields";
 import TextInput from "../../../Components/TextInput";
 import PasswordInput from "../../../Components/TextPassword";
 import { converterData, ROLE } from "../../../Controller/controllerGlobal";
-import { isSocialProfile } from "../../../hooks/useProfileFieldRules";
+import {
+  normalizeInstitutionalEmail,
+  normalizeUsername,
+} from "../../../hooks/useProfileFieldRules";
 import { ControllerProfile } from "../../../Services/Profile/controller";
 import { ControllerUser } from "../../../Services/Users/controller";
 import { Padding } from "../../../Styles/styles";
 import color from "../../../Styles/colors";
+import { buildCreateUserSchema } from "./validation";
 
 const ROLE_OPTIONS = [
   { id: ROLE.ADMIN, name: "Admin" },
   { id: ROLE.USER,  name: "Usuário" },
 ];
-
-// Schema base — campos de acesso sempre obrigatórios
-const accessSchema = {
-  name:            Yup.string().required("Nome é obrigatório").min(3, "Mínimo 3 caracteres"),
-  username:        Yup.string().required("Usuário é obrigatório").min(5, "Mínimo 5 caracteres"),
-  password:        Yup.string().required("Senha é obrigatória").min(8, "Mínimo 8 caracteres"),
-  confirmPassword: Yup.string()
-    .required("Confirmação é obrigatória")
-    .oneOf([Yup.ref("password")], "As senhas não coincidem"),
-  role:            Yup.string().required("Tipo de usuário é obrigatório"),
-};
-
-// Campos de perfil — obrigatórios quando role=USER
-const profileBaseSchema = {
-  current_type:        Yup.string().required("Tipo de perfil é obrigatório"),
-  social_technologies: Yup.array().min(1, "Selecione ao menos uma tecnologia social"),
-};
-
-// Campos extras obrigatórios para REAPPLICATOR
-const reapplicatorSchema = {
-  color_race: Yup.number().required("Cor/Raça é obrigatória").typeError("Cor/Raça é obrigatória"),
-  sex:        Yup.number().required("Gênero é obrigatório").typeError("Gênero é obrigatório"),
-  birthday:   Yup.string().required("Data de nascimento é obrigatória"),
-  phone:      Yup.string().required("Telefone é obrigatório"),
-};
-
-// Campo extra obrigatório para demais tipos
-const otherProfileSchema = {
-  email: Yup.string().email("E-mail inválido").required("E-mail é obrigatório"),
-};
-
-const adminSchema = {
-  email: Yup.string().email("E-mail inválido").optional(),
-};
-
-const buildSchema = (role: string, currentType: string) => {
-  if (role === ROLE.ADMIN) return Yup.object({ ...accessSchema, ...adminSchema });
-  const profileFields = isSocialProfile(currentType as any)
-    ? { ...profileBaseSchema, ...reapplicatorSchema }
-    : { ...profileBaseSchema, ...otherProfileSchema };
-  return Yup.object({ ...accessSchema, ...profileFields });
-};
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -93,7 +53,11 @@ const CreateUser = () => {
         }}
         validate={(values) => {
           try {
-            buildSchema(values.role, values.current_type).validateSync(values, { abortEarly: false });
+            buildCreateUserSchema(
+              values.role,
+              values.current_type,
+              values.email,
+            ).validateSync(values, { abortEarly: false });
             return {};
           } catch (err: any) {
             const errors: Record<string, string> = {};
@@ -105,12 +69,12 @@ const CreateUser = () => {
           if (values.role === ROLE.USER && values.current_type) {
             // POST /user-bff — cria user + profile em transação
             createUserWithProfileMutation.mutate({
-              name:                values.name,
-              username:            values.username,
+              name:                values.name.trim(),
+              username:            normalizeUsername(values.username),
               password:            values.password,
               role:                "USER",
               current_type:        values.current_type as any,
-              email:               values.email || undefined,
+              email:               normalizeInstitutionalEmail(values.email) || undefined,
               phone:               values.phone || undefined,
               sex:                 values.sex,
               color_race:          values.color_race,
@@ -121,11 +85,11 @@ const CreateUser = () => {
           } else {
             // POST /user-bff — dados de acesso + email opcional (ADMIN)
             requestUserMutation.mutate({
-              name:     values.name,
-              username: values.username,
+              name:     values.name.trim(),
+              username: normalizeUsername(values.username),
               password: values.password,
               role:     values.role as any,
-              ...(values.email ? { email: values.email } : {}),
+              ...(values.email ? { email: normalizeInstitutionalEmail(values.email) } : {}),
             } as any);
           }
         }}

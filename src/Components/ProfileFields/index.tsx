@@ -4,7 +4,12 @@ import MaskInput from "../InputMask";
 import MultiSelectComponet from "../MultiSelect";
 import TextInput from "../TextInput";
 import { color_race, typesex } from "../../Controller/controllerGlobal";
-import { getProfileTypeOptions, isSocialProfile } from "../../hooks/useProfileFieldRules";
+import {
+  getProfileTypeOptions,
+  requiresInstitutionalEmail,
+  requiresPhone,
+  requiresSocialDemographics,
+} from "../../hooks/useProfileFieldRules";
 import { useFetchRequestSocialTechnologyLists } from "../../Services/SocialTechnology/query";
 import color from "../../Styles/colors";
 import { Padding } from "../../Styles/styles";
@@ -47,7 +52,12 @@ const ProfileFields = ({
 }: ProfileFieldsProps) => {
   const { data: socialTechnologies } = useFetchRequestSocialTechnologyLists();
 
-  const isReapplicator = mode === "reapplicator" || isSocialProfile(values.current_type);
+  const effectiveType: ProfileType | "" = mode === "reapplicator"
+    ? "REAPPLICATOR"
+    : values.current_type;
+  const emailRequired = requiresInstitutionalEmail(effectiveType);
+  const phoneRequired = requiresPhone(effectiveType, values.email);
+  const demographicsRequired = requiresSocialDemographics(effectiveType);
   const typeChanged = isEditing && originalType && values.current_type !== originalType;
   const typeOptions = getProfileTypeOptions(true);
 
@@ -108,9 +118,9 @@ const ProfileFields = ({
           </div>
         )}
 
-        {/* E-mail — obrigatório para não-reaplicador, opcional para reaplicador */}
+        {/* E-mail institucional — obrigatório apenas para os perfis definidos na matriz */}
         <div className="col-12 md:col-6">
-          <label>E-mail {!isReapplicator ? "*" : ""}</label>
+          <label>E-mail {emailRequired ? "*" : "(opcional)"}</label>
           <Padding />
           <TextInput
             placeholder="E-mail"
@@ -124,9 +134,9 @@ const ProfileFields = ({
           )}
         </div>
 
-        {/* Telefone — obrigatório para reaplicador, opcional para demais */}
+        {/* Telefone — obrigatório para perfis sociais e Outro sem e-mail */}
         <div className="col-12 md:col-6">
-          <label>Telefone {isReapplicator ? "*" : ""}</label>
+          <label>Telefone {phoneRequired ? "*" : "(opcional)"}</label>
           <Padding />
           <MaskInput
             mask="(99) 9 9999-9999"
@@ -143,7 +153,7 @@ const ProfileFields = ({
 
         {/* Data de nascimento — obrigatória para reaplicador, opcional para demais */}
         <div className="col-12 md:col-6">
-          <label>Data de Nascimento {isReapplicator ? "*" : ""}</label>
+          <label>Data de Nascimento {demographicsRequired ? "*" : "(opcional)"}</label>
           <Padding />
           <MaskInput
             mask="99/99/9999"
@@ -160,7 +170,7 @@ const ProfileFields = ({
 
         {/* Gênero — obrigatório para reaplicador, opcional para demais */}
         <div className="col-12 md:col-6">
-          <label>Gênero {isReapplicator ? "*" : ""}</label>
+          <label>Gênero {demographicsRequired ? "*" : "(opcional)"}</label>
           <Padding />
           <DropdownComponent
             name="sex"
@@ -179,7 +189,7 @@ const ProfileFields = ({
 
         {/* Cor/Raça — obrigatória para reaplicador, opcional para demais */}
         <div className="col-12 md:col-6">
-          <label>Cor/Raça {isReapplicator ? "*" : ""}</label>
+          <label>Cor/Raça {demographicsRequired ? "*" : "(opcional)"}</label>
           <Padding />
           <DropdownComponent
             name="color_race"
