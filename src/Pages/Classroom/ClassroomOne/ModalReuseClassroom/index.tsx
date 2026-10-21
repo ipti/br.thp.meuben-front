@@ -4,6 +4,7 @@ import { Checkbox } from "primereact/checkbox";
 import { Dialog } from "primereact/dialog";
 import { useContext, useState } from "react";
 import * as Yup from "yup";
+import CalendarComponent from "../../../../Components/Calendar";
 import DropdownComponent from "../../../../Components/Dropdown";
 import TextInput from "../../../../Components/TextInput";
 import { AplicationContext } from "../../../../Context/Aplication/context";
@@ -13,6 +14,13 @@ import { Column, Padding, Row } from "../../../../Styles/styles";
 import { PropsAplicationContext } from "../../../../Types/types";
 import { ClassroomContext } from "../../../../Context/Classroom/context";
 import { ClassroomTypes } from "../../../../Context/Classroom/type";
+
+const formatDateOnly = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 const ModalReuseClassroom = ({
   onHide,
@@ -36,6 +44,21 @@ const ModalReuseClassroom = ({
     idTs: Yup.string().nullable().required("Tecnologia Social é obrigatória"),
     idProject: Yup.string().nullable().required("Plano de trabalho é obrigatório"),
     name: Yup.string().required("Nome da turma é obrigatório"),
+    meetingPeriod: Yup.array()
+      .nullable()
+      .when("reuseEncontros", {
+        is: true,
+        then: (field) =>
+          field.test(
+            "complete-meeting-period",
+            "Selecione a data inicial e a data final dos encontros",
+            (value) =>
+              Array.isArray(value) &&
+              value.length === 2 &&
+              value[0] instanceof Date &&
+              value[1] instanceof Date,
+          ),
+      }),
   });
 
 
@@ -53,14 +76,24 @@ const ModalReuseClassroom = ({
           idProject: "",
           name: classroom?.name || "",
           reuseEncontros: false,
+          meetingPeriod: null as (Date | null)[] | null,
         }}
         validationSchema={schema}
         onSubmit={(values) => {
+          const [meetingDateStart, meetingDateEnd] = values.meetingPeriod ?? [];
           props.ReuseClassroom({
             idClassroom: classroom?.id,
             idProject: values.idProject,
             name: values.name,
             reuseEncontros: values.reuseEncontros,
+            meetingDateStart:
+              values.reuseEncontros && meetingDateStart
+                ? formatDateOnly(meetingDateStart)
+                : undefined,
+            meetingDateEnd:
+              values.reuseEncontros && meetingDateEnd
+                ? formatDateOnly(meetingDateEnd)
+                : undefined,
           });
           onHide();
         }}
@@ -158,29 +191,53 @@ const ModalReuseClassroom = ({
                   <Checkbox
                     inputId="reuseEncontros"
                     checked={values.reuseEncontros}
-                    onChange={(e) => setFieldValue("reuseEncontros", e.checked)}
+                    onChange={(e) => {
+                      const checked = !!e.checked;
+                      setFieldValue("reuseEncontros", checked);
+                      if (!checked) {
+                        setFieldValue("meetingPeriod", null);
+                      }
+                    }}
                   />
                   <label htmlFor="reuseEncontros" style={{ cursor: "pointer", fontWeight: 500 }}>
                     Reaproveitar encontros da turma
                   </label>
                 </div>
                 {values.reuseEncontros && (
-                  <div style={{
-                    marginTop: 10,
-                    padding: "10px 14px",
-                    borderRadius: 8,
-                    background: "rgba(252,173,9,0.12)",
-                    border: "1px solid rgba(252,173,9,0.4)",
-                    display: "flex",
-                    gap: 8,
-                    alignItems: "flex-start",
-                  }}>
-                    <i className="pi pi-exclamation-triangle" style={{ color: "#9a6700", marginTop: 2, flexShrink: 0 }} />
-                    <span style={{ fontSize: "0.85rem", color: "#9a6700", lineHeight: 1.5 }}>
-                      Os encontros serão copiados com as mesmas datas da turma original.
-                      Após o reaproveitamento, <strong>atualize a data de cada encontro</strong> antes de registrar presença.
-                    </span>
-                  </div>
+                  <>
+                    <div style={{ marginTop: 18 }}>
+                      <label htmlFor="meetingPeriod" style={{ display: "block", fontWeight: 500 }}>
+                        Período dos encontros da turma original *
+                      </label>
+                      <Padding />
+                      <CalendarComponent
+                        name="meetingPeriod"
+                        value={values.meetingPeriod}
+                        onChange={(e: any) => setFieldValue("meetingPeriod", e.value)}
+                        selectionMode="range"
+                        placeholder="Selecione a data inicial e final"
+                        dateFormat="dd/mm/yy"
+                      />
+                      {touched.meetingPeriod && typeof errors.meetingPeriod === "string" && (
+                        <div style={{ color: "red", marginTop: 8 }}>{errors.meetingPeriod}</div>
+                      )}
+                    </div>
+                    <div style={{
+                      marginTop: 10,
+                      padding: "10px 14px",
+                      borderRadius: 8,
+                      background: "rgba(252,173,9,0.12)",
+                      border: "1px solid rgba(252,173,9,0.4)",
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "flex-start",
+                    }}>
+                      <i className="pi pi-info-circle" style={{ color: "#9a6700", marginTop: 2, flexShrink: 0 }} />
+                      <span style={{ fontSize: "0.85rem", color: "#9a6700", lineHeight: 1.5 }}>
+                        Somente os encontros entre as datas selecionadas serão copiados, mantendo as datas originais. Ajuste-as depois, se necessário.
+                      </span>
+                    </div>
+                  </>
                 )}
               </div>
               <Padding padding="16px" />

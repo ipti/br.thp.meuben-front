@@ -40,6 +40,8 @@ export interface ReuseClassroom {
   idClassroom: string;
   name: string;
   reuseEncontros?: boolean;
+  meetingDateStart?: string;
+  meetingDateEnd?: string;
 }
 export type Events = Event[];
 
