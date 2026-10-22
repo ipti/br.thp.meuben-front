@@ -4,6 +4,28 @@ import {
 } from "../../Context/Project/CreateList/type";
 import http from "../axios";
 import { GetIdTs, GetIdUser, getYear, logout } from "../localstorage";
+import {
+  ProjectRegistrationFrequencyFilters,
+  ProjectRegistrationFrequencyQuery,
+  ProjectRegistrationFrequencyReport,
+  ProjectRegistrationFrequencyResponse,
+} from "./frequency.types";
+
+const handleProjectRequestError = (err: any) => {
+  if (err.response?.status === 401) {
+    logout();
+    window.location.reload();
+  }
+  throw err;
+};
+
+const frequencyParams = (filters: ProjectRegistrationFrequencyFilters) => ({
+  ...(filters.search?.trim() ? { search: filters.search.trim() } : {}),
+  ...(filters.year !== undefined ? { year: filters.year } : {}),
+  ...(filters.classroomId !== undefined
+    ? { classroomId: filters.classroomId }
+    : {}),
+});
 
 export const requestCreateProject = (data: CreateProject) => {
   return http
@@ -31,7 +53,6 @@ export const requestDeleteProject = (id: number) => {
       throw err;
     });
 };
-
 
 export const requestUpdateProject = (data: UpdateProject, id: number) => {
   return http
@@ -94,7 +115,9 @@ export const requestProjectList = async () => {
 export const requestTsList = async (id: number | undefined) => {
   if (GetIdTs()) {
     return await http
-      .get("/social-technology-bff/one", { params: { stId: id ?? GetIdTs(), year: getYear() } })
+      .get("/social-technology-bff/one", {
+        params: { stId: id ?? GetIdTs(), year: getYear() },
+      })
       .then((response) => response.data)
       .catch((err) => {
         if (err.response.status === 401) {
@@ -107,10 +130,15 @@ export const requestTsList = async (id: number | undefined) => {
   }
 };
 
-export const requestTsListYear = async (id: number | undefined, year: number) => {
+export const requestTsListYear = async (
+  id: number | undefined,
+  year: number
+) => {
   if (GetIdTs()) {
     return await http
-      .get("/social-technology-bff/one", { params: { stId: id ?? GetIdTs(), year: year } })
+      .get("/social-technology-bff/one", {
+        params: { stId: id ?? GetIdTs(), year: year },
+      })
       .then((response) => response.data)
       .catch((err) => {
         if (err.response.status === 401) {
@@ -138,3 +166,29 @@ export const requestProjectOne = async (id: number) => {
       throw err;
     });
 };
+
+export const requestProjectRegistrationFrequency = async (
+  projectId: number,
+  query: ProjectRegistrationFrequencyQuery
+): Promise<ProjectRegistrationFrequencyResponse> =>
+  http
+    .get(`/project-bff/${projectId}/registration-frequency`, {
+      params: {
+        ...frequencyParams(query),
+        page: query.page,
+        limit: query.limit,
+      },
+    })
+    .then((response) => response.data)
+    .catch(handleProjectRequestError);
+
+export const requestProjectRegistrationFrequencyReport = async (
+  projectId: number,
+  filters: ProjectRegistrationFrequencyFilters
+): Promise<ProjectRegistrationFrequencyReport> =>
+  http
+    .get(`/project-bff/${projectId}/registration-frequency/report`, {
+      params: frequencyParams(filters),
+    })
+    .then((response) => response.data)
+    .catch(handleProjectRequestError);

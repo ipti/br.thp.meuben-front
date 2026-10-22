@@ -2,7 +2,7 @@ import { Form, Formik } from "formik";
 import { Button } from "primereact/button";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { useContext, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import * as Yup from "yup";
 import CalendarComponent from "../../../Components/Calendar";
 import CardClassroom from "../../../Components/Card/CardClassroom";
@@ -52,21 +52,29 @@ const ProjectOnePage = () => {
   const [visible, setVisible] = useState(false);
 
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const props = useContext(ProjectOneContext) as ProjectOneTypes;
 
   const initialValues = {
     name: props.project?.project.name,
     approval_percentage: props.project?.project?.approval_percentage,
-    date_initial: props.project?.project.date_initial ? new Date(props.project.project.date_initial) : undefined as Date | undefined,
-    date_final: props.project?.project.date_final ? new Date(props.project.project.date_final) : undefined as Date | undefined,
+    date_initial: props.project?.project.date_initial
+      ? new Date(props.project.project.date_initial)
+      : (undefined as Date | undefined),
+    date_final: props.project?.project.date_final
+      ? new Date(props.project.project.date_final)
+      : (undefined as Date | undefined),
     file: undefined,
   };
 
   if (props.isLoading) return <Loading />;
 
   return (
-    <ContentPage title={props.project?.project.name!} description="Detalhes do seu plano de trabalho">
+    <ContentPage
+      title={props.project?.project.name!}
+      description="Detalhes do seu plano de trabalho"
+    >
       {edit ? (
         <Formik
           initialValues={initialValues}
@@ -87,7 +95,9 @@ const ProjectOnePage = () => {
         >
           {({ values, errors, handleChange, setFieldValue }) => {
             const fieldError = (field: string) =>
-              submittedEdit ? (errors as Record<string, string>)[field] : undefined;
+              submittedEdit
+                ? (errors as Record<string, string>)[field]
+                : undefined;
             const errorArray = submittedEdit
               ? (Object.values(errors).filter(Boolean) as string[])
               : [];
@@ -128,7 +138,9 @@ const ProjectOnePage = () => {
                     <FieldError message={fieldError("name")} />
                   </div>
                   <div className="col-12 md:col-6">
-                    <label>Parâmetro para aprovação do plano de trabalho *</label>
+                    <label>
+                      Parâmetro para aprovação do plano de trabalho *
+                    </label>
                     <Padding />
                     <InputNumberComponent
                       name="approval_percentage"
@@ -147,7 +159,9 @@ const ProjectOnePage = () => {
                       dateFormat="dd/mm/yy"
                       placeholder="Data de início"
                       value={values.date_initial}
-                      onChange={(e: { value: Date }) => setFieldValue("date_initial", e.value)}
+                      onChange={(e: { value: Date }) =>
+                        setFieldValue("date_initial", e.value)
+                      }
                     />
                   </div>
                   <div className="col-12 md:col-6">
@@ -158,7 +172,9 @@ const ProjectOnePage = () => {
                       dateFormat="dd/mm/yy"
                       placeholder="Data de encerramento"
                       value={values.date_final}
-                      onChange={(e: { value: Date }) => setFieldValue("date_final", e.value)}
+                      onChange={(e: { value: Date }) =>
+                        setFieldValue("date_final", e.value)
+                      }
                     />
                   </div>
                   <div className="col-12 md:col-6">
@@ -167,7 +183,9 @@ const ProjectOnePage = () => {
                     <label>* Imagem para adicionar aos relatórios</label>
                     <Padding />
                     <TextInput
-                      onChange={(e) => setFieldValue("file", e.target?.files![0])}
+                      onChange={(e) =>
+                        setFieldValue("file", e.target?.files![0])
+                      }
                       name="file"
                       placeholder="Régua do plano de trabalho*"
                       type="file"
@@ -182,59 +200,76 @@ const ProjectOnePage = () => {
       ) : (
         <Column>
           <Row id="end">
-            <Row id="end">
+            <Row id="end" style={{ flexWrap: "wrap", gap: 8 }}>
+              <Button
+                outlined
+                label="Relatório de frequência"
+                icon="pi pi-chart-bar"
+                onClick={() => navigate(`/projetos/${id}/relatorio-frequencia`)}
+              />
               {can("project.edit") && (
-                  <Button
-                    text
-                    label="Editar"
-                    icon="pi pi-pencil"
-                    onClick={() => setEdit(true)}
-                  />
-                )}
-              <Padding />
+                <Button
+                  text
+                  label="Editar"
+                  icon="pi pi-pencil"
+                  onClick={() => setEdit(true)}
+                />
+              )}
               {can("project.delete") && (
-                  <Button
-                    text
-                    severity="danger"
-                    label="Excluir"
-                    icon="pi pi-trash"
-                    onClick={() => setVisible(true)}
-                  />
-                )}
+                <Button
+                  text
+                  severity="danger"
+                  label="Excluir"
+                  icon="pi pi-trash"
+                  onClick={() => setVisible(true)}
+                />
+              )}
             </Row>
           </Row>
-          {(props.project?.project.date_initial || props.project?.project.date_final) && (
+          {(props.project?.project.date_initial ||
+            props.project?.project.date_final) && (
             <>
               <Padding padding="8px" />
               <Row>
                 {props.project?.project.date_initial && (
                   <small style={{ color: "#6c757d" }}>
                     <strong>Início:</strong>{" "}
-                    {new Date(props.project.project.date_initial).toLocaleDateString("pt-BR")}
+                    {new Date(
+                      props.project.project.date_initial
+                    ).toLocaleDateString("pt-BR")}
                   </small>
                 )}
-                {props.project?.project.date_initial && props.project?.project.date_final && (
-                  <Padding padding="16px" />
-                )}
+                {props.project?.project.date_initial &&
+                  props.project?.project.date_final && (
+                    <Padding padding="16px" />
+                  )}
                 {props.project?.project.date_final && (
                   <small style={{ color: "#6c757d" }}>
                     <strong>Encerramento:</strong>{" "}
-                    {new Date(props.project.project.date_final).toLocaleDateString("pt-BR")}
+                    {new Date(
+                      props.project.project.date_final
+                    ).toLocaleDateString("pt-BR")}
                   </small>
                 )}
               </Row>
             </>
           )}
-          {props.project?.project.ruler_url && <div>
-            <Padding />
-            <h4>Régua de marca do plano de trabalho</h4>
-            <Padding />
-            <Column>
-              <label>* Imagem para adicionar aos relatórios</label>
+          {props.project?.project.ruler_url && (
+            <div>
               <Padding />
-              <img style={{ width: "100%" }} alt="" src={props.project?.project.ruler_url} />
-            </Column>
-          </div>}
+              <h4>Régua de marca do plano de trabalho</h4>
+              <Padding />
+              <Column>
+                <label>* Imagem para adicionar aos relatórios</label>
+                <Padding />
+                <img
+                  style={{ width: "100%" }}
+                  alt=""
+                  src={props.project?.project.ruler_url}
+                />
+              </Column>
+            </div>
+          )}
         </Column>
       )}
       <Padding padding="16px" />
