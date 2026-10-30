@@ -21,6 +21,7 @@ const report: ProjectRegistrationFrequencyReport = {
         name: "João Neves",
         status: "ACTIVE",
         adhesionTermStatus: "ACTIVE_TERM",
+        hasValidUnspecifiedTerm: false,
       },
       classrooms: [
         {
@@ -91,6 +92,26 @@ describe("project frequency report helpers", () => {
     };
 
     expect(buildProjectFrequencyPdfRows(reportWithoutActiveTerm)).toEqual([]);
+  });
+
+  it("accepts a valid UNSPECIFIED term when the adhesion term is not active", () => {
+    const reportWithAlternativeTerm: ProjectRegistrationFrequencyReport = {
+      ...report,
+      data: [
+        {
+          ...report.data[0],
+          registration: {
+            ...report.data[0].registration,
+            adhesionTermStatus: "INACTIVE_TERM",
+            hasValidUnspecifiedTerm: true,
+          },
+        },
+      ],
+    };
+
+    expect(buildProjectFrequencyPdfRows(reportWithAlternativeTerm)).toHaveLength(
+      1
+    );
   });
 
   it("keeps the term exception for projects before 2026", () => {

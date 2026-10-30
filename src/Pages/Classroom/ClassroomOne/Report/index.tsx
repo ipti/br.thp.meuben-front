@@ -1,7 +1,7 @@
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import Present from "../../../../Assets/images/status-approved.svg";
@@ -15,8 +15,10 @@ import {
 import CalendarComponent from "../../../../Components/Calendar";
 import http from "../../../../Services/axios";
 import { useFetchRequestClassroomReport } from "../../../../Services/Classroom/query";
+import { RegisterClassroom } from "../../../../Services/Classroom/type";
 import color from "../../../../Styles/colors";
 import { ReportClassroom } from "./Pdf";
+import { isClassroomRegistrationReportEligible } from "../../../../Utils/reportTermEligibility";
 
 const ReportWrapper = styled.div`
   width: 100%;
@@ -200,6 +202,22 @@ const ReportPage = () => {
 
   const { data } = useFetchRequestClassroomReport(parseInt(id!), dateStart, dateEnd);
 
+  const eligibleRegistrations = useMemo(() => {
+    const projectYear = data?.project?.date_initial
+      ? new Date(data.project.date_initial).getUTCFullYear()
+      : null;
+    const requiresActiveTerm = projectYear === null || projectYear >= 2026;
+
+    return (data?.register_classroom ?? []).filter((item: RegisterClassroom) =>
+      isClassroomRegistrationReportEligible(
+        item.status,
+        requiresActiveTerm,
+        item.registration.register_term?.[0]?.status,
+        item.registration.hasValidUnspecifiedTerm
+      )
+    );
+  }, [data]);
+
   const hasFilter = !!dateStart || !!dateEnd;
 
   const { generatePDF, generateImagesZip, isGeneratingImagesZip } =
@@ -207,6 +225,12 @@ const ReportPage = () => {
 
   const getLatestTermStatus = (rowData: any) => {
     const latestTerm = rowData?.registration?.register_term?.[0];
+    if (
+      latestTerm?.status !== "ACTIVE_TERM" &&
+      rowData?.registration?.hasValidUnspecifiedTerm
+    ) {
+      return "Termo alternativo válido";
+    }
     if (!latestTerm?.status) return "Sem termo de adesão";
     return StatusTermEnum[latestTerm.status] ?? latestTerm.status;
   };
@@ -344,7 +368,7 @@ const ReportPage = () => {
           <div className="report-summary">
             <div className="report-summary-card">
               <small>Alunos</small>
-              <strong>{data?.register_classroom?.length ?? 0}</strong>
+              <strong>{eligibleRegistrations.length}</strong>
             </div>
             <div className="report-summary-card">
               <small>Encontros</small>
@@ -392,7 +416,7 @@ const ReportPage = () => {
 
           <DataTable
             className="report-table"
-            value={data?.register_classroom}
+            value={eligibleRegistrations}
             scrollable
             scrollHeight="60vh"
             header={header}
@@ -400,7 +424,7 @@ const ReportPage = () => {
             rows={10}
             rowHover
             stripedRows
-            emptyMessage="Nenhum aluno encontrado para esta turma."
+            emptyMessage="Nenhum aluno elegível encontrado para esta turma."
             tableStyle={{
               minWidth: `${Math.max(
                 980,
@@ -439,7 +463,7 @@ const ReportPage = () => {
               }}
             />
             <Column
-              header={"Status do termo de adesão"}
+              header={"Status do termo para o relatório"}
               style={{ width: "180px" }}
               body={(rowData) => {
                 const label = getLatestTermStatus(rowData);
@@ -470,7 +494,7 @@ const ReportPage = () => {
             />
           </DataTable>
           <div className="report-note">
-            No PDF, são exportados apenas alunos com matrícula aprovadas e com termo de adesão assinado.
+            O relatório apresenta apenas alunos com matrícula aprovada e termo de adesão ativo ou termo UNSPECIFIED ativo e vigente.
           </div>
         </div>
       </ReportWrapper>

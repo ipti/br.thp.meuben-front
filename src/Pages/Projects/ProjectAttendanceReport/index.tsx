@@ -158,7 +158,7 @@ const ProjectAttendanceReport = () => {
           icon: "info",
           title: "Nenhuma matrícula elegível para exportação",
           text: report.project.requiresActiveAdhesionTerm
-            ? "Para sair no PDF, a matrícula deve estar aprovada e o termo de adesão deve estar ativo."
+            ? "Para sair no PDF, a matrícula deve estar aprovada e possuir termo de adesão ativo ou termo UNSPECIFIED ativo e vigente."
             : "Para sair no PDF, a matrícula deve estar aprovada.",
           confirmButtonText: "Entendi",
         });
@@ -235,11 +235,18 @@ const ProjectAttendanceReport = () => {
 
   const adhesionTermStatusBody = (row: ReportTableRow) => {
     const status = row.registration.adhesionTermStatus;
+    const hasAlternativeTerm = row.registration.hasValidUnspecifiedTerm;
     return (
       <Tag
-        value={adhesionTermStatusLabel(status)}
-        severity={
+        value={
           status === "ACTIVE_TERM"
+            ? adhesionTermStatusLabel(status)
+            : hasAlternativeTerm
+            ? "Termo alternativo válido"
+            : adhesionTermStatusLabel(status)
+        }
+        severity={
+          status === "ACTIVE_TERM" || hasAlternativeTerm
             ? "success"
             : status === "INACTIVE_TERM" || status === "INVALID_TERM"
             ? "danger"
@@ -430,7 +437,7 @@ const ProjectAttendanceReport = () => {
           severity="info"
           text={
             data.project.requiresActiveAdhesionTerm
-              ? "No PDF, são exportadas somente matrículas aprovadas com termo de adesão ativo."
+              ? "No PDF, são exportadas somente matrículas aprovadas com termo de adesão ativo ou termo UNSPECIFIED ativo e vigente."
               : "No PDF, são exportadas somente matrículas aprovadas. Para este plano anterior a 2026, o termo ativo não é obrigatório."
           }
           style={{ width: "100%", marginBottom: "1rem" }}
@@ -470,7 +477,7 @@ const ProjectAttendanceReport = () => {
             <Column field="registration.thpId" header="Código THP" />
             <Column header="Situação" body={registrationStatusBody} />
             <Column
-              header="Status do termo de adesão"
+              header="Status do termo para o relatório"
               body={adhesionTermStatusBody}
             />
             <Column

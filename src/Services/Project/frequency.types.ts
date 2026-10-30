@@ -42,6 +42,7 @@ export interface FrequencyRegistration {
   name: string;
   status: RegistrationStatus;
   adhesionTermStatus: AdhesionTermStatus | null;
+  hasValidUnspecifiedTerm: boolean;
 }
 
 export interface ClassroomFrequency {

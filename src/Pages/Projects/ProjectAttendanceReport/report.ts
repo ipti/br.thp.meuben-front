@@ -8,6 +8,7 @@ import {
   RegisterClassroomStatus,
   RegistrationStatus,
 } from "../../../Services/Project/frequency.types";
+import { isClassroomRegistrationReportEligible } from "../../../Utils/reportTermEligibility";
 
 export const ATTENDANCE_RESULT_LABELS: Record<
   ClassroomAttendanceResult,
@@ -91,9 +92,12 @@ const getExportableFrequencyEntries = (
     classrooms
       .filter(
         (classroom) =>
-          classroom.registrationStatus === "APPROVED" &&
-          (!report.project.requiresActiveAdhesionTerm ||
-            registration.adhesionTermStatus === "ACTIVE_TERM")
+          isClassroomRegistrationReportEligible(
+            classroom.registrationStatus,
+            report.project.requiresActiveAdhesionTerm,
+            registration.adhesionTermStatus,
+            registration.hasValidUnspecifiedTerm
+          )
       )
       .map((classroom) => ({ registration, classroom }))
   );

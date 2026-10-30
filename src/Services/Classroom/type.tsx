@@ -82,6 +82,7 @@ export interface Registration {
   name: string
   id: number
   register_term?: RegisterTermStatus[]
+  hasValidUnspecifiedTerm?: boolean
 }
 
 export interface RegisterTermStatus {

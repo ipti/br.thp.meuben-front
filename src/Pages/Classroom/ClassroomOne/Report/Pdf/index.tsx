@@ -24,6 +24,7 @@ import { MediafrequencyType } from "../../../../../Context/Classroom/type";
 import { minutesToTimeStr } from "../../../../../Components/TimeInput";
 import styles from "../../../../../Styles";
 import Swal from "sweetalert2";
+import { isClassroomRegistrationReportEligible } from "../../../../../Utils/reportTermEligibility";
 
 pdfMake.vfs = pdfFonts.vfs;
 
@@ -167,16 +168,19 @@ export const ReportClassroom = (dateStart?: Date, dateEnd?: Date) => {
   };
 
   const projectYear = report?.project?.date_initial
-    ? new Date(report.project.date_initial).getFullYear()
+    ? new Date(report.project.date_initial).getUTCFullYear()
     : null;
   const requiresTerm = projectYear === null || projectYear >= 2026;
 
   const getExportableRegistrations = () =>
     (report?.register_classroom || []).filter(
       (item: any) =>
-        item?.status === "APPROVED" &&
-        (!requiresTerm ||
-          item?.registration?.register_term?.[0]?.status === "ACTIVE_TERM")
+        isClassroomRegistrationReportEligible(
+          item?.status,
+          requiresTerm,
+          item?.registration?.register_term?.[0]?.status,
+          item?.registration?.hasValidUnspecifiedTerm
+        )
     );
 
   const buildPdfDoc = () => {
