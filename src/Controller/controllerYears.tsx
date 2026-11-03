@@ -1,17 +1,14 @@
+const FIRST_AVAILABLE_YEAR = 2021;
 
-export function controllerYears() {
-    const date = new Date(Date.now());
-    
-      const years = date.getMonth() >= 10 ? (date.getFullYear() + 1) - 2021 : date.getFullYear() - 2021; 
-      
-      let yearsOptions: Array<{value: number}> | undefined = [];
-    
-      for(var i = 0; i <= years; i++){
-        yearsOptions = [
-          ...(yearsOptions || []),
-          {value: (2021 + i)}
-        ]
-      }
-    
-      return {yearsOptions}
+export function controllerYears(date = new Date()) {
+  const currentYear = date.getFullYear();
+  const lastAvailableYear =
+    date.getMonth() >= 10 ? currentYear + 1 : currentYear;
+  const yearsOptions: Array<{ value: number }> = [];
+
+  for (let year = FIRST_AVAILABLE_YEAR; year <= lastAvailableYear; year++) {
+    yearsOptions.push({ value: year });
+  }
+
+  return { yearsOptions, currentYear };
 }

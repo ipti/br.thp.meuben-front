@@ -38,7 +38,7 @@ const LoginPage = () => {
   const [searchParams] = useSearchParams();
 
   const years = controllerYears();
-  const [year, setYearState] = useState<any>();
+  const [year, setYearState] = useState<number>(years.currentYear);
   const [microsoftError, setMicrosoftError] = useState<string | null>(null);
 
   const LoginSchema = Yup.object().shape({
@@ -47,9 +47,8 @@ const LoginPage = () => {
   });
 
   useEffect(() => {
-    setYear(years.yearsOptions[years.yearsOptions.length - 1].value.toString());
-    setYearState(years.yearsOptions[years.yearsOptions.length - 1].value);
-  }, [years.yearsOptions]);
+    setYear(years.currentYear.toString());
+  }, [years.currentYear]);
 
   useEffect(() => {
     const token = searchParams.get("token");
